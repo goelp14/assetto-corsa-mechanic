@@ -30,8 +30,8 @@ jobs:
           cache: npm
           cache-dependency-path: replay-viewer/package-lock.json
 
-      - name: Install Python dev dependencies
-        run: pip install -e ".[dev]"
+      - name: Install test dependencies
+        run: pip install "pytest>=7.0"
 
       - name: Run tests
         run: python -m pytest tests/ -q
