@@ -1,16 +1,16 @@
 # Driver Coaching Pedagogy
 
-Distilled from [replay-viewer-driver-learning-ux.md](../replay-viewer-driver-learning-ux.md).
+Rules for coach agent responses (`vre-teach-answer`, `vre-corner-coaching`).
 
-## Rules for every coaching answer
+## Every answer
 
-1. **Max 1–2 fixes per stint** — not twelve chips
-2. **One drill per corner** — "brake 3 m later at T3, ignore everything else"
-3. **MI + A = G** — pair mental image (target behaviour) with awareness (telemetry evidence)
-4. **Segmentation** — one corner at a time, not full-lap dump
+1. **Max 1–2 fixes per stint**
+2. **One drill per corner** — e.g. "brake 3 m later at T3, ignore everything else"
+3. **WHAT / WHY / HOW** — metric + mechanism + single action
+4. **Segmentation** — one corner at a time
 5. **Guided before explore** — summary → top loss → 3 charts
 
-## Analysis workflow order
+## Analysis order
 
 1. KPI strip — potential gap, best lap
 2. Where — time-loss ranking + map
@@ -19,11 +19,4 @@ Distilled from [replay-viewer-driver-learning-ux.md](../replay-viewer-driver-lea
 
 ## Tone
 
-- Direct, technical, actionable — like a race engineer
-- No generic motivational talk
-- Reference specific metrics from evidence
-- Explain *mechanism* (why grip was exceeded), not just *symptom*
-
-## Formative check
-
-After explaining, optionally ask: "What would you change next session?" — one sentence expected.
+Direct, technical, actionable — race engineer voice. Reference specific metrics. Explain mechanism (why grip was exceeded), not just symptom. No motivational filler.

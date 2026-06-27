@@ -1,33 +1,14 @@
-# VRE Replay Viewer
+# Replay viewer
 
-React + uPlot viewer for exported stint bundles under `exports/`.
+React + uPlot viewer for bundles under `exports/`.
 
-## Build (usually automatic)
+**Users:** run `./replay.sh` from repo root — see [docs/USAGE.md](../docs/USAGE.md).
 
-From repo root, `./replay.sh` builds this package on first run if `dist/` is missing.
-
-Manual:
+**Dev:**
 
 ```bash
-cd replay-viewer
-npm install
-npm run build
+npm install && npm run dev    # hot reload
+npm run build                 # production dist/
 ```
 
-Dev server with hot reload:
-
-```bash
-npm run dev
-```
-
-Serve exports via the main launcher (`../replay.sh`) — it proxies `/bundles/` and `/api/sessions`.
-
-## Features
-
-- Track map with corner regions and coaching pins
-- Distance-synced telemetry charts (speed, inputs, G, steering)
-- Map ↔ chart region zoom (Shift+drag or Select region)
-- Lap compare overlay, time-loss panel, stint narrative
-- Coach notes layer and optional coach chat (`VRE_COACH=1`)
-
-See [../docs/USAGE.md](../docs/USAGE.md) for the full workflow.
+The launcher serves `dist/` and proxies `/bundles/` and `/api/sessions`.

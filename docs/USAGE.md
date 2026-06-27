@@ -1,98 +1,55 @@
-# Using Virtual Race Engineer
+# Usage
 
-## Typical workflow
+Day-to-day workflow after [install](INSTALL.md).
 
-```
+---
+
+## Workflow
+
+```text
 Drive (in-game VRE) → Load Auto_Tweak in pits if prompted → ./replay.sh → review & drill
 ```
 
-1. **Learning phase** — first ~2 laps: app records baselines, minimal coaching.
-2. **Coaching phase** — orange corrections (driver input) and cyan opportunities (unused grip/speed).
-3. **Setup phase** — after repeated setup symptoms, micro-tweaks queue for the next pit stop.
-4. **Replay** — export stint, compare laps, read corner drills, optional coach chat.
+1. **Learning** — first ~2 laps: baselines recorded, minimal coaching
+2. **Coaching** — orange corrections (driver input), cyan opportunities (unused grip)
+3. **Setup** — repeated setup symptoms queue micro-tweaks for next pit stop
+4. **Replay** — export stint, compare laps, corner drills, optional coach chat
 
 ---
 
 ## In-game HUD
 
-- **Ticker** — headline coaching (exit grip, kerb, shift timing, etc.).
-- **Setup ready** — load `Auto_Tweak.ini` in the setup screen before going out.
-- **Bootstrap** — on new tracks, Monaco/Monza/Spa get a few safe default tweaks (wings, brake bias) after clean laps.
+- **Ticker** — headline coaching (exit grip, kerb, shift timing, etc.)
+- **Setup ready** — load `Auto_Tweak.ini` before going out
+- **Bootstrap** — Monaco/Monza/Spa get safe default tweaks (wings, brake bias) after clean laps on new tracks
 
-Coaching distinguishes:
-
-- **Driver error** — inputs while tyres are loaded (early throttle, sawing on kerbs).
-- **Setup flaw** — clean inputs but persistent balance issues (requires multi-lap evidence).
-- **Intentional rotation** — yaw within your normal aggressive style.
+**Verdicts:** driver error (inputs while loaded), setup flaw (clean inputs, persistent balance), intentional rotation (yaw within your style).
 
 ---
 
 ## Replay viewer
 
-Start: `./replay.sh` (see [INSTALL.md](INSTALL.md)).
+```bash
+./replay.sh                  # sync sessions + open browser
+./replay.sh --force-sync     # re-export all sessions
+./replay.sh --sync-only      # export only
+```
+
+Sessions are read from `<AC install>/apps/python/VirtualRaceEngineer/data/sessions/`. Exports land in `exports/` (gitignored). First run builds the viewer if needed.
 
 | Feature | How |
 |---------|-----|
-| Switch session | Header session dropdown |
-| Best lap | Defaults to ★ fastest flying lap |
-| Compare lap | Optional dashed overlay (second lap) |
-| Map ↔ charts | **Select region** or Shift+drag on map → zoom both |
-| Reset zoom | **Full lap** button |
-| Coach notes | Sky-blue pins; toggle in layers panel |
-| Narrative | Stint debrief markdown in bundle `analysis/narrative.md` |
+| Switch session | Header dropdown |
+| Best lap | Defaults to fastest flying lap |
+| Compare lap | Optional dashed overlay |
+| Map ↔ charts | **Select region** or Shift+drag → zoom both |
+| Reset zoom | **Full lap** |
+| Coach notes | Sky-blue pins; toggle in layers |
+| Narrative | `exports/<id>/analysis/narrative.md` |
 
-Hard-refresh the browser after viewer updates (`Ctrl+Shift+R`).
+Hard-refresh after viewer updates (`Ctrl+Shift+R`).
 
----
-
-## CLI tools
-
-All commands from **repo root** unless noted.
-
-### Export / list sessions
-
-```bash
-python external/query_tools/export_replay.py --list
-python external/query_tools/export_replay.py latest
-python external/query_tools/export_replay.py 2026-06-27_172058_523_monaco_2020
-```
-
-### Session query (JSONL)
-
-```bash
-python external/query_tools/session_query.py --sessions-dir "$VRE_SESSIONS"
-```
-
-### Stint analysis report
-
-```bash
-python external/query_tools/analyze_sessions.py
-```
-
-### Coach notes (persist feedback on replay)
-
-```bash
-python external/query_tools/coach_notes.py add \
-  --bundle 2026-06-27_172058_523_monaco_2020 \
-  --corner "Turn 1" --phase exit \
-  --title "Wait for reload off kerb" \
-  --action "No throttle until wheel load returns after right curb."
-
-python external/query_tools/coach_notes.py list --bundle latest
-python external/query_tools/coach_notes.py remove --bundle latest --id note_001
-```
-
-Re-run export or `./replay.sh` so `manifest.coach_notes` is set.
-
-### Coach agent (optional)
-
-```bash
-python -m external.query_tools.coach ask \
-  --bundle exports/2026-06-27_172058_523_monaco_2020 \
-  --question "Why did I lose time at Swimming Pool on lap 5?"
-```
-
-With `VRE_COACH=1`, `./replay.sh` also serves `POST /coach/ask` for the in-viewer chat panel.
+Optional coach chat: set `VRE_COACH=1` when running `./replay.sh`.
 
 ---
 
@@ -100,17 +57,15 @@ With `VRE_COACH=1`, `./replay.sh` also serves `POST /coach/ask` for the in-viewe
 
 | File | Role |
 |------|------|
-| `Auto_Tweak.ini` | Engineer output — **load this in pits** |
-| `last.ini` | AC’s last loaded setup (fallback clone source) |
-| Your named setups | Preferred clone source (newest mtime wins) |
+| `Auto_Tweak.ini` | Engineer output — **load in pits** |
+| `last.ini` | AC fallback clone source |
+| Your named setups | Preferred clone source (newest mtime) |
 
-Setup memory per track lives in:
+Memory per track: `VirtualRaceEngineer/data/setup_memory/<track_id>.json`
 
-`VirtualRaceEngineer/data/setup_memory/<track_id>.json`
+Pin a base setup: `VRE_BASE_SETUP=MyBaseline.ini`
 
-Harmful tweaks are down-weighted; the app avoids oscillating the same parameter.
-
-**Symptom → typical tweak** (see `ac_app/config/setup_symptom_map.json`):
+**Symptom → typical tweak** (`ac_app/config/setup_symptom_map.json`):
 
 - Entry push → `FRONT_BIAS`, wings
 - Kerb unsettled → softer `DAMP_BUMP` / `DAMP_REBOUND` front
@@ -118,25 +73,66 @@ Harmful tweaks are down-weighted; the app avoids oscillating the same parameter.
 
 ---
 
-## Session archive layout
+## CLI tools
 
-In-game (and after deploy):
+From repo root.
 
+**Export / list:**
+
+```bash
+python external/query_tools/export_replay.py --list
+python external/query_tools/export_replay.py latest
+python external/query_tools/export_replay.py <session_id>
 ```
+
+**Stint analysis:**
+
+```bash
+python external/query_tools/analyze_sessions.py
+```
+
+**Coach notes** (persist on replay bundles):
+
+```bash
+python external/query_tools/coach_notes.py add \
+  --bundle <session_id> --corner "Turn 1" --phase exit \
+  --title "Wait for reload off kerb" \
+  --action "No throttle until wheel load returns."
+
+python external/query_tools/coach_notes.py list --bundle latest
+```
+
+Re-run `./replay.sh` after adding notes.
+
+**Coach agent:**
+
+```bash
+python -m external.query_tools.coach ask \
+  --bundle exports/<session_id> \
+  --question "Why did I lose time at Swimming Pool on lap 5?"
+```
+
+---
+
+## Session layout
+
+**In-game:**
+
+```text
 VirtualRaceEngineer/data/sessions/<session_id>/
-├── session.jsonl       # events, lap summaries, setup changes
-├── laps/lap_NN.json    # subsampled telemetry per lap
+├── session.jsonl
+├── laps/lap_NN.json
 └── README.txt
 ```
 
-Exported for viewer:
+**Exported:**
 
-```
+```text
 exports/<session_id>/
 ├── manifest.json
 ├── geometry.json
 ├── laps/
-└── analysis/           # time_loss, incidents, narrative, coach_notes, …
+└── analysis/          # time_loss, incidents, narrative, coach_notes, …
 ```
 
 ---
@@ -146,13 +142,21 @@ exports/<session_id>/
 ```bash
 pip install -e ".[dev]"
 python3 -m pytest tests/ -q
+./deploy/install.sh --watch    # live sync while editing ac_app/
+./deploy/sync.sh               # one-shot redeploy
 ```
 
-Regenerate car setup catalog after a mod update:
+Regenerate setup catalog after unpacking the car's `data.acd`:
 
 ```bash
 pip install git+https://github.com/PhilippKosarev/acd.git
 python tools/extract_setup_catalog.py --acd path/to/data.acd --out ac_app/config/car_rss_fh_x_2026.json
 ```
 
-Domain glossary: [../CONTEXT.md](../CONTEXT.md). Coaching rubric: [coach/coaching-rubric.md](coach/coaching-rubric.md).
+Replay viewer dev server: `cd replay-viewer && npm run dev` (serve bundles via `./replay.sh`).
+
+---
+
+## Coach agent reference
+
+Domain terms: [CONTEXT.md](../CONTEXT.md). Coaching rules: [docs/coach/](coach/). Skills: [`.agents/skills/`](../.agents/skills/README.md).
