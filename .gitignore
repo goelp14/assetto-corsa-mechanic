@@ -15,6 +15,25 @@ ac_app/data/grip_map/**
 dist/
 exports/
 replay-viewer/node_modules/
+
+# Secrets & credentials (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+secrets.json
+**/secrets/
+
+# Local skill installs (only vre-* skills are part of this repo)
+.agents/skills/*
+!.agents/skills/vre-*/
+
 __pycache__/
 *.py[cod]
 *.egg-info/

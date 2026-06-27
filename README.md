@@ -1,5 +1,7 @@
 # Virtual Race Engineer
 
+[![CI](https://github.com/goelp14/assetto-corsa-mechanic/actions/workflows/ci.yml/badge.svg)](https://github.com/goelp14/assetto-corsa-mechanic/actions/workflows/ci.yml)
+
 In-game **Assetto Corsa** coach and setup engineer for the **RSS Formula Hybrid X 2026** (`rss_formula_hybrid_x_2026`). Learns your driving baseline, separates driver error from setup flaws, writes self-calibrating setup tweaks, and archives session telemetry for offline replay and analysis.
 
 **Requires:** Assetto Corsa, **CSP**, **Content Manager**, embedded **Python 3.3** (in-game app is stdlib-only).
@@ -9,6 +11,10 @@ In-game **Assetto Corsa** coach and setup engineer for the **RSS Formula Hybrid 
 ## Quick start
 
 ### 1. Install the app
+
+**From a [GitHub Release](https://github.com/goelp14/assetto-corsa-mechanic/releases)** (easiest — no clone):
+
+Download `VirtualRaceEngineer.zip` → drag onto Content Manager.
 
 **WSL / Linux (dev):**
 
@@ -114,6 +120,8 @@ Cloned from your newest named setup in that track folder. Set `VRE_BASE_SETUP=My
 
 - [Install guide](docs/INSTALL.md)
 - [Usage & CLI tools](docs/USAGE.md)
+- [Releases & CI](docs/RELEASE.md)
+- [Security](SECURITY.md)
 - [Domain glossary](CONTEXT.md)
 - [Replay viewer UX notes](docs/replay-viewer-driver-learning-ux.md)
 - [Coaching rubric](docs/coach/coaching-rubric.md)

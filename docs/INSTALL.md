@@ -62,6 +62,8 @@ Use `-Copy` to copy files instead of a junction. Use `-AcRoot "D:\Games\assettoc
 
 Drag `dist/VirtualRaceEngineer.zip` onto Content Manager (**Content → Install**).
 
+Or download a pre-built zip from **[GitHub Releases](https://github.com/goelp14/assetto-corsa-mechanic/releases)** (built automatically on version tags — see [RELEASE.md](RELEASE.md)).
+
 ---
 
 ## 2. Enable in Content Manager

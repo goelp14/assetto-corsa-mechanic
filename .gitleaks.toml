@@ -1,0 +1,25 @@
+title = "assetto-corsa-mechanic gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "False positives in docs, tests, and env var references"
+paths = [
+  '''\.env\.example$''',
+  '''docs/''',
+  '''\.github/workflows/''',
+  '''external/query_tools/coach/llm_provider\.py$''',
+  '''external/query_tools/narrate_stint\.py$''',
+  '''skills-lock\.json$''',
+]
+regexes = [
+  '''GITHUB_TOKEN''',
+  '''secrets\.GITHUB_TOKEN''',
+  '''OPENAI_API_KEY''',
+  '''ANTHROPIC_API_KEY''',
+  '''os\.environ\.get\(''',
+  '''Speed Secrets''',
+  '''js-tokens''',
+  '''computedHash''',
+]

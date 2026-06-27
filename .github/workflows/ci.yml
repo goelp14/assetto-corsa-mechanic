@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dev dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run pytest
+        run: python -m pytest tests/ -q
+
+  replay-viewer:
+    name: Replay viewer build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: replay-viewer/package-lock.json
+
+      - name: Install dependencies
+        working-directory: replay-viewer
+        run: npm ci
+
+      - name: Build viewer
+        working-directory: replay-viewer
+        run: npm run build
+
+      - name: Upload viewer dist (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: replay-viewer-dist
+          path: replay-viewer/dist/
+          if-no-files-found: error
+
+  package-smoke:
+    name: CM zip smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build VirtualRaceEngineer.zip
+        run: ./deploy/package.sh
+
+      - name: Verify zip contents
+        run: |
+          test -f dist/VirtualRaceEngineer.zip
+          unzip -l dist/VirtualRaceEngineer.zip | grep -q VirtualRaceEngineer/VirtualRaceEngineer.py
+
+      - name: Verify no .env or key files in zip
+        run: |
+          if unzip -l dist/VirtualRaceEngineer.zip | grep -qE '\.(env|pem|key|p12|pfx)$'; then
+            echo "ERROR: secret-like file found in release zip" >&2
+            unzip -l dist/VirtualRaceEngineer.zip | grep -E '\.(env|pem|key|p12|pfx)$'
+            exit 1
+          fi
