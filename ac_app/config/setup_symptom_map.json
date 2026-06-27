@@ -1,0 +1,189 @@
+{
+  "custom_script_aliases": {
+    "DIFF_ENTRY": "CUSTOM_SCRIPT_ITEM_4",
+    "DIFF_MID": "CUSTOM_SCRIPT_ITEM_5",
+    "DIFF_EXIT": "CUSTOM_SCRIPT_ITEM_6",
+    "BRAKE_MIGRATION": "CUSTOM_SCRIPT_ITEM_1",
+    "BMIG_RAMP": "CUSTOM_SCRIPT_ITEM_2",
+    "FUEL_TARGET": "CUSTOM_SCRIPT_ITEM_3",
+    "DIFF_HISPD_SWITCH": "CUSTOM_SCRIPT_ITEM_7"
+  },
+  "entry_understeer": {
+    "entry": [
+      {"section": "FRONT_BIAS", "delta": -1, "tier": "A", "reason": "Shift bias forward for sharper entry rotation"},
+      {"section": "WING_0", "delta": 1, "tier": "A", "reason": "More front downforce"},
+      {"section": "ARB_FRONT", "delta": -10000, "tier": "A", "reason": "Softer front ARB"},
+      {"section": "CUSTOM_SCRIPT_ITEM_4", "delta": 1, "tier": "A", "reason": "Diff entry — less coast lock"}
+    ]
+  },
+  "entry_oversteer": {
+    "entry": [
+      {"section": "FRONT_BIAS", "delta": -2, "tier": "A", "reason": "More front bias under braking"},
+      {"section": "DIFF_PRELOAD", "delta": 10, "tier": "A", "reason": "More preload for rear stability"},
+      {"section": "DAMP_REBOUND_LF", "delta": 1, "tier": "B", "reason": "Softer front rebound"},
+      {"section": "BRAKE_ENGINE", "delta": -1, "tier": "D", "reason": "Less engine braking"}
+    ]
+  },
+  "mid_understeer": {
+    "mid": [
+      {"section": "WING_0", "delta": 1, "tier": "A", "reason": "More front downforce"},
+      {"section": "ARB_FRONT", "delta": -10000, "tier": "A", "reason": "Softer front ARB"},
+      {"section": "CAMBER_LF", "delta": -1, "tier": "C", "reason": "More front camber"}
+    ]
+  },
+  "mid_oversteer": {
+    "mid": [
+      {"section": "WING_1", "delta": 1, "tier": "A", "reason": "More rear downforce"},
+      {"section": "ARB_REAR", "delta": -5000, "tier": "A", "reason": "Softer rear ARB"}
+    ]
+  },
+  "exit_oversteer": {
+    "exit": [
+      {"section": "WING_1", "delta": 1, "tier": "A", "reason": "More rear downforce"},
+      {"section": "DIFF_PRELOAD", "delta": 10, "tier": "A", "reason": "More preload"},
+      {"section": "CUSTOM_SCRIPT_ITEM_6", "delta": 1, "tier": "A", "reason": "Diff exit map — more lock"}
+    ]
+  },
+  "exit_wheelspin": {
+    "exit": [
+      {"section": "CUSTOM_SCRIPT_ITEM_6", "delta": -1, "tier": "A", "reason": "Diff exit — less lock"},
+      {"section": "DIFF_PRELOAD", "delta": 10, "tier": "A", "reason": "More preload"}
+    ]
+  },
+  "kerb_instability": {
+    "any": [
+      {"section": "DAMP_BUMP_LF", "delta": 1, "tier": "B", "reason": "Softer front bump — keep tyre loaded over kerb"},
+      {"section": "DAMP_BUMP_RF", "delta": 1, "tier": "B", "reason": "Softer front bump — keep tyre loaded over kerb"},
+      {"section": "ROD_LENGTH_LF", "delta": 1, "tier": "B", "reason": "Raise front ride height"}
+    ]
+  },
+  "kerb_grip_loss": {
+    "any": [
+      {"section": "DAMP_BUMP_LF", "delta": 1, "tier": "B", "reason": "Softer bump — absorb kerb without unloading the tyre"},
+      {"section": "DAMP_BUMP_RF", "delta": 1, "tier": "B", "reason": "Softer bump — absorb kerb without unloading the tyre"},
+      {"section": "DAMP_REBOUND_LF", "delta": 1, "tier": "B", "reason": "Softer rebound — platform reloads after kerb"}
+    ]
+  },
+  "painted_kerb_slip": {
+    "any": [
+      {"section": "ROD_LENGTH_LF", "delta": 1, "tier": "B", "reason": "Slightly higher ride — less painted-kerb contact"},
+      {"section": "DAMP_BUMP_LF", "delta": 1, "tier": "B", "reason": "Softer bump — compliance on marbled edges"}
+    ]
+  },
+  "kerb_overload": {
+    "any": [
+      {"section": "ROD_LENGTH_LF", "delta": 1, "tier": "B", "reason": "Raise front — avoid slamming travel limit on kerbs"},
+      {"section": "ROD_LENGTH_RF", "delta": 1, "tier": "B", "reason": "Raise front — avoid slamming travel limit on kerbs"},
+      {"section": "DAMP_BUMP_LF", "delta": 1, "tier": "B", "reason": "Softer bump — stay inside suspension travel"}
+    ]
+  },
+  "platform_hop": {
+    "any": [
+      {"section": "DAMP_REBOUND_LF", "delta": 1, "tier": "B", "reason": "Softer rebound — chassis settles after kerb hop"},
+      {"section": "DAMP_REBOUND_RF", "delta": 1, "tier": "B", "reason": "Softer rebound — chassis settles after kerb hop"},
+      {"section": "DAMP_BUMP_LR", "delta": 1, "tier": "B", "reason": "Softer rear bump — rear platform stability"}
+    ]
+  },
+  "bump_unsettled": {
+    "any": [
+      {"section": "DAMP_BUMP_LF", "delta": 1, "tier": "B", "reason": "Softer bump — tyre follows surface over bumps"},
+      {"section": "DAMP_BUMP_LR", "delta": 1, "tier": "B", "reason": "Softer rear bump — keep contact patch loaded"},
+      {"section": "SPRING_RATE_LF", "delta": -1, "tier": "C", "reason": "Softer spring — mechanical compliance over bumps"}
+    ]
+  },
+  "high_speed_instability": {
+    "straight": [
+      {"section": "WING_1", "delta": 1, "tier": "A", "reason": "More rear downforce at speed"},
+      {"section": "WING_0", "delta": -1, "tier": "A", "reason": "Balance aero — less front wing"}
+    ]
+  },
+  "loss_of_control": {
+    "any": [
+      {"section": "WING_1", "delta": 2, "tier": "A", "reason": "Emergency rear downforce"},
+      {"section": "FRONT_BIAS", "delta": -1, "tier": "A", "reason": "Stabilize entry balance"}
+    ]
+  },
+  "rear_unstable_braking": {
+    "entry": [
+      {"section": "MGUK_RECOVERY", "delta": -1, "tier": "D", "reason": "Less K recovery under braking"},
+      {"section": "BRAKE_ENGINE", "delta": -1, "tier": "D", "reason": "Less engine braking"},
+      {"section": "FRONT_BIAS", "delta": -2, "tier": "A", "reason": "More front bias"}
+    ]
+  },
+  "shift_unsettling_downshift": {
+    "entry": [
+      {"section": "BRAKE_ENGINE", "delta": -1, "tier": "D", "reason": "Less engine braking on downshifts"},
+      {"section": "DIFF_PRELOAD", "delta": 10, "tier": "A", "reason": "More diff preload — rear stability after shifts"},
+      {"section": "FRONT_BIAS", "delta": -1, "tier": "A", "reason": "Forward bias — shift earlier in straight-line braking"}
+    ]
+  },
+  "shift_harsh_downshift": {
+    "entry": [
+      {"section": "DIFF_PRELOAD", "delta": 10, "tier": "A", "reason": "More preload — tame rear kick on aggressive downshifts"},
+      {"section": "DAMP_REBOUND_LR", "delta": 1, "tier": "B", "reason": "Softer rear rebound — platform absorbs shift shock"},
+      {"section": "BRAKE_ENGINE", "delta": -1, "tier": "D", "reason": "Reduce engine-braking spike"}
+    ]
+  },
+  "shift_unsettling_upshift": {
+    "exit": [
+      {"section": "DIFF_PRELOAD", "delta": 10, "tier": "A", "reason": "More preload for exit traction after upshifts"},
+      {"section": "CUSTOM_SCRIPT_ITEM_6", "delta": 1, "tier": "A", "reason": "Diff exit — more lock on power"}
+    ]
+  },
+  "tyre_front_hot": {
+    "any": [
+      {"section": "PRESSURE_LF", "delta": -1, "tier": "C", "reason": "Lower LF cold pressure to reduce front overheating"},
+      {"section": "PRESSURE_RF", "delta": -1, "tier": "C", "reason": "Lower RF cold pressure to reduce front overheating"},
+      {"section": "CAMBER_LF", "delta": 1, "tier": "C", "reason": "Reduce front camber to lower scrub heat"}
+    ]
+  },
+  "tyre_front_hot_aggressive": {
+    "any": [
+      {"section": "PRESSURE_LF", "delta": -1, "tier": "C", "reason": "Sliding overheats fronts — lower LF pressure"},
+      {"section": "PRESSURE_RF", "delta": -1, "tier": "C", "reason": "Sliding overheats fronts — lower RF pressure"},
+      {"section": "TOE_OUT_LF", "delta": -1, "tier": "C", "reason": "Less toe-out reduces front scrub with aggressive inputs"}
+    ]
+  },
+  "tyre_rear_hot": {
+    "any": [
+      {"section": "PRESSURE_LR", "delta": -1, "tier": "C", "reason": "Lower LR cold pressure to reduce rear overheating"},
+      {"section": "PRESSURE_RR", "delta": -1, "tier": "C", "reason": "Lower RR cold pressure to reduce rear overheating"},
+      {"section": "CAMBER_LR", "delta": 1, "tier": "C", "reason": "Reduce rear camber to lower heat"}
+    ]
+  },
+  "tyre_rear_hot_aggressive": {
+    "any": [
+      {"section": "PRESSURE_LR", "delta": -1, "tier": "C", "reason": "Rear sliding — lower LR pressure"},
+      {"section": "PRESSURE_RR", "delta": -1, "tier": "C", "reason": "Rear sliding — lower RR pressure"},
+      {"section": "CUSTOM_SCRIPT_ITEM_6", "delta": -1, "tier": "A", "reason": "Less diff exit lock to reduce rear tyre work"}
+    ]
+  },
+  "tyre_front_cold": {
+    "any": [
+      {"section": "PRESSURE_LF", "delta": 1, "tier": "C", "reason": "Raise LF pressure to bring front into temperature window"},
+      {"section": "PRESSURE_RF", "delta": 1, "tier": "C", "reason": "Raise RF pressure to bring front into temperature window"},
+      {"section": "CAMBER_LF", "delta": -1, "tier": "C", "reason": "More front camber to energize the tyre"}
+    ]
+  },
+  "tyre_front_cold_conservative": {
+    "any": [
+      {"section": "CAMBER_LF", "delta": -1, "tier": "C", "reason": "Conservative style — add front camber for mechanical grip"},
+      {"section": "CAMBER_RF", "delta": -1, "tier": "C", "reason": "Conservative style — add front camber for mechanical grip"},
+      {"section": "PRESSURE_LF", "delta": 1, "tier": "C", "reason": "Raise LF pressure to build heat"}
+    ]
+  },
+  "tyre_rear_cold": {
+    "any": [
+      {"section": "PRESSURE_LR", "delta": 1, "tier": "C", "reason": "Raise LR pressure to bring rear into temperature window"},
+      {"section": "PRESSURE_RR", "delta": 1, "tier": "C", "reason": "Raise RR pressure to bring rear into temperature window"},
+      {"section": "CAMBER_LR", "delta": -1, "tier": "C", "reason": "More rear camber to energize the tyre"}
+    ]
+  },
+  "tyre_rear_cold_conservative": {
+    "any": [
+      {"section": "CAMBER_LR", "delta": -1, "tier": "C", "reason": "Conservative style — add rear camber"},
+      {"section": "CAMBER_RR", "delta": -1, "tier": "C", "reason": "Conservative style — add rear camber"},
+      {"section": "PRESSURE_LR", "delta": 1, "tier": "C", "reason": "Raise LR pressure to build heat"}
+    ]
+  }
+}

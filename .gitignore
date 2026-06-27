@@ -1,0 +1,32 @@
+# Runtime / generated (telemetry, grip maps, setup memory, voice state)
+ac_app/data/*
+!ac_app/data/track_geometry/
+!ac_app/data/track_geometry/**
+!ac_app/data/sessions/
+ac_app/data/sessions/**
+!ac_app/data/sessions/.gitkeep
+!ac_app/data/grip_map/
+ac_app/data/grip_map/**
+!ac_app/data/grip_map/.gitkeep
+**/session.jsonl
+**/laps/
+**/setup_memory/
+.tmp_setup.ini
+dist/
+exports/
+replay-viewer/node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

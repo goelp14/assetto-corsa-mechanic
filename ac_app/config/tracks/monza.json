@@ -1,0 +1,50 @@
+{
+  "track_id": "monza",
+  "display_name": "Monza",
+  "length_m": 5793,
+  "spline_offset": 0.0,
+  "setup_folder": "monza",
+  "sectors": [
+    {"name": "S1", "spline_end": 0.33},
+    {"name": "S2", "spline_end": 0.66},
+    {"name": "S3", "spline_end": 1.0}
+  ],
+  "corners": [
+    {
+      "name": "Turn 1",
+      "spline_start": 0.02,
+      "spline_end": 0.06,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.5}
+    },
+    {
+      "name": "Turn 4",
+      "spline_start": 0.12,
+      "spline_end": 0.18,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.5}
+    },
+    {
+      "name": "Turn 6",
+      "spline_start": 0.22,
+      "spline_end": 0.28,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.5}
+    },
+    {
+      "name": "Turn 8",
+      "spline_start": 0.35,
+      "spline_end": 0.42,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.5}
+    },
+    {
+      "name": "Turn 10",
+      "spline_start": 0.55,
+      "spline_end": 0.62,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.5}
+    },
+    {
+      "name": "Turn 11",
+      "spline_start": 0.78,
+      "spline_end": 0.85,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.5}
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "default": {
+    "core_temp_ideal_min_c": 75.0,
+    "core_temp_ideal_max_c": 95.0,
+    "core_temp_hot_c": 102.0,
+    "core_temp_cold_c": 68.0,
+    "min_sample_speed_kmh": 40.0,
+    "min_sample_ay_g": 0.15,
+    "spike_slip_threshold": 0.22,
+    "trim_fraction": 0.12,
+    "stint_history_laps": 4
+  },
+  "compounds": {
+    "soft": {
+      "core_temp_ideal_min_c": 72.0,
+      "core_temp_ideal_max_c": 92.0,
+      "core_temp_hot_c": 100.0,
+      "core_temp_cold_c": 65.0
+    },
+    "medium": {},
+    "hard": {
+      "core_temp_ideal_min_c": 78.0,
+      "core_temp_ideal_max_c": 98.0,
+      "core_temp_hot_c": 105.0,
+      "core_temp_cold_c": 70.0
+    },
+    "hypersoft": {
+      "core_temp_ideal_min_c": 70.0,
+      "core_temp_ideal_max_c": 90.0,
+      "core_temp_hot_c": 98.0,
+      "core_temp_cold_c": 62.0
+    },
+    "supersoft": {
+      "core_temp_ideal_min_c": 71.0,
+      "core_temp_ideal_max_c": 91.0,
+      "core_temp_hot_c": 99.0,
+      "core_temp_cold_c": 64.0
+    }
+  }
+}

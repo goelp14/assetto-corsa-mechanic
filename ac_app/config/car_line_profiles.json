@@ -1,0 +1,28 @@
+{
+  "rss_formula_hybrid_x_2026": {
+    "display_name": "RSS Formula Hybrid X 2026",
+    "downforce_class": "high",
+    "mass_class": "light",
+    "line_bias": "traditional_wide",
+    "min_speed_priority": 0.85,
+    "trail_brake_style": "aero_rotation",
+    "technique_keys": {
+      "brake": "trail_brake_high_downforce",
+      "throttle": "patience_throttle",
+      "steer": "progressive_steer"
+    }
+  },
+  "gt3_generic": {
+    "display_name": "GT3 (reference)",
+    "downforce_class": "medium",
+    "mass_class": "heavy",
+    "line_bias": "v_line_exit",
+    "min_speed_priority": 0.45,
+    "trail_brake_style": "rotation_creator",
+    "technique_keys": {
+      "brake": "trail_brake",
+      "throttle": "early_throttle_vline",
+      "steer": "minimal_steer"
+    }
+  }
+}

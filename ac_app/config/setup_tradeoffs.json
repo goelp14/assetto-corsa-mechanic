@@ -1,0 +1,108 @@
+{
+  "WING_1": {
+    "max": {
+      "mid_oversteer": [
+        {
+          "deltas": [
+            {"section": "WING_0", "delta": -1},
+            {"section": "ARB_REAR", "delta": -5000}
+          ],
+          "reason": "Rear wing at max — reduce front wing and soften rear ARB to rebalance"
+        },
+        {
+          "deltas": [
+            {"section": "FRONT_BIAS", "delta": -1},
+            {"section": "DIFF_PRELOAD", "delta": 10}
+          ],
+          "reason": "Rear wing at max — shift brake bias forward and add diff preload"
+        }
+      ],
+      "exit_oversteer": [
+        {
+          "deltas": [
+            {"section": "WING_0", "delta": -1},
+            {"section": "CUSTOM_SCRIPT_ITEM_6", "delta": 1}
+          ],
+          "reason": "Rear wing at max — less front aero, more diff exit lock for traction"
+        }
+      ],
+      "high_speed_instability": [
+        {
+          "deltas": [
+            {"section": "WING_0", "delta": -1}
+          ],
+          "reason": "Rear wing at max — trim front wing to balance high-speed aero"
+        }
+      ]
+    }
+  },
+  "WING_0": {
+    "max": {
+      "mid_understeer": [
+        {
+          "deltas": [
+            {"section": "ARB_FRONT", "delta": -10000},
+            {"section": "FRONT_BIAS", "delta": -1}
+          ],
+          "reason": "Front wing at max — soften front ARB and shift bias forward"
+        }
+      ],
+      "entry_understeer": [
+        {
+          "deltas": [
+            {"section": "FRONT_BIAS", "delta": -2},
+            {"section": "ARB_FRONT", "delta": -10000}
+          ],
+          "reason": "Front wing at max — mechanical front grip via bias and ARB"
+        }
+      ]
+    },
+    "min": {
+      "high_speed_instability": [
+        {
+          "deltas": [
+            {"section": "WING_1", "delta": 5}
+          ],
+          "reason": "Front wing at min — add rear wing for high-speed stability"
+        }
+      ]
+    }
+  },
+  "ARB_FRONT": {
+    "min": {
+      "mid_understeer": [
+        {
+          "deltas": [
+            {"section": "WING_0", "delta": 1},
+            {"section": "CAMBER_LF", "delta": -1}
+          ],
+          "reason": "Front ARB at softest — add front wing and camber"
+        }
+      ]
+    },
+    "max": {
+      "entry_oversteer": [
+        {
+          "deltas": [
+            {"section": "ARB_REAR", "delta": 5000},
+            {"section": "WING_1", "delta": 5}
+          ],
+          "reason": "Front ARB at stiffest — stiffen rear ARB and add rear wing"
+        }
+      ]
+    }
+  },
+  "ARB_REAR": {
+    "min": {
+      "mid_oversteer": [
+        {
+          "deltas": [
+            {"section": "WING_1", "delta": 5},
+            {"section": "DIFF_PRELOAD", "delta": 10}
+          ],
+          "reason": "Rear ARB at softest — rear wing and diff preload for stability"
+        }
+      ]
+    }
+  }
+}

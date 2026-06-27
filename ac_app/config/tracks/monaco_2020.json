@@ -1,0 +1,220 @@
+{
+  "track_id": "monaco_2020",
+  "display_name": "Monaco",
+  "length_m": 3337,
+  "spline_offset": 0.0,
+  "setup_folder": "monaco_2020",
+  "profile_id": "monaco_2020",
+  "sectors": [
+    {"name": "S1", "spline_end": 0.33},
+    {"name": "S2", "spline_end": 0.66},
+    {"name": "S3", "spline_end": 1.0}
+  ],
+  "line_chains": [
+    {
+      "id": "casino_hairpin",
+      "corners": ["Turn 4", "Turn 6"],
+      "goal": "Casino exit sets up the slowest hairpin — sacrifice mid-corner speed for rotation"
+    },
+    {
+      "id": "harbour_s3",
+      "corners": ["Swimming Pool", "Tabac", "Rascasse"],
+      "goal": "Treat pool chicanes + Rascasse as one complex — exit speed onto the short straight wins"
+    },
+    {
+      "id": "rascasse_start",
+      "corners": ["Rascasse", "Final Corner"],
+      "goal": "Tight Rascasse hook sets up the last corner and start-finish straight"
+    }
+  ],
+  "corners": [
+    {
+      "name": "Turn 1",
+      "display_name": "Sainte Devote",
+      "speed_class": "medium",
+      "spline_start": 0.02,
+      "spline_end": 0.08,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "late_apex",
+        "width_bias": "wide",
+        "inputs": {"brake": "trail", "throttle": "patience", "steer": "progressive"},
+        "line_hint": "Stay right on the straight, then use full track width left before turn-in"
+      },
+      "landmarks": {
+        "map": "Bottom-left of the map — first right off the start straight",
+        "approach": "Main straight uphill toward the harbour",
+        "line_hint": "Stay right on the straight, then use full track width left before turn-in",
+        "brake_cue": "Brake at the 100m board while the wall still runs straight ahead",
+        "apex_cue": "Tight right at the bottom of the hill; stay off the sausage kerb",
+        "exit_cue": "Short climb on full throttle toward Beau Rivage"
+      }
+    },
+    {
+      "name": "Turn 4",
+      "display_name": "Casino",
+      "speed_class": "medium",
+      "spline_start": 0.14,
+      "spline_end": 0.20,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "compromise_setup",
+        "width_bias": "neutral",
+        "chain": "casino_hairpin",
+        "chain_role": "setup",
+        "chain_payoff": "Turn 6",
+        "compromise_note": "A slightly tighter Casino mid-corner is OK if it rotates the car for the hairpin",
+        "inputs": {"brake": "trail", "throttle": "patience", "steer": "progressive"}
+      },
+      "landmarks": {
+        "map": "Top-left sweep past the casino hairpin area",
+        "approach": "Uphill left after Beau Rivage",
+        "brake_cue": "Brake as the hotel facade fills your left peripheral vision",
+        "apex_cue": "Right at the casino — use all the road on the inside",
+        "exit_cue": "Feed throttle once the front bites toward Mirabeau"
+      }
+    },
+    {
+      "name": "Turn 6",
+      "display_name": "Hairpin",
+      "speed_class": "low",
+      "spline_start": 0.28,
+      "spline_end": 0.34,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "late_apex",
+        "width_bias": "wide",
+        "chain": "casino_hairpin",
+        "chain_role": "payoff",
+        "inputs": {"brake": "straight", "throttle": "patience", "steer": "minimal"},
+        "line_hint": "Use the full left side of the track on approach — do not turn in early"
+      },
+      "landmarks": {
+        "map": "Tightest loop on the left side of the map",
+        "approach": "Downhill into Mirabeau",
+        "line_hint": "Use the full left side of the track on approach — do not turn in early",
+        "brake_cue": "Hard brake when the guard rail on your right opens up",
+        "apex_cue": "Slowest point of the lap — hairpin apex at the hotel",
+        "exit_cue": "Patience on throttle until the car is straight for Portier"
+      }
+    },
+    {
+      "name": "Turn 8",
+      "display_name": "Tunnel exit chicane",
+      "speed_class": "medium",
+      "spline_start": 0.42,
+      "spline_end": 0.48,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "compromise_setup",
+        "width_bias": "neutral",
+        "grip_note": "Bumps and kerb rubber — clip inside kerb for grip, straighten for harbour",
+        "inputs": {"brake": "straight", "throttle": "maintenance", "steer": "minimal"}
+      },
+      "landmarks": {
+        "map": "Right-hand kink where the long bottom curve meets the harbour",
+        "approach": "Blind exit from the tunnel onto the waterfront",
+        "brake_cue": "Brake when daylight opens and the chicane kerbs appear",
+        "apex_cue": "Clip the inside kerb, avoid hopping the sausage",
+        "exit_cue": "Flat through Tabac approach once the rear settles"
+      }
+    },
+    {
+      "name": "Swimming Pool",
+      "display_name": "Swimming Pool",
+      "speed_class": "medium",
+      "spline_start": 0.58,
+      "spline_end": 0.64,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "compromise_setup",
+        "width_bias": "narrow",
+        "chain": "harbour_s3",
+        "chain_role": "setup",
+        "chain_payoff": "Rascasse",
+        "compromise_note": "Miss the ideal first apex if it opens a cleaner second chicane and Rascasse entry",
+        "grip_note": "Kerb rubber and painted lines — stay on the rubber, not the geometric wide arc",
+        "inputs": {"brake": "straight", "throttle": "maintenance", "steer": "minimal"},
+        "line_hint": "Rhythm through both chicanes — sacrifice pool 1 if pool 2 and Rascasse improve"
+      },
+      "landmarks": {
+        "map": "Top-right double wiggle — two quick left-right kinks",
+        "approach": "Fast left at Tabac with the harbour on your right",
+        "brake_cue": "Hard brake as the first blue pool structure passes on your left",
+        "apex_cue": "Rhythm through both chicanes — don't fight the second kerb",
+        "exit_cue": "Short harbour straight; the tight right hook of Rascasse is next"
+      }
+    },
+    {
+      "name": "Tabac",
+      "display_name": "Tabac",
+      "speed_class": "high",
+      "spline_start": 0.64,
+      "spline_end": 0.68,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "maintenance",
+        "width_bias": "narrow",
+        "chain": "harbour_s3",
+        "chain_role": "link",
+        "grip_note": "Blind left on rubber — narrow line on the racing groove is faster than opening up",
+        "inputs": {"brake": "lift", "throttle": "maintenance", "steer": "minimal"}
+      },
+      "landmarks": {
+        "map": "Fast left kink between the harbour straight and the pool chicanes",
+        "approach": "Flat out along the harbour wall after the tunnel section",
+        "brake_cue": "No brake — blind left, trust the line on the rubber",
+        "apex_cue": "Quick left with barriers close on both sides",
+        "exit_cue": "Open throttle toward the first Swimming Pool board"
+      }
+    },
+    {
+      "name": "Rascasse",
+      "display_name": "Rascasse",
+      "speed_class": "low",
+      "spline_start": 0.68,
+      "spline_end": 0.76,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "tight_rubber",
+        "width_bias": "narrow",
+        "chain": "rascasse_start",
+        "chain_role": "setup",
+        "chain_payoff": "Final Corner",
+        "grip_note": "Half a metre too wide and the grip disappears — stay on the inside rubber",
+        "inputs": {"brake": "trail", "throttle": "patience", "steer": "minimal"},
+        "line_hint": "Full width on the harbour straight, then commit to the tight inside hook on rubber"
+      },
+      "landmarks": {
+        "map": "Sharp right hook after the pool wiggle — pit-entry notch on the inside",
+        "approach": "Harbour straight right after the second pool chicane",
+        "line_hint": "Use the full width of the harbour straight before the tight right hook",
+        "brake_cue": "Brake when the second pool kerb is behind you and the tight right opens ahead",
+        "apex_cue": "Tightest right in sector 3 — pit wall on your inside, ~120 km/h",
+        "exit_cue": "Throttle once the car points at the short straight to the final corner"
+      }
+    },
+    {
+      "name": "Final Corner",
+      "display_name": "Anthony Noghes",
+      "speed_class": "medium",
+      "spline_start": 0.76,
+      "spline_end": 0.82,
+      "phases": {"entry_end_ay_pct": 0.5, "mid_end_throttle_pct": 0.45},
+      "line": {
+        "profile": "early_apex",
+        "width_bias": "wide",
+        "chain": "rascasse_start",
+        "chain_role": "payoff",
+        "inputs": {"brake": "trail", "throttle": "early", "steer": "progressive"}
+      },
+      "landmarks": {
+        "map": "Last sharp right before the bottom start straight on the map",
+        "approach": "Tiny straight after Rascasse — harbour wall on your left",
+        "brake_cue": "Light brake as the start-finish gantry comes into view ahead-left",
+        "apex_cue": "Last right onto the straight — touch inside, open for the wall exit",
+        "exit_cue": "Full throttle once the steering unwinds toward Sainte Devote"
+      }
+    }
+  ]
+}

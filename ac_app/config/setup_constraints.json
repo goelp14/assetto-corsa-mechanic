@@ -1,0 +1,22 @@
+{
+  "tyres_before_chassis": true,
+  "blocked_axle_sections": {
+    "front": ["WING_0", "ARB_FRONT", "CAMBER_LF", "CAMBER_RF", "DAMP_BUMP_LF", "DAMP_BUMP_RF"],
+    "rear": ["WING_1", "ARB_REAR", "CAMBER_LR", "CAMBER_RR", "DIFF_PRELOAD"]
+  },
+  "contradictions": [
+    {
+      "symptoms": ["mid_understeer", "tyre_front_hot"],
+      "block_sections": ["WING_0", "ARB_FRONT"]
+    },
+    {
+      "symptoms": ["exit_oversteer", "exit_wheelspin"],
+      "block_sections": ["CUSTOM_SCRIPT_ITEM_6"]
+    }
+  ],
+  "speed_class_aero": {
+    "low": ["WING_0", "ARB_FRONT", "FRONT_BIAS"],
+    "medium": ["WING_0", "WING_1", "ARB_FRONT", "ARB_REAR"],
+    "high": ["WING_1", "WING_0"]
+  }
+}

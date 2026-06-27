@@ -1,0 +1,702 @@
+{
+  "car_id": "rss_formula_hybrid_x_2026",
+  "display_name": "RSS Formula Hybrid X 2026",
+  "wheelbase_m": 3.65,
+  "cg_to_front_axle_m": 1.65,
+  "cg_to_rear_axle_m": 2.0,
+  "understeer_gradient_K": 0.005,
+  "max_yaw_rate_rad_s": 1.2,
+  "custom_script_id_map": {
+    "BRAKE_MIGRATION": "CUSTOM_SCRIPT_ITEM_1",
+    "BMIG_RAMP": "CUSTOM_SCRIPT_ITEM_2",
+    "FUEL_TARGET": "CUSTOM_SCRIPT_ITEM_3",
+    "DIFF_ENTRY": "CUSTOM_SCRIPT_ITEM_4",
+    "DIFF_MID": "CUSTOM_SCRIPT_ITEM_5",
+    "DIFF_EXIT": "CUSTOM_SCRIPT_ITEM_6",
+    "DIFF_HISPD_SWITCH": "CUSTOM_SCRIPT_ITEM_7"
+  },
+  "levers": [
+    {
+      "section": "AEROMAP",
+      "name": "Aero Config",
+      "tab": "AERODYNAMICS",
+      "tier": null,
+      "default": "1",
+      "lut": "aero_map_setup.lut"
+    },
+    {
+      "section": "ARB_FRONT",
+      "name": "Front ARB",
+      "tab": "SUSP2: MAIN",
+      "tier": "A",
+      "min": 0,
+      "max": 200000,
+      "step": 10000
+    },
+    {
+      "section": "ARB_REAR",
+      "name": "Rear ARB",
+      "tab": "SUSP2: MAIN",
+      "tier": "A",
+      "min": 0,
+      "max": 100000,
+      "step": 5000
+    },
+    {
+      "section": "BRAKE_POWER_MULT",
+      "name": "Brake Pressure",
+      "tab": "BRAKES",
+      "tier": "B",
+      "min": 70,
+      "max": 115,
+      "step": 1
+    },
+    {
+      "section": "BUMPSTOP_HF",
+      "name": "Bump Rubber F",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "lut": "bs_setup.lut"
+    },
+    {
+      "section": "BUMPSTOP_HR",
+      "name": "Bump Rubber R",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "lut": "bs_setup.lut"
+    },
+    {
+      "section": "CAMBER_LF",
+      "name": "CAMBER_LF",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -3.6,
+      "max": 0,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_LR",
+      "name": "CAMBER_LR",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -2,
+      "max": 0,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_RF",
+      "name": "CAMBER_RF",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -3.6,
+      "max": 0,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_RR",
+      "name": "CAMBER_RR",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -2,
+      "max": 0,
+      "step": 1
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_1",
+      "name": "Brake Migration",
+      "tab": "BRAKES",
+      "tier": "D",
+      "id": "BRAKE_MIGRATION",
+      "default": "0.02",
+      "lut": "bmig_setup.lut"
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_2",
+      "name": "Ramp",
+      "tab": "BRAKES",
+      "tier": "D",
+      "id": "BMIG_RAMP",
+      "default": "0.5",
+      "lut": "bmig_ramp.lut"
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_3",
+      "name": "Fuel target",
+      "tab": "VISUAL: MFD",
+      "tier": "B",
+      "id": "FUEL_TARGET",
+      "default": "2",
+      "lut": "fuel_target.lut"
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_4",
+      "name": "Diff Entry",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "id": "DIFF_ENTRY",
+      "default": "3/12",
+      "lut": "diff_setup.lut"
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_5",
+      "name": "Diff Mid",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "id": "DIFF_MID",
+      "default": "5/12",
+      "lut": "diff_setup.lut"
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_6",
+      "name": "Diff Exit/Hispd",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "id": "DIFF_EXIT",
+      "default": "5/12",
+      "lut": "diff_setup.lut"
+    },
+    {
+      "section": "CUSTOM_SCRIPT_ITEM_7",
+      "name": "Mid Hispd Switch",
+      "tab": "DRIVETRAIN",
+      "tier": "D",
+      "id": "DIFF_HISPD_SWITCH",
+      "default": "250km/h",
+      "lut": "hispd_setup.lut"
+    },
+    {
+      "section": "DAMP_BUMP_HF",
+      "name": "Bump",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 1600,
+      "max": 2400,
+      "step": 53
+    },
+    {
+      "section": "DAMP_BUMP_HR",
+      "name": "Bump",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 1250,
+      "max": 3000,
+      "step": 117
+    },
+    {
+      "section": "DAMP_BUMP_LF",
+      "name": "Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 4000,
+      "max": 7000,
+      "step": 200
+    },
+    {
+      "section": "DAMP_BUMP_LR",
+      "name": "Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 3500,
+      "max": 8400,
+      "step": 327
+    },
+    {
+      "section": "DAMP_BUMP_RF",
+      "name": "Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 4000,
+      "max": 7000,
+      "step": 200
+    },
+    {
+      "section": "DAMP_BUMP_RR",
+      "name": "Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 3500,
+      "max": 8400,
+      "step": 327
+    },
+    {
+      "section": "DAMP_FAST_BUMP_HF",
+      "name": "FST Bump",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 800,
+      "max": 1200,
+      "step": 27
+    },
+    {
+      "section": "DAMP_FAST_BUMP_HR",
+      "name": "FST Bump",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 750,
+      "max": 1800,
+      "step": 70
+    },
+    {
+      "section": "DAMP_FAST_BUMP_LF",
+      "name": "FST Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 2000,
+      "max": 3500,
+      "step": 100
+    },
+    {
+      "section": "DAMP_FAST_BUMP_LR",
+      "name": "FST Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 2250,
+      "max": 5400,
+      "step": 210
+    },
+    {
+      "section": "DAMP_FAST_BUMP_RF",
+      "name": "FST Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 2000,
+      "max": 3500,
+      "step": 100
+    },
+    {
+      "section": "DAMP_FAST_BUMP_RR",
+      "name": "FST Bump",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 2250,
+      "max": 5400,
+      "step": 210
+    },
+    {
+      "section": "DAMP_FAST_REBOUND_HF",
+      "name": "FST Rebound",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 880,
+      "max": 1320,
+      "step": 29
+    },
+    {
+      "section": "DAMP_FAST_REBOUND_HR",
+      "name": "FST Rebound",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 1250,
+      "max": 3000,
+      "step": 117
+    },
+    {
+      "section": "DAMP_FAST_REBOUND_LF",
+      "name": "FST Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 2400,
+      "max": 4200,
+      "step": 120
+    },
+    {
+      "section": "DAMP_FAST_REBOUND_LR",
+      "name": "FST Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 3250,
+      "max": 7800,
+      "step": 303
+    },
+    {
+      "section": "DAMP_FAST_REBOUND_RF",
+      "name": "FST Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 2400,
+      "max": 4200,
+      "step": 120
+    },
+    {
+      "section": "DAMP_FAST_REBOUND_RR",
+      "name": "FST Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 3250,
+      "max": 7800,
+      "step": 303
+    },
+    {
+      "section": "DAMP_REBOUND_HF",
+      "name": "Rebound",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 1760,
+      "max": 2640,
+      "step": 59
+    },
+    {
+      "section": "DAMP_REBOUND_HR",
+      "name": "Rebound",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 1750,
+      "max": 4200,
+      "step": 163
+    },
+    {
+      "section": "DAMP_REBOUND_LF",
+      "name": "Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 4800,
+      "max": 8400,
+      "step": 240
+    },
+    {
+      "section": "DAMP_REBOUND_LR",
+      "name": "Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 4500,
+      "max": 10800,
+      "step": 420
+    },
+    {
+      "section": "DAMP_REBOUND_RF",
+      "name": "Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 4800,
+      "max": 8400,
+      "step": 240
+    },
+    {
+      "section": "DAMP_REBOUND_RR",
+      "name": "Rebound",
+      "tab": "SUSP3: DAMPERS",
+      "tier": "B",
+      "min": 4500,
+      "max": 10800,
+      "step": 420
+    },
+    {
+      "section": "DIFF_COAST",
+      "name": "ctrl_diff_coast.ini",
+      "tab": "DRIVETRAIN",
+      "tier": "B",
+      "ext_controller": "ctrl_diff_coast.ini"
+    },
+    {
+      "section": "DIFF_POWER",
+      "name": "ctrl_diff_power.ini",
+      "tab": "DRIVETRAIN",
+      "tier": "B",
+      "ext_controller": "ctrl_diff_power.ini"
+    },
+    {
+      "section": "DIFF_PRELOAD",
+      "name": "Diff Preload",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "min": 0,
+      "max": 250,
+      "step": 1
+    },
+    {
+      "section": "ENGINE_MAPS",
+      "name": "Engine Map",
+      "tab": "FUEL",
+      "tier": "D",
+      "lut": "engine_map_setup.lut"
+    },
+    {
+      "section": "FRONT_BIAS",
+      "name": "Brake Bias",
+      "tab": "BRAKES",
+      "tier": "A",
+      "min": 47,
+      "max": 66,
+      "step": 1
+    },
+    {
+      "section": "FUEL",
+      "name": "Fuel",
+      "tab": "GENERIC",
+      "tier": null,
+      "min": 0,
+      "max": 133,
+      "step": 1
+    },
+    {
+      "section": "PACKER_RANGE_HF",
+      "name": "Travel HF",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 0,
+      "max": 150,
+      "step": 1
+    },
+    {
+      "section": "PACKER_RANGE_HR",
+      "name": "Travel HR",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 0,
+      "max": 150,
+      "step": 1
+    },
+    {
+      "section": "PACKER_RANGE_LF",
+      "name": "Travel LF",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 0,
+      "max": 150,
+      "step": 1
+    },
+    {
+      "section": "PACKER_RANGE_LR",
+      "name": "Travel LR",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 0,
+      "max": 150,
+      "step": 1
+    },
+    {
+      "section": "PACKER_RANGE_RF",
+      "name": "Travel RF",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 0,
+      "max": 150,
+      "step": 1
+    },
+    {
+      "section": "PACKER_RANGE_RR",
+      "name": "Travel RR",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 0,
+      "max": 150,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_LF",
+      "name": "Cold Pressure LF",
+      "tab": "TYRES",
+      "tier": "C",
+      "min": 16,
+      "max": 25,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_LR",
+      "name": "Cold Pressure LR",
+      "tab": "TYRES",
+      "tier": "C",
+      "min": 15,
+      "max": 25,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_RF",
+      "name": "Cold Pressure RF",
+      "tab": "TYRES",
+      "tier": "C",
+      "min": 16,
+      "max": 25,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_RR",
+      "name": "Cold Pressure RR",
+      "tab": "TYRES",
+      "tier": "C",
+      "min": 15,
+      "max": 25,
+      "step": 1
+    },
+    {
+      "section": "ROD_LENGTH_LF",
+      "name": "Height LF",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 20,
+      "max": 100,
+      "step": 5
+    },
+    {
+      "section": "ROD_LENGTH_LR",
+      "name": "Height LR",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 40,
+      "max": 160,
+      "step": 5
+    },
+    {
+      "section": "ROD_LENGTH_RF",
+      "name": "Height RF",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 20,
+      "max": 100,
+      "step": 5
+    },
+    {
+      "section": "ROD_LENGTH_RR",
+      "name": "Height RR",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 40,
+      "max": 160,
+      "step": 5
+    },
+    {
+      "section": "SPRING_RATE_HF",
+      "name": "Wheel Rate HF",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 100,
+      "max": 300,
+      "step": 10
+    },
+    {
+      "section": "SPRING_RATE_HR",
+      "name": "Wheel Rate HR",
+      "tab": "SUSP4: HEAVE",
+      "tier": "B",
+      "min": 50,
+      "max": 200,
+      "step": 10
+    },
+    {
+      "section": "SPRING_RATE_LF",
+      "name": "Spring rate LF",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 100,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "section": "SPRING_RATE_LR",
+      "name": "Spring rate LR",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 100,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "section": "SPRING_RATE_RF",
+      "name": "Spring rate RF",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 100,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "section": "SPRING_RATE_RR",
+      "name": "Spring rate RR",
+      "tab": "SUSP2: MAIN",
+      "tier": "B",
+      "min": 100,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "section": "STEER_ASSIST",
+      "name": "Steer Assist",
+      "tab": "VARIOUS",
+      "tier": null,
+      "min": 0,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "section": "TOE_OUT_LF",
+      "name": "Toe LF",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -100,
+      "max": 100,
+      "step": 5
+    },
+    {
+      "section": "TOE_OUT_LR",
+      "name": "Toe LR",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -100,
+      "max": 100,
+      "step": 5
+    },
+    {
+      "section": "TOE_OUT_RF",
+      "name": "Toe RF",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -100,
+      "max": 100,
+      "step": 5
+    },
+    {
+      "section": "TOE_OUT_RR",
+      "name": "Toe RR",
+      "tab": "SUSP1: ALIGNMENTS",
+      "tier": "C",
+      "min": -100,
+      "max": 100,
+      "step": 5
+    },
+    {
+      "section": "WING_0",
+      "name": "Front Wing Offset",
+      "tab": "AERODYNAMICS",
+      "tier": "A",
+      "min": 10,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "section": "WING_1",
+      "name": "Rear Wing Offset",
+      "tab": "AERODYNAMICS",
+      "tier": "A",
+      "min": 0,
+      "max": 20,
+      "step": 5
+    },
+    {
+      "section": "WING_11",
+      "name": "HALO",
+      "tab": "VISUALS",
+      "tier": null,
+      "min": 0,
+      "max": 90,
+      "step": 90
+    },
+    {
+      "section": "WING_12",
+      "name": "HALO STYLE",
+      "tab": "VISUALS",
+      "tier": null,
+      "min": 0,
+      "max": 90,
+      "step": 90
+    },
+    {
+      "section": "WING_13",
+      "name": "WINDSCREEN STYLE",
+      "tab": "VISUALS",
+      "tier": null,
+      "min": 0,
+      "max": 45,
+      "step": 22.5
+    }
+  ]
+}

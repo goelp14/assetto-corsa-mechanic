@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Monaco Corner Map — Your L17</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; margin: 0; background: #0f1117; color: #e8eaed; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 1.5rem; margin: 0 0 8px; }
+  .sub { color: #9aa0a6; margin-bottom: 20px; }
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  svg { width: 100%; height: auto; background: #1a1d27; border: 1px solid #333; border-radius: 8px; }
+  .track { fill: none; stroke: #5b8def; stroke-width: 4; stroke-linecap: round; }
+  .panel { background: #1a1d27; border: 1px solid #333; border-radius: 8px; padding: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 1.1rem; }
+  .corner-btn { display: block; width: 100%; text-align: left; background: #252836; border: 1px solid #333; color: #e8eaed; padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; }
+  .corner-btn:hover, .corner-btn.active { border-color: #5b8def; background: #2a3148; }
+  .corner-btn .num { color: #5b8def; font-weight: 700; margin-right: 8px; }
+  .detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid #333; }
+  .detail .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 8px; }
+  .detail p { margin: 8px 0; line-height: 1.5; color: #c4c7cc; font-size: 14px; }
+  .detail strong { color: #e8eaed; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #333; }
+  th { color: #9aa0a6; }
+  .loss { color: #ef4444; }
+  .gain { color: #22c55e; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Monaco — where each corner is</h1>
+  <p class="sub">Your lap 17 (79.208s) · drive clockwise from green START dot · click a corner</p>
+  <div class="layout">
+    <div>
+      <svg viewBox="0 0 900 600" id="map">
+        <path class="track" d="M 52.4,252.0 L 51.5,260.1 L 50.8,267.7 L 50.2,277.1 L 50.0,285.3 L 50.4,293.5 L 51.4,301.7 L 53.1,310.1 L 55.4,318.4 L 58.7,326.7 L 62.5,334.6 L 66.5,342.5 L 70.4,350.4 L 75.2,358.1 L 84.6,364.6 L 98.5,368.6 L 114.1,371.0 L 130.2,372.6 L 146.6,373.5 L 163.0,374.3 L 179.5,375.2 L 196.0,376.5 L 212.6,378.1 L 228.4,380.0 L 244.6,381.9 L 261.2,383.7 L 277.1,385.2 L 293.3,386.5 L 309.9,387.9 L 326.6,389.7 L 343.0,391.6 L 358.5,393.6 L 374.0,395.9 L 389.4,398.4 L 404.9,401.3 L 420.5,404.2 L 436.4,407.0 L 452.6,409.5 L 469.3,411.6 L 486.4,413.2 L 503.7,414.4 L 520.2,415.7 L 536.6,417.1 L 552.7,418.9 L 568.6,421.2 L 583.4,424.8 L 596.7,429.8 L 608.1,435.4 L 617.6,442.1 L 623.8,449.5 L 626.2,457.4 L 624.5,465.5 L 619.0,472.9 L 609.9,479.6 L 599.3,485.9 L 587.7,491.7 L 579.3,498.5 L 576.0,506.3 L 578.2,514.3 L 583.5,521.9 L 590.9,529.2 L 599.7,536.0 L 609.4,542.7 L 619.4,549.1 L 629.7,555.5 L 639.9,562.0 L 650.0,568.3 L 660.4,574.9 L 670.6,581.3 L 680.8,587.7 L 691.4,593.8 L 704.3,598.5 L 720.2,598.7 L 733.3,594.1 L 739.9,586.8 L 743.1,578.9 L 748.1,571.3 L 755.3,564.0 L 762.6,556.9 L 772.0,550.5 L 786.9,551.1 L 789.5,558.5 L 778.8,564.3 L 765.9,569.2 L 758.2,576.1 L 759.4,584.0 L 769.2,590.2 L 782.9,594.5 L 798.0,597.7 L 813.6,600.0 L 829.6,599.4 L 841.8,594.3 L 848.2,587.0 L 850.0,579.0 L 849.3,571.0 L 847.6,563.0 L 845.5,555.0 L 843.1,547.0 L 840.2,538.8 L 836.8,530.9 L 832.9,523.0 L 828.6,515.1 L 823.9,507.4 L 819.0,499.6 L 813.2,491.7 L 806.9,484.3 L 800.2,477.0 L 792.9,469.8 L 784.5,462.8 L 774.7,456.0 L 763.4,449.7 L 751.0,443.7 L 738.5,438.5 L 725.5,433.8 L 711.7,429.5 L 697.4,425.5 L 682.7,421.6 L 667.7,417.8 L 652.5,414.0 L 637.1,410.2 L 621.6,406.7 L 605.7,403.4 L 589.5,400.3 L 573.0,397.4 L 556.2,394.8 L 539.6,392.6 L 523.7,390.7 L 507.3,388.8 L 490.9,387.1 L 474.6,385.6 L 458.5,384.1 L 442.6,382.5 L 427.7,379.5 L 418.8,373.1 L 406.7,368.1 L 390.6,367.6 L 374.5,369.0 L 358.2,370.1 L 341.7,370.2 L 325.3,369.7 L 308.9,368.9 L 292.4,368.1 L 275.7,367.2 L 259.4,366.4 L 242.6,365.5 L 226.3,364.7 L 209.8,363.8 L 192.9,362.9 L 176.4,361.9 L 160.4,360.1 L 145.5,356.9 L 133.1,351.8 L 123.2,345.4 L 114.4,338.5 L 106.6,331.3 L 100.9,323.5 L 97.5,315.7 L 96.0,307.5 L 96.4,299.4 L 98.4,291.4 L 102.6,283.4 L 109.2,275.7 L 117.7,268.3 L 126.4,261.4 L 133.7,254.4 L 139.3,246.8 L 143.3,238.9 L 146.8,231.0 L 150.2,223.1 L 153.1,215.2 L 153.2,207.2 L 146.8,199.8 L 136.8,193.5 L 130.6,186.2 L 131.3,178.2 L 135.5,170.5 L 141.5,163.0 L 149.4,155.8 L 158.7,149.1 L 169.0,143.1 L 180.9,137.4 L 193.8,132.2 L 207.8,127.9 L 222.1,124.1 L 234.2,118.9 L 235.0,111.3 L 223.8,105.8 L 208.6,102.8 L 192.6,100.9 L 176.4,100.0 L 160.7,102.0 L 149.4,107.5 L 144.1,115.1 L 137.4,122.4 L 129.5,129.5 L 121.5,136.6 L 113.6,143.7 L 106.4,150.9 L 99.4,158.5 L 93.3,165.9 L 87.3,173.6 L 82.0,181.2 L 77.1,189.0 L 72.7,197.0 L 68.5,205.0 L 64.7,212.7 L 61.2,220.5 L 58.2,228.4 L 55.7,236.4 L 53.7,244.4"/>
+        <circle cx="52.4" cy="252.0" r="10" fill="#22c55e"/>
+        <text x="66.4" y="256.0" fill="#22c55e" font-size="13">START / FINISH</text>
+        <g class="marker" data-id="Turn 1" style="cursor:pointer">
+          <circle cx="64.1" cy="337.7" r="14" fill="#1a1d27" stroke="#22c55e" stroke-width="3"/>
+          <text x="64.1" y="341.7" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">1</text>
+          <title>Sainte Devote</title>
+        </g>
+        <g class="marker" data-id="Turn 4" style="cursor:pointer">
+          <circle cx="430.0" cy="405.9" r="14" fill="#1a1d27" stroke="#eab308" stroke-width="3"/>
+          <text x="430.0" y="409.9" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">2</text>
+          <title>Casino</title>
+        </g>
+        <g class="marker" data-id="Turn 6" style="cursor:pointer">
+          <circle cx="639.9" cy="562.0" r="14" fill="#1a1d27" stroke="#eab308" stroke-width="3"/>
+          <text x="639.9" y="566.0" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">3</text>
+          <title>Hairpin</title>
+        </g>
+        <g class="marker" data-id="Turn 8" style="cursor:pointer">
+          <circle cx="848.7" cy="567.7" r="14" fill="#1a1d27" stroke="#94a3b8" stroke-width="3"/>
+          <text x="848.7" y="571.7" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">4</text>
+          <title>Tunnel exit chicane</title>
+        </g>
+        <g class="marker" data-id="Swimming Pool" style="cursor:pointer">
+          <circle cx="492.5" cy="387.2" r="14" fill="#1a1d27" stroke="#94a3b8" stroke-width="3"/>
+          <text x="492.5" y="391.2" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">5</text>
+          <title>Swimming Pool</title>
+        </g>
+        <g class="marker" data-id="Tabac" style="cursor:pointer">
+          <circle cx="335.2" cy="370.0" r="14" fill="#1a1d27" stroke="#eab308" stroke-width="3"/>
+          <text x="335.2" y="374.0" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">6</text>
+          <title>Tabac</title>
+        </g>
+        <g class="marker" data-id="Rascasse" style="cursor:pointer">
+          <circle cx="133.1" cy="351.8" r="14" fill="#1a1d27" stroke="#94a3b8" stroke-width="3"/>
+          <text x="133.1" y="355.8" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">7</text>
+          <title>Rascasse</title>
+        </g>
+        <g class="marker" data-id="Final Corner" style="cursor:pointer">
+          <circle cx="142.2" cy="241.3" r="14" fill="#1a1d27" stroke="#ef4444" stroke-width="3"/>
+          <text x="142.2" y="245.3" text-anchor="middle" fill="#e8eaed" font-size="11" font-weight="bold">8</text>
+          <title>Anthony Noghes</title>
+        </g>
+      </svg>
+    </div>
+    <div class="panel">
+      <h2>Corners (lap order)</h2>
+      <div id="buttons"></div>
+      <div class="detail" id="detail"></div>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Name</th><th>Engine ID</th><th>Where</th><th>vs ref</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+<script>
+const CORNERS = [{"order": 1, "name": "Sainte Devote", "internal": "Turn 1", "map": "Bottom-left of the map \u2014 first right off the start straight", "fix": "Short climb on full throttle toward Beau Rivage", "issue": "Improving", "color": "#22c55e", "delta": -0.15, "nx": 64.1, "ny": 337.7}, {"order": 2, "name": "Casino", "internal": "Turn 4", "map": "Top-left sweep past the casino hairpin area", "fix": "Feed throttle once the front bites toward Mirabeau", "issue": "Power while turning", "color": "#eab308", "delta": 0.12, "nx": 430.0, "ny": 405.9}, {"order": 3, "name": "Hairpin", "internal": "Turn 6", "map": "Tightest loop on the left side of the map", "fix": "Patience on throttle until the car is straight for Portier", "issue": "Brake earlier", "color": "#eab308", "delta": -0.38, "nx": 639.9, "ny": 562.0}, {"order": 4, "name": "Tunnel exit chicane", "internal": "Turn 8", "map": "Right-hand kink where the long bottom curve meets the harbour", "fix": "Flat through Tabac approach once the rear settles", "issue": "Understeer sometimes", "color": "#94a3b8", "delta": -0.2, "nx": 848.7, "ny": 567.7}, {"order": 5, "name": "Swimming Pool", "internal": "Swimming Pool", "map": "Top-right double wiggle \u2014 two quick left-right kinks", "fix": "Short harbour straight; the tight right hook of Rascasse is next", "issue": "Steer corrections", "color": "#94a3b8", "delta": -0.74, "nx": 492.5, "ny": 387.2}, {"order": 6, "name": "Tabac", "internal": "Tabac", "map": "Fast left kink between the harbour straight and the pool chicanes", "fix": "Open throttle toward the first Swimming Pool board", "issue": "Early throttle", "color": "#eab308", "delta": 0.15, "nx": 335.2, "ny": 370.0}, {"order": 7, "name": "Rascasse", "internal": "Rascasse", "map": "Sharp right hook after the pool wiggle \u2014 pit-entry notch on the inside", "fix": "Throttle once the car points at the short straight to the final corner", "issue": "Stay on rubber", "color": "#94a3b8", "delta": 0.06, "nx": 133.1, "ny": 351.8}, {"order": 8, "name": "Anthony Noghes", "internal": "Final Corner", "map": "Last sharp right before the bottom start straight on the map", "fix": "Full throttle once the steering unwinds toward Sainte Devote", "issue": "FIX FIRST: steer sawing", "color": "#ef4444", "delta": 0.87, "nx": 142.2, "ny": 241.3}];
+const detail = document.getElementById('detail');
+const buttons = document.getElementById('buttons');
+const rows = document.getElementById('rows');
+let active = CORNERS.find(c => c.internal === 'Final Corner') || CORNERS[0];
+
+function fmtDelta(d) {
+  if (d > 0.05) return '<span class="loss">+' + d.toFixed(2) + 's</span>';
+  if (d < -0.05) return '<span class="gain">' + d.toFixed(2) + 's</span>';
+  return d.toFixed(2) + 's';
+}
+
+function show(c) {
+  active = c;
+  document.querySelectorAll('.corner-btn').forEach(b => b.classList.toggle('active', b.dataset.id === c.internal));
+  detail.innerHTML = '<span class="tag" style="background:' + c.color + '33;color:' + c.color + '">' + c.issue + '</span>'
+    + '<h2 style="margin:4px 0 8px">' + c.order + '. ' + c.name + '</h2>'
+    + '<p><strong>Where:</strong> ' + c.map + '</p>'
+    + '<p><strong>Fix:</strong> ' + c.fix + '</p>'
+    + '<p><strong>Time vs your ref:</strong> ' + fmtDelta(c.delta) + '</p>';
+}
+
+CORNERS.forEach(c => {
+  const btn = document.createElement('button');
+  btn.className = 'corner-btn';
+  btn.dataset.id = c.internal;
+  btn.innerHTML = '<span class="num">' + c.order + '</span>' + c.name + ' ' + fmtDelta(c.delta);
+  btn.onclick = () => show(c);
+  buttons.appendChild(btn);
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + c.order + '</td><td>' + c.name + '</td><td>' + c.internal + '</td><td>' + c.map + '</td><td>' + fmtDelta(c.delta) + '</td>';
+  rows.appendChild(tr);
+  document.querySelector('.marker[data-id="' + c.internal + '"]').addEventListener('click', () => show(c));
+});
+show(active);
+</script>
+</body>
+</html>

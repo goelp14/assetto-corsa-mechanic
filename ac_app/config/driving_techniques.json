@@ -1,0 +1,80 @@
+{
+  "trail_brake": {
+    "input": "brake",
+    "coaching": "Bleed brake pressure past turn-in — braking shifts weight forward so the front tyres gain grip for rotation.",
+    "why": "Trail braking uses longitudinal load transfer to increase front normal force while blending into steering (Wikipedia: Trail braking; Driver61 weight-transfer tutorial).",
+    "source": "driver61.com/uni/trail-braking"
+  },
+  "trail_brake_high_downforce": {
+    "input": "brake",
+    "coaching": "Trail brake to keep the nose loaded — minimum corner speed builds downforce; release pressure gradually, not in one step.",
+    "why": "High-downforce cars gain grip with speed; maintaining front load through turn-in preserves rotation without a separate brake release (Track Titan: F1 vs V-line minimum-speed tradeoff).",
+    "source": "tracktitan.io V-line vs traditional line"
+  },
+  "straight_line_brake": {
+    "input": "brake",
+    "coaching": "Brake in a straight line first — separate maximum braking from turn-in so the tyre stays inside the friction circle.",
+    "why": "A tyre has finite combined grip; threshold braking uses full longitudinal capacity before steering loads the contact patch (Sarah Moore Racing: friction circle).",
+    "source": "sarahmooreracing.com trail vs threshold braking"
+  },
+  "patience_throttle": {
+    "input": "throttle",
+    "coaching": "Wait until the car points at the exit before full throttle — patience on entry protects exit speed.",
+    "why": "Drivers who chase entry speed often destroy exit speed; the lap-time line prioritises the following straight (Driver61 / Mansell late-apex teaching).",
+    "source": "driver61.com/uni/racing-line"
+  },
+  "early_throttle_vline": {
+    "input": "throttle",
+    "coaching": "Unwind steering then apply throttle — a straighter exit lets you accelerate earlier on the next straight.",
+    "why": "The V-line trades mid-corner minimum speed for exit traction; time gained on the straight outweighs the loss (Track Titan V-line guide; LivePhysics GT racing line).",
+    "source": "livephysics.com GT racing line"
+  },
+  "maintenance_throttle": {
+    "input": "throttle",
+    "coaching": "Light constant throttle through the kink — a lift unloads the tyres and costs grip you cannot see on the map.",
+    "why": "Fast direction changes need a stable platform; maintenance throttle keeps load on the contact patch through blind or high-speed kinks.",
+    "source": "Driver61 racing line — fast corner momentum"
+  },
+  "minimal_steer": {
+    "input": "steer",
+    "coaching": "One steering input — sawing at the wheel mid-corner spends grip on corrections instead of acceleration.",
+    "why": "The friction circle limits combined brake/steer/throttle; corrections mean you exceeded available grip at that point on the line.",
+    "source": "Wikipedia: Circle of forces"
+  },
+  "progressive_steer": {
+    "input": "steer",
+    "coaching": "Build steering angle smoothly — snap inputs spike lateral demand when the tyre is already loaded.",
+    "why": "Progressive steering keeps the combined force vector inside the traction circle through corner entry.",
+    "source": "Sarah Moore Racing: friction circle / trail braking"
+  },
+  "kerb_grip_loss": {
+    "input": "steer",
+    "coaching": "Unwind steering when the kerb unloads the tyre — sawing while airborne or on paint wastes grip on recovery.",
+    "why": "Stiff suspension and kerb impacts reduce vertical load at the contact patch; F1 teams monitor load-cell spikes for exactly this (Autosport ride quality; Race Sundays kerb vs aero).",
+    "source": "autosport.com F1 suspension ride quality"
+  },
+  "kerb_overload": {
+    "input": "steer",
+    "coaching": "Clip the kerb, don't launch over it — stay inside travel so the tyre stays in contact with tarmac.",
+    "why": "At suspension travel limit the chassis hops and mechanical grip collapses until the tyre reloads (Penske: compliant setup keeps tyres on track).",
+    "source": "penskeshocks.com racing suspension issues"
+  },
+  "bump_platform": {
+    "input": "brake",
+    "coaching": "Ease inputs over the bump — a vertical hit while braking or turning overloads the tyre instantly.",
+    "why": "Vertical acceleration spikes transfer through the tyre spring; teams use accelerometers on wheel hubs to separate bump from aero platform control (Autosport F1 setup science).",
+    "source": "autosport.com F1 suspension set-ups"
+  },
+  "shift_brake_zone": {
+    "input": "brake",
+    "coaching": "Finish downshifts before turn-in — brake in a straight line, blip the throttle to match revs, then rotate.",
+    "why": "F1 seamless boxes still cut torque on upshifts and apply engine braking on downshifts; drivers sequence shifts in the braking zone with straight steering so the rear stays settled (F1Technical.net transmission guide).",
+    "source": "f1technical.net/features/10705"
+  },
+  "shift_straight_upshift": {
+    "input": "throttle",
+    "coaching": "Upshift when the wheel is straight — hold the gear through the loaded part of the corner.",
+    "why": "Upshifting under lateral load interrupts torque when the tyre needs consistency; straight-line upshifts avoid the mid-corner platform step.",
+    "source": "Motorsport Technology — seamless F1 gearbox load transfer"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "car_id": "rss_formula_hybrid_x_2026",
+  "display_name": "RSS Formula Hybrid X 2026",
+  "physics_config": "car_rss_fh_x_2026.json",
+  "line_profile_key": "rss_formula_hybrid_x_2026",
+  "setup_catalog": "car_rss_fh_x_2026.json"
+}

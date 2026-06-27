@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "record_types": {
+    "session_start": {
+      "required": ["record_type", "schema_version", "timestamp", "track", "car", "phase"],
+      "fields": {
+        "baseline_setup": "string",
+        "phase": "string"
+      }
+    },
+    "lap_summary": {
+      "required": ["record_type", "schema_version", "timestamp", "lap", "lap_time_ms"],
+      "fields": {
+        "lap_type": "string",
+        "counted": "boolean",
+        "phase": "string",
+        "in_pit": "boolean",
+        "setup_snapshot": "object",
+        "driving_style": "object",
+        "corner_deltas_s": "object",
+        "sector_deltas_s": "array"
+      }
+    },
+    "corner_event": {
+      "required": ["record_type", "schema_version", "timestamp", "lap", "corner", "phase", "verdict"],
+      "fields": {
+        "input_score": "float",
+        "output_score": "float",
+        "evidence": "object",
+        "feedback_id": "string"
+      }
+    },
+    "setup_change": {
+      "required": ["record_type", "schema_version", "timestamp", "tweak_id", "parameter", "old_value", "new_value"],
+      "fields": {
+        "symptom": "string",
+        "reason": "string",
+        "lap": "integer",
+        "corner": "string",
+        "corner_display": "string",
+        "phase": "string",
+        "spline": "float",
+        "verdict": "string",
+        "input_score": "float",
+        "output_score": "float",
+        "corner_delta_s": "float",
+        "detection_what": "string",
+        "detection_why": "string",
+        "source": "string",
+        "queued_lap": "integer",
+        "pit_entry": "boolean",
+        "delta": "number"
+      }
+    },
+    "setup_queued": {
+      "required": ["record_type", "schema_version", "timestamp", "lap", "section"],
+      "fields": {
+        "delta": "number",
+        "old_value": "number",
+        "new_value": "number",
+        "symptom": "string",
+        "corner": "string",
+        "corner_display": "string",
+        "phase": "string",
+        "spline": "float",
+        "verdict": "string",
+        "input_score": "float",
+        "output_score": "float",
+        "corner_delta_s": "float",
+        "detection_what": "string",
+        "detection_why": "string",
+        "source": "string",
+        "queue_size": "integer"
+      }
+    },
+    "setup_evaluation": {
+      "required": ["record_type", "schema_version", "timestamp", "tweak_id", "effectiveness", "status"],
+      "fields": {
+        "lap_time_delta_ms": "integer"
+      }
+    },
+    "setup_advisory": {
+      "required": ["record_type", "schema_version", "timestamp", "lap", "section", "tier"],
+      "fields": {
+        "recommendation": "string",
+        "reason": "string"
+      }
+    },
+    "feedback": {
+      "required": ["record_type", "schema_version", "timestamp", "feedback_id", "type", "headline"],
+      "fields": {
+        "action": "string",
+        "voice": "string"
+      }
+    },
+    "investigation": {
+      "required": ["record_type", "schema_version", "timestamp", "lap", "corner", "phase", "template_key"],
+      "fields": {
+        "root_cause_id": "string",
+        "confidence": "float",
+        "evidence": "object",
+        "feedback_id": "string"
+      }
+    },
+    "session_end": {
+      "required": ["record_type", "schema_version", "timestamp", "total_laps", "best_lap_ms"],
+      "fields": {
+        "phase": "string",
+        "setup_tweaks_applied": "integer",
+        "setup_tweaks_reverted": "integer"
+      }
+    },
+    "phase_change": {
+      "required": ["record_type", "schema_version", "timestamp", "from_phase", "to_phase", "lap"],
+      "fields": {
+        "clean_laps": "integer",
+        "total_laps": "integer"
+      }
+    },
+    "pit_transition": {
+      "required": ["record_type", "schema_version", "timestamp", "kind", "lap"],
+      "fields": {
+        "spline": "float"
+      }
+    },
+    "setup_file_written": {
+      "required": ["record_type", "schema_version", "timestamp", "lap", "path"],
+      "fields": {
+        "sections": "array"
+      }
+    }
+  },
+  "lap_file": {
+    "required": ["lap", "lap_time_ms", "samples", "corner_summaries"],
+    "sample_fields": {
+      "spline": "float",
+      "corner": "string",
+      "phase": "string",
+      "speed_kmh": "float",
+      "brake": "float",
+      "throttle": "float",
+      "steer_deg": "float",
+      "acc_g_lat": "float",
+      "acc_g_long": "float",
+      "beta_deg": "float",
+      "delta_us_deg": "float",
+      "yaw_rate": "float",
+      "pos_x": "float",
+      "pos_z": "float",
+      "heading": "float",
+      "wheel_load": "array",
+      "susp_ratio": "array"
+    }
+  }
+}
