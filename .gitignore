@@ -30,9 +30,15 @@ credentials.json
 secrets.json
 **/secrets/
 
-# Local skill installs (only vre-* skills are part of this repo)
+# Local agent skills — only the VRE coach chain is part of this repo.
+# Install other dev skills locally; they stay on disk but are not committed.
 .agents/skills/*
+!.agents/skills/README.md
 !.agents/skills/vre-*/
+!.agents/skills/vre-*/**
+
+# Cursor/npx skills installer lockfile (lists locally installed dev skills)
+skills-lock.json
 
 __pycache__/
 *.py[cod]
