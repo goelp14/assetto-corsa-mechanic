@@ -7,6 +7,7 @@ import threading
 import time
 
 SCHEMA_VERSION = 1
+CHANNEL_VERSION = 2
 DEFAULT_MAX_LAP_SAMPLES = 1200
 
 
@@ -26,6 +27,71 @@ def _decimate_samples(samples, max_count):
     return out
 
 
+def _add_car_channels(sample, frame):
+    """Per-wheel channels (FL, FR, RL, RR) needed to tune pressures, camber, diff and ride height."""
+    slip = getattr(frame, "slip", ())
+    if any(slip):
+        sample["wheel_slip"] = [round(v, 3) for v in slip]
+    ws = getattr(frame, "wheel_speed", ())
+    if any(ws):
+        sample["wheel_rads"] = [round(v, 2) for v in ws]
+    core = getattr(frame, "tyre_temp", ())
+    if any(core):
+        sample["tyre_core"] = [round(v, 1) for v in core]
+    psi = getattr(frame, "tyre_pressure", ())
+    if any(psi):
+        sample["tyre_psi"] = [round(v, 2) for v in psi]
+    imo = getattr(frame, "tyre_temp_imo", ())
+    if imo:
+        sample["tyre_imo"] = [[round(v, 1) for v in t] for t in imo]
+    camber = getattr(frame, "camber", ())
+    if any(camber):
+        sample["camber_deg"] = [round(v * 57.2958, 2) for v in camber]
+    bt = getattr(frame, "brake_temp", ())
+    if bt:
+        sample["brake_temp"] = [round(v, 0) for v in bt]
+    rh = getattr(frame, "ride_height", ())
+    if rh:
+        sample["ride_height_mm"] = [round(v * 1000.0, 1) for v in rh]
+
+
+def _mean(vals):
+    return sum(vals) / float(len(vals)) if vals else 0.0
+
+
+def _lap_car_summary(samples):
+    """Per-wheel lap averages; tyre temps only while cornering, where the contact patch matters."""
+    out = {}
+    psi = [s["tyre_psi"] for s in samples if "tyre_psi" in s]
+    if psi:
+        out["psi_mean"] = [round(_mean([p[i] for p in psi]), 2) for i in range(4)]
+        out["psi_max"] = [round(max(p[i] for p in psi), 2) for i in range(4)]
+    core = [s["tyre_core"] for s in samples if "tyre_core" in s]
+    if core:
+        out["core_mean"] = [round(_mean([c[i] for c in core]), 1) for i in range(4)]
+    loaded = [s for s in samples if abs(s.get("acc_g_lat", 0.0)) > 0.8 and "tyre_imo" in s]
+    if loaded:
+        out["imo_cornering"] = [
+            [round(_mean([s["tyre_imo"][i][k] for s in loaded]), 1) for k in range(3)] for i in range(4)
+        ]
+    cam = [s for s in samples if abs(s.get("acc_g_lat", 0.0)) > 0.8 and "camber_deg" in s]
+    if cam:
+        out["camber_cornering_deg"] = [round(_mean([s["camber_deg"][i] for s in cam]), 2) for i in range(4)]
+    bt = [s["brake_temp"] for s in samples if "brake_temp" in s]
+    if bt:
+        out["brake_temp_max"] = [round(max(b[i] for b in bt), 0) for i in range(4)]
+    rh = [s["ride_height_mm"] for s in samples if "ride_height_mm" in s]
+    if rh:
+        out["ride_height_min_mm"] = [round(min(r[i] for r in rh), 1) for i in range(2)]
+    susp = [s["susp_ratio"] for s in samples if "susp_ratio" in s]
+    if susp:
+        out["bump_stop_pct"] = [round(100.0 * sum(1 for r in susp if r[i] > 0.97) / len(susp), 1) for i in range(4)]
+    if samples:
+        out["top_speed_kmh"] = max(s.get("speed_kmh", 0.0) for s in samples)
+        out["max_rpm"] = max(s.get("rpm", 0) for s in samples)
+    return out
+
+
 class TelemetryArchive(object):
     """JSONL session logs and per-lap subsampled telemetry."""
 
@@ -39,6 +105,8 @@ class TelemetryArchive(object):
         self.session_id = ""
         self._jsonl_path = None
         self._frame_counter = 0
+        self._tyres_out_peak = 0
+        self._reset_lap_ffb()
         self._lap_samples = []
         self._lap_corner_summaries = []
         self._feedback_counter = 0
@@ -55,7 +123,7 @@ class TelemetryArchive(object):
             os.path.dirname(os.path.dirname(__file__)), "data", "sessions",
         )
 
-    def start_session(self, track, car, phase="LEARNING", baseline_setup=""):
+    def start_session(self, track, car, phase="LEARNING", baseline_setup="", track_config=""):
         ts = time.strftime("%Y-%m-%d_%H%M%S")
         ms = int((time.time() % 1.0) * 1000)
         safe_track = track.replace(" ", "_").lower() or "unknown"
@@ -72,16 +140,21 @@ class TelemetryArchive(object):
         with open(readme, "w") as fh:
             fh.write(
                 "Virtual Race Engineer session\n"
-                "Track: %s\nCar: %s\nStarted: %s\n" % (track, car, ts)
+                "Track: %s\nLayout: %s\nCar: %s\nStarted: %s\n"
+                % (track, track_config or "-", car, ts)
             )
         self.append_record({
             "record_type": "session_start",
             "schema_version": SCHEMA_VERSION,
             "timestamp": self._iso_now(),
             "track": track,
+            "track_config": track_config,
             "car": car,
             "phase": phase,
             "baseline_setup": baseline_setup,
+            # 2 = acc_g remapped to (long, lat, vert), heading-derived yaw rate,
+            # body velocity from world x/z; sessions without it have bad dynamics channels.
+            "channel_version": CHANNEL_VERSION,
         })
 
     def _iso_now(self):
@@ -101,6 +174,16 @@ class TelemetryArchive(object):
 
     def observe_frame(self, frame, corner="", phase="", dynamics=None, balance=None):
         self._frame_counter += 1
+        # Kerb hops can be shorter than the subsample interval, so keep the peak between samples.
+        self._tyres_out_peak = max(self._tyres_out_peak, getattr(frame, "tyres_out", 0))
+        ffb = abs(getattr(frame, "ffb", 0.0) or 0.0)
+        if ffb > 0.0:
+            self._ffb_peak = max(self._ffb_peak, ffb)
+            self._ffb_frames += 1
+            if ffb >= 0.99:
+                self._ffb_clip_frames += 1
+        if getattr(frame, "brake_bias", 0.0):
+            self._brake_bias = frame.brake_bias
         if self._frame_counter % self.subsample_every != 0:
             return
         sample = {
@@ -111,6 +194,7 @@ class TelemetryArchive(object):
             "brake": round(frame.brake, 3),
             "throttle": round(frame.throttle, 3),
             "steer_deg": round(frame.steer * 57.2958, 2),
+            "steer_road_deg": round(getattr(frame, "steer_road", 0.0) * 57.2958, 2),
             "acc_g_lat": round(frame.acc_g[1], 3),
             "acc_g_long": round(frame.acc_g[0], 3),
             "pos_x": round(frame.pos_x, 2),
@@ -136,6 +220,15 @@ class TelemetryArchive(object):
             sample["wheel_load"] = [round(v, 0) for v in frame.wheel_load]
         if any(frame.susp_ratio):
             sample["susp_ratio"] = [round(v, 3) for v in frame.susp_ratio]
+        _add_car_channels(sample, frame)
+        if any(getattr(frame, "tyre_radius", ())):
+            self._tyre_radius = frame.tyre_radius
+        if self._tyres_out_peak:
+            sample["tyres_out"] = self._tyres_out_peak
+            self._tyres_out_peak = 0
+        if self._ffb_peak:
+            sample["ffb"] = round(self._ffb_peak, 3)
+            self._ffb_peak = 0.0
         self._lap_samples.append(sample)
 
     def record_investigation(self, lap, corner, phase, investigation, feedback_id=None):
@@ -231,25 +324,50 @@ class TelemetryArchive(object):
     def note_setup_revert(self, count=1):
         self._setup_tweaks_reverted += int(count)
 
+    def _reset_lap_ffb(self):
+        self._ffb_peak = 0.0
+        self._ffb_frames = 0
+        self._ffb_clip_frames = 0
+        self._brake_bias = 0.0
+        self._tyre_radius = (0.0, 0.0, 0.0, 0.0)
+
+    def _live_car_state(self):
+        out = {}
+        if any(self._tyre_radius):
+            out["tyre_radius_m"] = [round(v, 4) for v in self._tyre_radius]
+        if self._ffb_frames:
+            out["ffb_clip_pct"] = round(100.0 * self._ffb_clip_frames / self._ffb_frames, 1)
+        if self._brake_bias:
+            out["brake_bias_live"] = round(100.0 * self._brake_bias, 1)
+        return out
+
     def flush_lap(self, lap, lap_time_ms, setup_snapshot=None, driving_style=None,
                   corner_deltas=None, sector_deltas=None, lap_type="flying",
-                  phase="", in_pit=False, counted=True):
+                  phase="", in_pit=False, counted=True, setup_source=""):
         if self.session_dir is None:
             return
 
         samples = _decimate_samples(self._lap_samples, self.max_lap_samples)
+        live = self._live_car_state()
         payload = {
             "lap": lap,
             "lap_time_ms": lap_time_ms,
             "lap_type": lap_type,
             "counted": counted,
             "sample_count_raw": len(self._lap_samples),
+            "tyres_out_tracked": True,
             "samples": samples,
             "corner_summaries": list(self._lap_corner_summaries),
         }
+        car_state = _lap_car_summary(samples)
+        if car_state:
+            live["car_state"] = car_state
+        payload.update(live)
         self._lap_samples = []
         self._lap_corner_summaries = []
         self._frame_counter = 0
+        self._tyres_out_peak = 0
+        self._reset_lap_ffb()
 
         summary = {
             "record_type": "lap_summary",
@@ -260,8 +378,11 @@ class TelemetryArchive(object):
             "phase": phase or self._phase,
             "in_pit": bool(in_pit),
         }
+        summary.update(live)
         if setup_snapshot:
             summary["setup_snapshot"] = setup_snapshot
+            if setup_source:
+                summary["setup_snapshot_source"] = setup_source
         if driving_style:
             summary["driving_style"] = driving_style
         if corner_deltas:

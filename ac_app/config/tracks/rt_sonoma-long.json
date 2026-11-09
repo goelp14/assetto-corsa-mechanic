@@ -1,0 +1,237 @@
+{
+  "track_id": "rt_sonoma-long",
+  "display_name": "Sonoma Raceway Long Circuit",
+  "length_m": 3974,
+  "spline_offset": 0.0,
+  "setup_folder": "rt_sonoma",
+  "layout": "long",
+  "direction": "clockwise",
+  "generated_from": "fast_lane.ai",
+  "sectors": [
+    {
+      "name": "S1",
+      "spline_end": 0.33
+    },
+    {
+      "name": "S2",
+      "spline_end": 0.66
+    },
+    {
+      "name": "S3",
+      "spline_end": 1.0
+    }
+  ],
+  "corners": [
+    {
+      "name": "Turn 2",
+      "display_name": "Turn 2",
+      "direction": "right",
+      "speed_class": "slow",
+      "spline_start": 0.041,
+      "spline_end": 0.132,
+      "apex_spline": 0.112,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Uphill braking zone",
+        "apex_cue": "Right-hander, ~100 deg"
+      }
+    },
+    {
+      "name": "Turn 3",
+      "display_name": "Turn 3",
+      "direction": "left",
+      "speed_class": "medium",
+      "spline_start": 0.155,
+      "spline_end": 0.19,
+      "apex_spline": 0.185,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Level braking zone",
+        "apex_cue": "Left-hander, ~50 deg"
+      },
+      "line": {
+        "chain": "t3_t3a",
+        "chain_role": "setup",
+        "chain_payoff": "Turn 3a"
+      }
+    },
+    {
+      "name": "Turn 3a",
+      "display_name": "Turn 3a",
+      "direction": "right",
+      "speed_class": "medium",
+      "spline_start": 0.19,
+      "spline_end": 0.212,
+      "apex_spline": 0.2,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Uphill braking zone",
+        "apex_cue": "Right-hander, ~50 deg"
+      },
+      "line": {
+        "chain": "t3_t3a",
+        "chain_role": "payoff"
+      }
+    },
+    {
+      "name": "Turn 4",
+      "display_name": "Turn 4",
+      "direction": "right",
+      "speed_class": "slow",
+      "spline_start": 0.228,
+      "spline_end": 0.278,
+      "apex_spline": 0.253,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Downhill braking zone",
+        "apex_cue": "Right-hander, ~100 deg"
+      }
+    },
+    {
+      "name": "Turn 6",
+      "display_name": "Carousel (T5-T6)",
+      "direction": "left",
+      "speed_class": "medium",
+      "spline_start": 0.319,
+      "spline_end": 0.439,
+      "apex_spline": 0.38,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Downhill braking zone",
+        "apex_cue": "Left-hander, ~190 deg"
+      }
+    },
+    {
+      "name": "Turn 7",
+      "display_name": "Turn 7 hairpin",
+      "direction": "right",
+      "speed_class": "slow",
+      "spline_start": 0.492,
+      "spline_end": 0.583,
+      "apex_spline": 0.548,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Uphill braking zone",
+        "apex_cue": "Right-hander, ~190 deg",
+        "brake_cue": "~25 m before the 400 board, where the cone/arrow row on the right ends",
+        "line_hint": "Turn in at the 100 board from the left edge; double apex",
+        "exit_cue": "Hold a light brake past the 100 board, release at the first clip, then throttle"
+      }
+    },
+    {
+      "name": "Turn 8",
+      "display_name": "Turn 8",
+      "direction": "left",
+      "speed_class": "fast",
+      "spline_start": 0.622,
+      "spline_end": 0.649,
+      "apex_spline": 0.645,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Downhill braking zone",
+        "apex_cue": "Left-hander, ~30 deg"
+      },
+      "line": {
+        "chain": "esses_8",
+        "chain_role": "setup",
+        "chain_payoff": "Turn 8a"
+      }
+    },
+    {
+      "name": "Turn 8a",
+      "display_name": "Turn 8a",
+      "direction": "right",
+      "speed_class": "fast",
+      "spline_start": 0.652,
+      "spline_end": 0.697,
+      "apex_spline": 0.668,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Level braking zone",
+        "apex_cue": "Right-hander, ~30 deg"
+      },
+      "line": {
+        "chain": "esses_8",
+        "chain_role": "payoff"
+      }
+    },
+    {
+      "name": "Turn 10",
+      "display_name": "Turn 10",
+      "direction": "right",
+      "speed_class": "fast",
+      "spline_start": 0.762,
+      "spline_end": 0.827,
+      "apex_spline": 0.797,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Level braking zone",
+        "apex_cue": "Right-hander, ~40 deg"
+      }
+    },
+    {
+      "name": "Turn 11",
+      "display_name": "Turn 11 hairpin",
+      "direction": "right",
+      "speed_class": "slow",
+      "spline_start": 0.844,
+      "spline_end": 0.929,
+      "apex_spline": 0.898,
+      "phases": {
+        "entry_end_ay_pct": 0.5,
+        "mid_end_throttle_pct": 0.5
+      },
+      "landmarks": {
+        "approach": "Level braking zone",
+        "apex_cue": "Tyre stack on the inside (right) marks the apex; brake fully off at the clip",
+        "brake_cue": "First cone group + short wall on the right edge",
+        "line_hint": "Ease the brake at the second cones; turn in at the wall on the left edge"
+      }
+    }
+  ],
+  "line_chains": [
+    {
+      "id": "t3_t3a",
+      "corners": [
+        "Turn 3",
+        "Turn 3a"
+      ],
+      "goal": "Left into right with no straight between \u2014 give up a little in Turn 3 to be on line for Turn 3a and the short run to Turn 4"
+    },
+    {
+      "id": "esses_8",
+      "corners": [
+        "Turn 8",
+        "Turn 8a"
+      ],
+      "goal": "Left-right esses taken as one \u2014 a straighter line through Turn 8 buys exit speed out of Turn 8a"
+    }
+  ]
+}

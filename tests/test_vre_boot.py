@@ -2,6 +2,7 @@
 # Python 3.3 compatible — stdlib only
 
 import importlib
+import math
 import os
 import sys
 import types
@@ -134,8 +135,11 @@ def _load_vre_module():
 
 
 @pytest.fixture(scope="module")
-def vre():
-    return _load_vre_module()
+def vre(tmp_path_factory):
+    module = _load_vre_module()
+    data_root = str(tmp_path_factory.mktemp("vre_data"))
+    module._data_path = lambda *parts: os.path.join(data_root, *parts)
+    return module
 
 
 def test_ac_app_sources_compile_and_are_python33_compatible():
@@ -190,3 +194,22 @@ def test_vre_acupdate_one_tick_without_crash(vre):
     vre.acMain(1)
     vre.acUpdate(0.016)
     assert vre._ingest is not None
+
+
+def test_vre_switches_car_and_layout(vre, monkeypatch):
+    static = sys.modules["sim_info"].info.static
+    vre._initialized = False
+    vre.acMain(1)
+    vre.acUpdate(0.016)
+    assert vre._store_key == "monza"
+    monkeypatch.setattr(static, "carModel", "ks_ferrari_312_67", raising=False)
+    monkeypatch.setattr(static, "track", "rt_sonoma", raising=False)
+    monkeypatch.setattr(static, "trackConfiguration", "long", raising=False)
+    vre.acUpdate(0.016)
+    assert vre._store_key == "rt_sonoma-long__ks_ferrari_312_67"
+    assert vre._track_profile.profile_id == "sonoma"
+    assert vre._catalog.lever("WING_0") is None
+    assert abs(vre._balance.wheelbase - 2.40) < 0.05
+    assert vre._balance.lat_g_per_ms == 0.0
+    assert abs(vre._ingest._max_road_wheel_rad - math.radians(22.5)) < 1e-9
+    assert vre._tyre_tracker.ideal_temp_range() == (40, 110)

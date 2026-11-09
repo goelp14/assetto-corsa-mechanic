@@ -1,0 +1,439 @@
+{
+  "car_id": "ks_ferrari_312_67",
+  "display_name": "Ferrari 312/67",
+  "understeer_gradient_K": 0.005,
+  "max_yaw_rate_rad_s": 1.2,
+  "wheelbase_m": 2.4,
+  "front_weight_frac": 0.35,
+  "cg_to_front_axle_m": 1.56,
+  "cg_to_rear_axle_m": 0.84,
+  "mass_kg": 605.0,
+  "max_road_wheel_deg": 22.5,
+  "lat_g_base": 1.5,
+  "lat_g_per_ms": 0.0,
+  "tyre_window": {
+    "core_temp_ideal_min_c": 40.0,
+    "core_temp_ideal_max_c": 110.0,
+    "core_temp_cold_c": 24.0,
+    "core_temp_hot_c": 140.0
+  },
+  "tyre_windows_by_compound": {
+    "gp67": {
+      "core_temp_ideal_min_c": 40.0,
+      "core_temp_ideal_max_c": 110.0,
+      "core_temp_cold_c": 24.0,
+      "core_temp_hot_c": 140.0
+    },
+    "v": {
+      "core_temp_ideal_min_c": 40.0,
+      "core_temp_ideal_max_c": 110.0,
+      "core_temp_cold_c": 24.0,
+      "core_temp_hot_c": 140.0
+    }
+  },
+  "pressure_ideal_psi": {
+    "front": 26.0,
+    "rear": 26.0
+  },
+  "custom_script_id_map": {},
+  "levers": [
+    {
+      "section": "ARB_FRONT",
+      "name": "ARB Front",
+      "tab": "SUSPENSION",
+      "tier": "A",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "phys_min": 5000,
+      "phys_step": 1000
+    },
+    {
+      "section": "ARB_REAR",
+      "name": "ARB Rear",
+      "tab": "SUSPENSION",
+      "tier": "A",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 18,
+      "step": 1,
+      "phys_min": 0,
+      "phys_step": 500
+    },
+    {
+      "section": "BRAKE_POWER_MULT",
+      "name": "Brake power",
+      "tab": "GENERIC",
+      "tier": "B",
+      "encoding": "raw",
+      "min": 80,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_LF",
+      "name": "CAMBER_LF",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "tenths",
+      "min": -20,
+      "max": 2,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_LR",
+      "name": "CAMBER_LR",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "tenths",
+      "min": -20,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_RF",
+      "name": "CAMBER_RF",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "tenths",
+      "min": -20,
+      "max": 2,
+      "step": 1
+    },
+    {
+      "section": "CAMBER_RR",
+      "name": "CAMBER_RR",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "tenths",
+      "min": -20,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "section": "DAMP_BUMP_LF",
+      "name": "Bump",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 1000,
+      "phys_step": 216
+    },
+    {
+      "section": "DAMP_BUMP_LR",
+      "name": "Bump",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 1800,
+      "phys_step": 400
+    },
+    {
+      "section": "DAMP_BUMP_RF",
+      "name": "Bump",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 1000,
+      "phys_step": 216
+    },
+    {
+      "section": "DAMP_BUMP_RR",
+      "name": "Bump",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 1800,
+      "phys_step": 400
+    },
+    {
+      "section": "DAMP_REBOUND_LF",
+      "name": "Rebound",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 1000,
+      "phys_step": 418
+    },
+    {
+      "section": "DAMP_REBOUND_LR",
+      "name": "Rebound",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 2320,
+      "phys_step": 840
+    },
+    {
+      "section": "DAMP_REBOUND_RF",
+      "name": "Rebound",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 1000,
+      "phys_step": 418
+    },
+    {
+      "section": "DAMP_REBOUND_RR",
+      "name": "Rebound",
+      "tab": "DAMPERS",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "phys_min": 2320,
+      "phys_step": 840
+    },
+    {
+      "section": "DIFF_COAST",
+      "name": "Diff Coast",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "encoding": "raw",
+      "min": 0,
+      "max": 80,
+      "step": 5
+    },
+    {
+      "section": "DIFF_POWER",
+      "name": "Diff Power",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "encoding": "raw",
+      "min": 0,
+      "max": 80,
+      "step": 5
+    },
+    {
+      "section": "DIFF_PRELOAD",
+      "name": "Diff Preload",
+      "tab": "DRIVETRAIN",
+      "tier": "A",
+      "encoding": "raw",
+      "min": 0,
+      "max": 80,
+      "step": 5
+    },
+    {
+      "section": "ENGINE_LIMITER",
+      "name": "EngineLimiter",
+      "tab": "GENERIC",
+      "tier": null,
+      "encoding": "raw",
+      "min": 96,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "section": "FRONT_BIAS",
+      "name": "Brake Bias",
+      "tab": "GENERIC",
+      "tier": "A",
+      "encoding": "raw",
+      "min": 52,
+      "max": 80,
+      "step": 1
+    },
+    {
+      "section": "FUEL",
+      "name": "Fuel",
+      "tab": "GENERIC",
+      "tier": null,
+      "encoding": "raw",
+      "min": 5,
+      "max": 181,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_LF",
+      "name": "Pressure LF",
+      "tab": "TYRES",
+      "tier": "C",
+      "encoding": "raw",
+      "min": 12,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_LR",
+      "name": "Pressure LR",
+      "tab": "TYRES",
+      "tier": "C",
+      "encoding": "raw",
+      "min": 12,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_RF",
+      "name": "Pressure RF",
+      "tab": "TYRES",
+      "tier": "C",
+      "encoding": "raw",
+      "min": 12,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "section": "PRESSURE_RR",
+      "name": "Pressure RR",
+      "tab": "TYRES",
+      "tier": "C",
+      "encoding": "raw",
+      "min": 12,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "section": "ROD_LENGTH_LF",
+      "name": "Height LF",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "phys_min": 100,
+      "phys_step": 10
+    },
+    {
+      "section": "ROD_LENGTH_LR",
+      "name": "Height LR",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "phys_min": 100,
+      "phys_step": 10
+    },
+    {
+      "section": "ROD_LENGTH_RF",
+      "name": "Height RF",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "phys_min": 100,
+      "phys_step": 10
+    },
+    {
+      "section": "ROD_LENGTH_RR",
+      "name": "Height RR",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "clicks",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "phys_min": 100,
+      "phys_step": 10
+    },
+    {
+      "section": "SPRING_RATE_LF",
+      "name": "Wheel rate LF",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "raw",
+      "min": 14,
+      "max": 22,
+      "step": 2
+    },
+    {
+      "section": "SPRING_RATE_LR",
+      "name": "Wheel rate LR",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "raw",
+      "min": 25,
+      "max": 45,
+      "step": 5
+    },
+    {
+      "section": "SPRING_RATE_RF",
+      "name": "Wheel rate RF",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "raw",
+      "min": 14,
+      "max": 22,
+      "step": 2
+    },
+    {
+      "section": "SPRING_RATE_RR",
+      "name": "Wheel rate RR",
+      "tab": "SUSPENSION",
+      "tier": "B",
+      "encoding": "raw",
+      "min": 25,
+      "max": 45,
+      "step": 5
+    },
+    {
+      "section": "TOE_OUT_LF",
+      "name": "Toe LF",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "raw",
+      "min": -70,
+      "max": 70,
+      "step": 2
+    },
+    {
+      "section": "TOE_OUT_LR",
+      "name": "Toe LR",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "raw",
+      "min": -70,
+      "max": 70,
+      "step": 2
+    },
+    {
+      "section": "TOE_OUT_RF",
+      "name": "Toe RF",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "raw",
+      "min": -70,
+      "max": 70,
+      "step": 2
+    },
+    {
+      "section": "TOE_OUT_RR",
+      "name": "Toe RR",
+      "tab": "ALIGNMENT",
+      "tier": "C",
+      "encoding": "raw",
+      "min": -70,
+      "max": 70,
+      "step": 2
+    }
+  ]
+}

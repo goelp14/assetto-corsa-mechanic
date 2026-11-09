@@ -39,6 +39,10 @@ class SetupMemory(object):
 
     def load(self, track_id):
         self.track_id = track_id
+        self.tweaks = []
+        self.tweak_weights = {}
+        self._tweak_counter = 0
+        self._pending = None
         path = self._path()
         if not os.path.isfile(path):
             return False

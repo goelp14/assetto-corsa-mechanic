@@ -15,20 +15,22 @@ from response_schema import empty_response, normalize_response
 
 QUESTION_PATTERNS = {
     "incident": re.compile(r"\b(spin|spun|crash|lost control|high beta|incident|off track)\b", re.I),
-    "technique": re.compile(r"\b(technique|drill|what should|how do i|fix|lose time|time loss|brake|throttle|apex)\b", re.I),
+    "technique": re.compile(r"\b(technique|drill|what should|how do i|fix|lose time|time loss|brake|throttle|apex|coast\w*|exit)\b", re.I),
     "mechanism": re.compile(r"\b(why|understeer|oversteer|grip|tyre|tire|aero|balance|mechanism|physics)\b", re.I),
     "stint": re.compile(r"\b(stint|session|summary|debrief|overall)\b", re.I),
+    "setup": re.compile(r"\b(setup|set-up|bias|diff|anti-?roll|arb|camber|toe|pressure|gearing|gamma|calibrat\w*)\b", re.I),
+    "line": re.compile(r"\b(line|turn-?in point|track-?out|more (left|right))\b", re.I),
 }
+
+
+TIE_PRIORITY = ("incident", "setup", "line", "technique", "mechanism", "stint")
 
 
 def classify_question(question):
     q = question or ""
-    scores = {k: 0 for k in QUESTION_PATTERNS}
-    for kind, pat in QUESTION_PATTERNS.items():
-        if pat.search(q):
-            scores[kind] += 1
-    best = max(scores.items(), key=lambda kv: kv[1])
-    return best[0] if best[1] > 0 else "technique"
+    scores = {k: (1 if pat.search(q) else 0) for k, pat in QUESTION_PATTERNS.items()}
+    best = max(TIE_PRIORITY, key=lambda k: (scores[k], -TIE_PRIORITY.index(k)))
+    return best if scores[best] > 0 else "technique"
 
 
 def _system_prompt(question_type):
@@ -40,13 +42,21 @@ def _system_prompt(question_type):
         '"citations":["evidence_id", ...], "confidence":0.0-1.0}. '
         "Cite evidence_id for every metric. Max 1-2 actionable fixes. "
         "Structure: WHAT happened, WHY (vehicle dynamics mechanism), HOW (one drill). "
+        "Find the root cause: late throttle, coasting and running wide are symptoms; name the upstream input "
+        "(pedal gap, brake release, turn-in point) that caused them. Give a visual cue, not a distance. "
         "Tone: direct, technical, actionable — like a real engineer."
     )
     addenda = {
         "incident": " Focus on the pre-window inputs before beta spike. Distinguish driver error from setup.",
-        "technique": " Compare to reference phase metrics. One drill per corner.",
+        "technique": " Compare to reference phase metrics. One drill per corner. Do not prescribe 'throttle earlier' "
+                     "or 'stop coasting' without the cause that makes the driver wait.",
         "mechanism": " Explain tyre/load/input physics using evidence numbers only.",
         "stint": " Executive summary then top 2 time-loss corners with drills.",
+        "setup": " Pace first: never recommend a change because it makes the car calmer. Check input calibration "
+                 "and technique causes before setup. Prefer grip levers (pressures, camber, gearing) over stability "
+                 "levers (forward bias, more diff coast, softer rear bar). One change, judged on >=5 laps.",
+        "line": " Judge lines against the driver's own faster passes, not the AI line. Prefer later/wider turn-in "
+                "and late apex when slow passes are both slower and wider mid-corner.",
     }
     return base + addenda.get(question_type, "")
 

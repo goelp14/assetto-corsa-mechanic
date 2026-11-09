@@ -96,6 +96,16 @@ class SetupFlawDetector(object):
                     tier=cand.get("tier", "A"),
                     old_value=cur, new_value=new_val,
                 ))
+                mirror = self.catalog.mirror_section(section)
+                if mirror and self.catalog.lever(mirror) is not None:
+                    m_cur = current_values.get(mirror, cur)
+                    m_delta, m_new = self.catalog.validate_delta(mirror, m_cur, cand["delta"])
+                    if m_delta != 0:
+                        deltas.append(SetupDelta(
+                            mirror, m_delta, cand.get("reason", ""),
+                            tier=cand.get("tier", "A"),
+                            old_value=m_cur, new_value=m_new,
+                        ))
                 break
             if self.catalog.is_at_limit(section, cur, cand["delta"]):
                 for move in self.catalog.tradeoff_moves(section, cand["delta"], symptom):

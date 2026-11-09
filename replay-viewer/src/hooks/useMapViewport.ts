@@ -58,6 +58,8 @@ export function viewportForWorldRect(
   return { cx, cz, scale: Math.min(scaleX, scaleZ) };
 }
 
+// AC world is viewed from above with +z pointing down the screen (same as AC's map.png);
+// drawing +z up mirrors the track and turns right-handers into left-handers.
 export function worldToScreen(
   x: number,
   z: number,
@@ -67,7 +69,7 @@ export function worldToScreen(
 ) {
   return {
     x: w / 2 + (x - vp.cx) * vp.scale,
-    y: h / 2 - (z - vp.cz) * vp.scale,
+    y: h / 2 + (z - vp.cz) * vp.scale,
   };
 }
 
@@ -80,7 +82,7 @@ export function screenToWorld(
 ) {
   return {
     x: vp.cx + (sx - w / 2) / vp.scale,
-    z: vp.cz - (sy - h / 2) / vp.scale,
+    z: vp.cz + (sy - h / 2) / vp.scale,
   };
 }
 
@@ -120,7 +122,7 @@ export function useMapViewport(initial: MapViewport) {
       setVp((prev) => ({
         ...prev,
         cx: prev.cx - dx / prev.scale,
-        cz: prev.cz + dy / prev.scale,
+        cz: prev.cz - dy / prev.scale,
       }));
     },
     [drag],

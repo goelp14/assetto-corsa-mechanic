@@ -12,7 +12,7 @@ import sys
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 LIB = os.path.join(REPO, "ac_app", "lib")
 CFG = os.path.join(REPO, "ac_app", "config")
-EXPORT_TOOL_VERSION = "2"
+EXPORT_TOOL_VERSION = "3"
 sys.path.insert(0, LIB)
 
 from spline_indexer import SplineIndexer
@@ -20,6 +20,7 @@ from corner_investigator import CornerInvestigator
 from pace_opportunity import PaceOpportunityAnalyzer
 from gg_envelope import GgEnvelope
 from lap_time_analyzer import LapTimeAnalyzer
+from channel_repair import read_lap
 from analyze_sessions import (
     build_phase_summary,
     load_jsonl,
@@ -203,8 +204,7 @@ def build_time_loss_analysis(
 
     laps_out = {}
     for path in lap_paths:
-        with open(path) as fh:
-            d = json.load(fh)
+        d = read_lap(path)
         lap_num = d.get("lap", 0)
         samples = normalize_lap_samples(d.get("samples", []))
         losses = corner_losses_for_lap(samples, spline, stitched, track_length_m)
@@ -277,8 +277,7 @@ def detect_export_channels(lap_paths, has_gg_envelope, has_time_loss):
     """Which telemetry channels exist in exported laps (for viewer defaults)."""
     all_samples = []
     for path in lap_paths:
-        with open(path) as fh:
-            all_samples.extend(json.load(fh).get("samples", []))
+        all_samples.extend(read_lap(path).get("samples", []))
     n = float(len(all_samples)) if all_samples else 1.0
 
     def cov(pred):
@@ -329,8 +328,7 @@ def build_corner_reports_offline(lap_paths, spline, thresholds, sector_refs):
     reports = []
     seen = set()
     for path in lap_paths:
-        with open(path) as fh:
-            d = json.load(fh)
+        d = read_lap(path)
         lap_num = d.get("lap", 0)
         samples = d.get("samples", [])
         for corner_cfg in spline.corners:
@@ -380,6 +378,25 @@ def track_id_from_session(records):
             track = r.get("track", "")
             return track.replace(" ", "_").lower() or "unknown"
     return "unknown"
+
+
+def track_key_from_session(records, track_id):
+    """track-layout key; sessions recorded before layouts were logged use the only known layout."""
+    layout = ""
+    for r in records:
+        if r.get("record_type") == "session_start":
+            layout = (r.get("track_config") or "").replace(" ", "_").lower()
+            break
+    if layout:
+        return "%s-%s" % (track_id, layout)
+    prefix = track_id + "-"
+    found = set()
+    for folder in (os.path.join(CFG, "tracks"), os.path.join(REPO, "ac_app", "data", "track_geometry")):
+        if os.path.isdir(folder):
+            for name in os.listdir(folder):
+                if name.startswith(prefix) and name.endswith(".json"):
+                    found.add(name[:-5])
+    return found.pop() if len(found) == 1 else track_id
 
 
 def car_id_from_session(records):
@@ -456,8 +473,7 @@ def _resolve_record_spline(rec, spline, investigations_by_fb=None):
 def build_sector_refs(lap_paths, spline, thresholds):
     refs = {}
     for path in lap_paths:
-        with open(path) as fh:
-            d = json.load(fh)
+        d = read_lap(path)
         t = d.get("lap_time_ms", 0)
         for corner_cfg in spline.corners:
             corner = corner_cfg.get("name", "")
@@ -484,8 +500,9 @@ def export_session(session_dir, output_dir, standalone=False):
 
     records = load_jsonl(jsonl_path)
     track_id = track_id_from_session(records)
+    track_key = track_key_from_session(records, track_id)
     car_id = car_id_from_session(records)
-    track_cfg = load_track_config(track_id)
+    track_cfg = load_track_config(track_key) or load_track_config(track_id)
     spline = SplineIndexer(track_cfg)
     thresholds = load_thresholds()
 
@@ -494,7 +511,10 @@ def export_session(session_dir, output_dir, standalone=False):
     os.makedirs(analysis_dir, exist_ok=True)
     os.makedirs(laps_dir, exist_ok=True)
 
-    geom_src = os.path.join(REPO, "ac_app", "data", "track_geometry", "%s.json" % track_id)
+    geom_dir = os.path.join(REPO, "ac_app", "data", "track_geometry")
+    geom_src = os.path.join(geom_dir, "%s.json" % track_key)
+    if not os.path.isfile(geom_src):
+        geom_src = os.path.join(geom_dir, "%s.json" % track_id)
     geometry = None
     if os.path.isfile(geom_src):
         shutil.copy2(geom_src, os.path.join(output_dir, "geometry.json"))
@@ -520,8 +540,7 @@ def export_session(session_dir, output_dir, standalone=False):
     any_world_coords = False
     any_projected = False
     for path in lap_paths:
-        with open(path) as fh:
-            lap_data = json.load(fh)
+        lap_data = read_lap(path)
         lap_num = lap_data.get("lap", 0)
         samples = normalize_lap_samples(lap_data.get("samples", []))
         samples, projected = enrich_lap_samples(samples, geometry)
@@ -565,8 +584,7 @@ def export_session(session_dir, output_dir, standalone=False):
     opp_id = 0
     lta = LapTimeAnalyzer(track_length_m=track_cfg.get("length_m", 3337), spline_indexer=spline)
     for path in lap_paths:
-        with open(path) as fh:
-            d = json.load(fh)
+        d = read_lap(path)
         lap_num = d.get("lap", 0)
         samples = d.get("samples", [])
         for s in samples:
@@ -598,7 +616,9 @@ def export_session(session_dir, output_dir, standalone=False):
     setup_episodes = []
     try:
         from setup_episodes import build_setup_episodes, build_setup_timeline as episodes_to_timeline
-        catalog_path = os.path.join(CFG, "car_rss_fh_x_2026.json")
+        catalog_path = os.path.join(CFG, "cars", "%s.json" % (car_id or "rss_formula_hybrid_x_2026"))
+        if not os.path.isfile(catalog_path):
+            catalog_path = os.path.join(CFG, "cars", "rss_formula_hybrid_x_2026.json")
         setup_episodes = build_setup_episodes(
             records, spline_indexer=spline, lap_count=len(lap_manifest),
             catalog_path=catalog_path,
@@ -845,7 +865,10 @@ def glob_laps(session_dir):
             continue
         if "_decimated" in f:
             continue
-        out.append(os.path.join(laps_dir, f))
+        path = os.path.join(laps_dir, f)
+        if os.path.getsize(path) == 0:
+            continue
+        out.append(path)
     return out
 
 

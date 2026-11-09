@@ -71,9 +71,16 @@ class TrackProfileStore(object):
             for alias in data.get("aliases", []):
                 self._alias_map[alias.lower()] = pid
 
-    def resolve(self, track_name):
-        key = (track_name or "").replace(" ", "_").lower()
-        pid = self._alias_map.get(key, self._default_id)
+    def resolve(self, track_name, layout=""):
+        base = (track_name or "").replace(" ", "_").lower()
+        keys = [base]
+        if layout:
+            keys.insert(0, "%s-%s" % (base, layout.replace(" ", "_").lower()))
+        pid = self._default_id
+        for key in keys:
+            if key in self._alias_map:
+                pid = self._alias_map[key]
+                break
         if pid not in self._profiles:
             pid = self._default_id
         return TrackProfile(pid, self._profiles.get(pid, {}))

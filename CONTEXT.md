@@ -40,6 +40,21 @@ See [docs/coach/coaching-rubric.md](docs/coach/coaching-rubric.md) and [docs/coa
 
 - CLI: `python -m external.query_tools.coach ask --bundle exports/<id> --question "..."`
 - API: `POST /coach/ask` on port 8765 when `VRE_COACH=1`
-- Skills: `vre-coach-router` → `vre-collect-evidence` → specialist → `vre-teach-answer`
+- Skills: `vre-coach-router` → evidence (`vre-collect-evidence` or `driver_lab.py`) → specialist → `vre-teach-answer`
+- Session analysis CLI: `python external/query_tools/driver_lab.py {controls,coast,corner,lines,sim,compare,style}`
+
+## Analysis terms
+
+| Term | Meaning |
+|------|---------|
+| **Pass** | One car's trip through one corner on one lap |
+| **Fast/slow quarter** | Fastest/slowest 25% of passes through a corner by section time |
+| **Coast (while turning)** | Brake < 5% and throttle < 5% with steering; classified A save / B rotation wait / C pedal swap / D lift |
+| **Pedal gap** | Brake-off → throttle-on time; the most common upstream cause of late throttle |
+| **Re-steer** | Steering added after the apex — car not pointed |
+| **Station** | Fixed track-metre point used to compare passes (10–20 m apart) |
+| **Transition loss** | Real median lap − sim at the same grip |
+| **Driver profile** | `ac_app/data/driver_profile.json`: per-session style metrics, labels, stated preferences |
+| **Pace-first verdict** | A setup change is good only if it is faster (or equal and preferred); stable-but-slower fails |
 
 Dynamics vocabulary: [docs/coach/dynamics-glossary.md](docs/coach/dynamics-glossary.md).

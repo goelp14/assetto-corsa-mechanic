@@ -2,9 +2,11 @@
 
 [![CI](https://github.com/goelp14/assetto-corsa-mechanic/actions/workflows/ci.yml/badge.svg)](https://github.com/goelp14/assetto-corsa-mechanic/actions/workflows/ci.yml)
 
-In-game **Assetto Corsa** coach and setup engineer for **RSS Formula Hybrid X 2026**. Learns your baseline, separates driver error from setup flaws, writes setup tweaks, and archives telemetry for offline replay.
+In-game **Assetto Corsa** coach and setup engineer. Learns your baseline per car and track layout, separates driver error from setup flaws, writes setup tweaks, and archives telemetry for offline replay.
 
-**Requires:** Assetto Corsa, **CSP**, **Content Manager**, RSS FH X 2026.
+Setup profiles ship for the **RSS Formula Hybrid X 2026** and **Ferrari 312/67**; add any other car with `tools/extract_car_profile.py` (see [docs/USAGE.md](docs/USAGE.md)). Named-corner configs ship for Monaco, Monza and Sonoma (Long).
+
+**Requires:** Assetto Corsa, **CSP**, **Content Manager**.
 
 ---
 

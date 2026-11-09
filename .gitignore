@@ -12,6 +12,7 @@ ac_app/data/grip_map/**
 **/laps/
 **/setup_memory/
 .tmp_setup.ini
+.tmp_*/
 dist/
 exports/
 replay-viewer/node_modules/

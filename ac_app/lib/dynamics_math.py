@@ -45,13 +45,18 @@ class DynamicsMath(object):
         self.K = car_config.get("understeer_gradient_K", self.K)
 
     def _body_velocity(self, velocity, heading):
+        """World velocity (x, y up, z) -> (forward, rightward) in m/s.
+
+        AC heading points the car along world (-sin h, cos h) in the x/z plane
+        and increases when turning right.
+        """
         vx_w = velocity[0]
-        vy_w = velocity[1]
-        c = math.cos(-heading)
-        s = math.sin(-heading)
-        vx = vx_w * c - vy_w * s
-        vy = vx_w * s + vy_w * c
-        return vx, vy
+        vz_w = velocity[2] if len(velocity) > 2 else 0.0
+        s = math.sin(heading)
+        c = math.cos(heading)
+        forward = -vx_w * s + vz_w * c
+        right = -vx_w * c - vz_w * s
+        return forward, right
 
     def _push_ring(self, value):
         self._yaw_accel_ring[self._ring_idx] = value
@@ -70,7 +75,9 @@ class DynamicsMath(object):
         else:
             st.beta = 0.0
 
-        steer = frame.steer
+        # Lateral axis, steer and yaw rate are all + to the right, so the
+        # textbook (left-positive) bicycle relations hold unchanged.
+        steer = getattr(frame, "steer_road", 0.0)
         if abs(st.vx) > 1.0:
             st.alpha_f = (st.vy + self.l_f * frame.yaw_rate) / st.vx - steer
             st.alpha_r = (st.vy - self.l_r * frame.yaw_rate) / st.vx
@@ -78,7 +85,7 @@ class DynamicsMath(object):
             st.alpha_f = 0.0
             st.alpha_r = 0.0
 
-        ay = frame.acc_g[1] * 9.81
+        ay = abs(frame.acc_g[1]) * 9.81
         denom = 1.0 + self.K * ay
         if abs(denom) < 1e-6:
             denom = 1e-6

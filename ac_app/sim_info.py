@@ -81,6 +81,43 @@ class SPageFilePhysics(ctypes.Structure):
     ]
 
 
+class SPageFilePhysicsExt(ctypes.Structure):
+    _pack_ = 4
+    _fields_ = SPageFilePhysics._fields_ + [
+        ('kersCharge', c_float),
+        ('kersInput', c_float),
+        ('autoShifterOn', c_int32),
+        ('rideHeight', c_float * 2),
+        ('turboBoost', c_float),
+        ('ballast', c_float),
+        ('airDensity', c_float),
+        ('airTemp', c_float),
+        ('roadTemp', c_float),
+        ('localAngularVel', c_float * 3),
+        ('finalFF', c_float),
+        ('performanceMeter', c_float),
+        ('engineBrake', c_int32),
+        ('ersRecoveryLevel', c_int32),
+        ('ersPowerLevel', c_int32),
+        ('ersHeatCharging', c_int32),
+        ('ersIsCharging', c_int32),
+        ('kersCurrentKJ', c_float),
+        ('drsAvailable', c_int32),
+        ('drsEnabled', c_int32),
+        ('brakeTemp', c_float * 4),
+        ('clutch', c_float),
+        ('tyreTempI', c_float * 4),
+        ('tyreTempM', c_float * 4),
+        ('tyreTempO', c_float * 4),
+        ('isAIControlled', c_int32),
+        ('tyreContactPoint', (c_float * 3) * 4),
+        ('tyreContactNormal', (c_float * 3) * 4),
+        ('tyreContactHeading', (c_float * 3) * 4),
+        ('brakeBias', c_float),
+        ('localVelocity', c_float * 3),
+    ]
+
+
 class SPageFileGraphic(ctypes.Structure):
     _pack_ = 4
     _fields_ = [
@@ -137,10 +174,14 @@ class SPageFileStatic(ctypes.Structure):
 
 class SimInfo:
     def __init__(self):
-        self._acpmf_physics = mmap.mmap(0, ctypes.sizeof(SPageFilePhysics), "acpmf_physics")
+        try:
+            self._acpmf_physics = mmap.mmap(0, ctypes.sizeof(SPageFilePhysicsExt), "acpmf_physics")
+            self.physics = SPageFilePhysicsExt.from_buffer(self._acpmf_physics)
+        except (OSError, ValueError):
+            self._acpmf_physics = mmap.mmap(0, ctypes.sizeof(SPageFilePhysics), "acpmf_physics")
+            self.physics = SPageFilePhysics.from_buffer(self._acpmf_physics)
         self._acpmf_graphics = mmap.mmap(0, ctypes.sizeof(SPageFileGraphic), "acpmf_graphics")
         self._acpmf_static = mmap.mmap(0, ctypes.sizeof(SPageFileStatic), "acpmf_static")
-        self.physics = SPageFilePhysics.from_buffer(self._acpmf_physics)
         self.graphics = SPageFileGraphic.from_buffer(self._acpmf_graphics)
         self.static = SPageFileStatic.from_buffer(self._acpmf_static)
 

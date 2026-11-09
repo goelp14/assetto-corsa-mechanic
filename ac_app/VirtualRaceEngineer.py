@@ -152,9 +152,18 @@ _SURFACE_SYMPTOMS = frozenset((
 ))
 _thresholds = {}
 _car_cfg = {}
+_car_id = ""
+_DEFAULT_CAR_ID = "rss_formula_hybrid_x_2026"
+_GENERIC_CAR = {
+    "wheelbase_m": 2.6, "cg_to_front_axle_m": 1.3, "cg_to_rear_axle_m": 1.3,
+    "understeer_gradient_K": 0.005, "max_yaw_rate_rad_s": 1.2,
+    "max_road_wheel_deg": 20.0, "lat_g_base": 1.5, "lat_g_per_ms": 0.0,
+}
 _track_folder = "generic"
 _initialized = False
 _last_track = ""
+_combo = None
+_store_key = ""
 _lap_time_ms = 0
 _last_setup_note = None
 _pit_tweak_queue = []
@@ -185,8 +194,57 @@ _last_volatility_phase = PHASE_LEARNING
 
 
 def _resolve_track_folder(track_name, track_cfg=None):
-    car_id = _car_cfg.get("car_id", "rss_formula_hybrid_x_2026") if _car_cfg else None
+    car_id = _car_cfg.get("car_id", _DEFAULT_CAR_ID) if _car_cfg else None
     return resolve_track_setup_folder(track_name, track_cfg=track_cfg, car_id=car_id)
+
+
+def _track_key(track, layout=""):
+    return "%s-%s" % (track, layout) if layout else track
+
+
+def _make_store_key(track_key, car_id):
+    """Learned data is per car + layout; the default car keeps its historical per-track files."""
+    if not car_id or car_id == _DEFAULT_CAR_ID:
+        return track_key
+    return "%s__%s" % (track_key, car_id)
+
+
+def _car_profile_path(car_id):
+    return _config_path(os.path.join("cars", "%s.json" % car_id))
+
+
+def _load_car(car_id):
+    """Switch every car-dependent module to this car. Unknown cars coach without setup writes."""
+    global _car_cfg, _car_id
+    profile = dict(_GENERIC_CAR)
+    profile.update(_load_json(_car_profile_path(car_id), {}))
+    if not profile.get("levers"):
+        profile.update({"car_id": car_id, "levers": [], "profile_missing": True})
+        profile.setdefault("display_name", car_id)
+    _car_cfg = profile
+    _car_id = car_id
+    _catalog.load_car_profile(profile)
+    if _ingest is not None:
+        _ingest.set_steer_range(profile.get("max_road_wheel_deg"))
+    _dynamics.load_car_config(profile)
+    _balance.load_car_config(profile)
+    _setup_writer.car_id = car_id
+    _setup_writer._active_setups_root = None
+    _line_analyzer.set_car_profile(LineStrategyEngine.load_car_profile(
+        _config_path("car_line_profiles.json"), car_id,
+    ))
+    _tyre_tracker.set_car_windows(
+        profile.get("tyre_window"), profile.get("tyre_windows_by_compound"),
+    )
+
+
+def _load_track_config(track, layout):
+    for name in (_track_key(track, layout), track):
+        path = _config_path(os.path.join("tracks", name.replace(" ", "_").lower() + ".json"))
+        if os.path.isfile(path):
+            return _load_json(path, {})
+    return {"track_id": _track_key(track, layout), "display_name": track,
+            "setup_folder": track, "corners": [], "generic": True}
 
 
 def _find_base_setup(track_folder):
@@ -211,11 +269,23 @@ def _apply_remaining_bootstrap(frame, limit=None, force_immediate=False):
         hint = _track_profile.next_bootstrap_hint()
         if hint is None:
             break
-        if _apply_bootstrap_hint(hint, frame, force_immediate=force_immediate):
+        result = _apply_bootstrap_hint(hint, frame, force_immediate=force_immediate)
+        if result is None:
+            continue
+        if result:
             applied += 1
         else:
             break
     return applied
+
+
+def _bootstrap_already_applied(section):
+    if _setup_memory is None:
+        return False
+    for rec in _setup_memory.tweaks:
+        if rec.get("symptom") == "bootstrap" and rec.get("parameter") == section:
+            return True
+    return False
 
 
 def _read_setup_values(ini_path):
@@ -251,7 +321,7 @@ def _init_modules():
         return
 
     _thresholds = _load_json(_config_path("thresholds.json"), {})
-    _car_cfg = _load_json(_config_path("car_rss_fh_x_2026.json"), {})
+    _car_cfg = _load_json(_car_profile_path(_DEFAULT_CAR_ID), {})
 
     _ingest = TelemetryIngest(info)
     _spline = SplineIndexer()
@@ -271,7 +341,7 @@ def _init_modules():
     _corner_investigator = CornerInvestigator(_thresholds)
     _driver_clf = DriverClassifier(_thresholds, investigator=_corner_investigator)
     _catalog = SetupCatalog(
-        _config_path("car_rss_fh_x_2026.json"),
+        _car_profile_path(_DEFAULT_CAR_ID),
         _config_path("setup_symptom_map.json"),
     )
     _catalog.load_tradeoffs(_config_path("setup_tradeoffs.json"))
@@ -305,7 +375,7 @@ def _init_modules():
     _grip_map = GripMapStore(data_dir=_data_path("grip_map"), thresholds=_thresholds)
     _session_analyst = SessionAnalyst()
     _line_ref = LineReference(data_dir=_data_path("line_refs"))
-    car_id = _car_cfg.get("car_id", "rss_formula_hybrid_x_2026")
+    car_id = _car_cfg.get("car_id", _DEFAULT_CAR_ID)
     car_line = LineStrategyEngine.load_car_profile(
         _config_path("car_line_profiles.json"), car_id,
     )
@@ -365,33 +435,31 @@ def _remember_setup_tweak(d0, source, why="", action="", corner=""):
     }
 
 
-def _save_session_phase(track_name=None):
-    track = track_name or _last_track
-    if not track or _session_phase is None or _volatility is None:
+def _save_session_phase(store_key=None):
+    key = store_key or _store_key
+    if not key or _session_phase is None or _volatility is None:
         return
     _session_phase.save(
-        track, _volatility.phase,
+        key, _volatility.phase,
         _volatility.clean_laps, _volatility.total_laps,
     )
 
 
-def _load_track(track_name):
-    global _track_folder, _lap_analyzer, _track_profile, _volatility
+def _load_track(track_name, layout="", spline_length_m=0.0):
+    global _track_folder, _lap_analyzer, _track_profile, _volatility, _store_key
     global _gg_envelope, _corner_metrics, _active_tyre_symptoms, _lap_corner_summaries
     global _session_flying_laps, _session_best_lap_ms, _shift_corner_counts
     global _pit_tweak_queue
-    safe = track_name.replace(" ", "_").lower()
-    path = _config_path(os.path.join("tracks", safe + ".json"))
-    if not os.path.isfile(path):
-        path = _config_path("tracks/monza.json")
-    cfg = _load_json(path, {})
+    cfg = _load_track_config(track_name, layout)
+    store_key = _make_store_key(_track_key(track_name, layout), _car_id or _DEFAULT_CAR_ID)
+    _store_key = store_key
     _spline.load_config(cfg)
     _track_folder = _resolve_track_folder(track_name, cfg)
-    _track_profile = _track_profiles.resolve(track_name)
+    _track_profile = _track_profiles.resolve(track_name, layout)
     _track_profile.reset_bootstrap()
-    _baselines.load(track_name)
+    _baselines.load(store_key)
     phase_state = _session_phase.load(
-        track_name, baseline_sample_total=_baselines.sample_total(),
+        store_key, baseline_sample_total=_baselines.sample_total(),
     )
     _volatility.phase = phase_state["phase"]
     _volatility.clean_laps = phase_state["clean_laps"]
@@ -403,18 +471,20 @@ def _load_track(track_name):
     if _shift_analyzer is not None:
         _shift_analyzer.spline_indexer = _spline
         _shift_analyzer.reset_lap()
-    _lap_analyzer.track_length_m = cfg.get("length_m", 5793)
+    _lap_analyzer.track_length_m = cfg.get("length_m") or spline_length_m or 5000
     _lap_analyzer.spline_indexer = _spline
     _corner_phases.spline_indexer = _spline
-    _setup_memory.load(track_name)
+    _setup_memory.load(store_key)
     _restore_last_setup_note()
     if _setup_writer is not None:
         _setup_writer._active_setups_root = None
     if _archive is not None:
-        car_id = _car_cfg.get("car_id", "rss_formula_hybrid_x_2026") if _car_cfg else None
+        car_id = _car_cfg.get("car_id", _DEFAULT_CAR_ID) if _car_cfg else None
         _archive.append_record({
             "record_type": "setup_path_probe",
             "track": track_name,
+            "track_config": layout,
+            "car": car_id,
             "track_folder": _track_folder,
             "probe": probe_setup_paths(_track_folder, car_id=car_id),
             "base_ini": _find_base_setup(_track_folder) or "",
@@ -422,14 +492,14 @@ def _load_track(track_name):
     if _gg_envelope is not None:
         _gg_envelope.reset()
     if _grip_map is not None:
-        _grip_map.load(track_name)
+        _grip_map.load(store_key)
     if _corner_metrics is not None:
         _corner_metrics.reset_lap()
     _active_tyre_symptoms = []
     _lap_corner_summaries = {}
     _pit_tweak_queue = []
     if _line_ref is not None:
-        _line_ref.load(track_name)
+        _line_ref.load(store_key)
 
 
 def _handle_shift_event(event):
@@ -850,16 +920,19 @@ def _apply_setup_delta(d0, frame, corner="", phase="", symptom="", notify=True,
 
 
 def _apply_bootstrap_hint(hint, frame, force_immediate=False):
+    """True = applied, False = failed (stop), None = skipped (car lacks lever / already applied)."""
+    section = _catalog.resolve_section(hint["section"])
+    if _catalog.lever(section) is None or _bootstrap_already_applied(section):
+        return None
     base_ini = _find_base_setup(_track_folder)
     out_ini = _setup_writer.resolve_output_path(_track_folder)
     values = _read_setup_values(
         out_ini if os.path.isfile(out_ini) else base_ini
     )
-    section = hint["section"]
     cur = values.get(section, 0)
-    delta, new_val = _catalog.validate_delta(section, cur, hint["delta"])
+    delta, new_val = _catalog.validate_delta(section, cur, _catalog.item_delta(hint, section))
     if delta == 0:
-        return False
+        return None
     d0 = SetupDelta(
         section, delta, hint.get("reason", ""),
         tier="A", old_value=cur, new_value=new_val,
@@ -1261,7 +1334,7 @@ def _on_lap_complete(lap, frame, lap_type=LAP_FLYING):
         _lap_time_ms, _lap_analyzer._lap_bucket_speed, counted=counted,
     )
     if counted:
-        _baselines.save(frame.track, async_write=True)
+        _baselines.save(_store_key, async_write=True)
 
     clean, target = _volatility.learning_progress()
     if counted and _volatility.phase == PHASE_BASELINE_READY and prev_phase == PHASE_LEARNING:
@@ -1282,7 +1355,7 @@ def _on_lap_complete(lap, frame, lap_type=LAP_FLYING):
 
     _last_volatility_phase = _volatility.phase
     if counted:
-        _save_session_phase(frame.track)
+        _save_session_phase()
 
     _sync_tyre_compound()
     tyre_diagnoses = _tyre_tracker.finish_lap() if counted else []
@@ -1295,6 +1368,7 @@ def _on_lap_complete(lap, frame, lap_type=LAP_FLYING):
     _archive.flush_lap(
         lap, _lap_time_ms,
         setup_snapshot=_read_setup_values(out_ini),
+        setup_source=os.path.basename(out_ini) if out_ini else "",
         driving_style={
             "aggression": tyre_style.get("aggression", min(1.0, abs(_dynamics.beta_deg()) / 25.0)),
             "consistency": tyre_style.get("consistency", max(0.0, 1.0 - _lap_analyzer.consistency_sigma_ms() / 2000.0)),
@@ -1744,7 +1818,7 @@ def acMain(ac_version):
 
 
 def _shutdown():
-    global _initialized, _archive, _baselines, _setup_memory, _last_track, _pit_tweak_queue
+    global _initialized, _archive, _baselines, _setup_memory, _last_track, _pit_tweak_queue, _combo
     if _archive is not None and _archive.session_dir:
         try:
             phase = _volatility.phase if _volatility is not None else "LEARNING"
@@ -1754,9 +1828,9 @@ def _shutdown():
         except Exception:
             pass
     _save_session_phase()
-    if _baselines is not None and _last_track:
+    if _baselines is not None and _store_key:
         try:
-            _baselines.save(_last_track)
+            _baselines.save(_store_key)
         except Exception:
             pass
     if _setup_memory is not None:
@@ -1771,6 +1845,7 @@ def _shutdown():
             pass
     _initialized = False
     _last_track = ""
+    _combo = None
     _pit_tweak_queue = []
 
 
@@ -1784,22 +1859,33 @@ def acShutdown():
 
 
 def acUpdate(deltaT):
-    global _last_track, _track_folder, _session_flying_laps, _session_best_lap_ms
+    global _last_track, _track_folder, _session_flying_laps, _session_best_lap_ms, _combo
 
     if not _initialized:
         _init_modules()
 
     frame = _ingest.sample(deltaT)
 
-    if frame.track and frame.track != _last_track:
+    combo = (frame.car, frame.track, frame.track_config)
+    if frame.track and combo != _combo:
+        if _combo is not None:
+            _save_session_phase()
+            _baselines.save(_store_key)
+            _setup_memory.save()
+            if _grip_map is not None:
+                _grip_map.save()
+        _combo = combo
         _last_track = frame.track
-        _load_track(frame.track)
+        _load_car(frame.car or _DEFAULT_CAR_ID)
+        _load_track(frame.track, frame.track_config, frame.track_length_m)
         _session_flying_laps = 0
         _session_best_lap_ms = 0
-        _archive.start_session(frame.track, frame.car, _volatility.phase)
+        _archive.start_session(frame.track, frame.car, _volatility.phase,
+                               track_config=frame.track_config)
         _apply_remaining_bootstrap(frame)
     elif frame.track and _archive is not None and _archive.session_dir is None:
-        _archive.start_session(frame.track, frame.car, _volatility.phase)
+        _archive.start_session(frame.track, frame.car, _volatility.phase,
+                               track_config=frame.track_config)
 
     bucket = _spline.bin(frame.spline)
     corner = _spline.corner_name(frame.spline)

@@ -12,6 +12,19 @@
       "steer": "progressive_steer"
     }
   },
+  "ks_ferrari_312_67": {
+    "display_name": "Ferrari 312/67",
+    "downforce_class": "none",
+    "mass_class": "light",
+    "line_bias": "v_line_exit",
+    "min_speed_priority": 0.55,
+    "trail_brake_style": "rotation_creator",
+    "technique_keys": {
+      "brake": "trail_brake",
+      "throttle": "patience_throttle",
+      "steer": "progressive_steer"
+    }
+  },
   "gt3_generic": {
     "display_name": "GT3 (reference)",
     "downforce_class": "medium",
@@ -23,6 +36,19 @@
       "brake": "trail_brake",
       "throttle": "early_throttle_vline",
       "steer": "minimal_steer"
+    }
+  },
+  "default": {
+    "display_name": "Generic car",
+    "downforce_class": "medium",
+    "mass_class": "medium",
+    "line_bias": "v_line_exit",
+    "min_speed_priority": 0.5,
+    "trail_brake_style": "rotation_creator",
+    "technique_keys": {
+      "brake": "trail_brake",
+      "throttle": "patience_throttle",
+      "steer": "progressive_steer"
     }
   }
 }

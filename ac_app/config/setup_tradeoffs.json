@@ -4,24 +4,24 @@
       "mid_oversteer": [
         {
           "deltas": [
-            {"section": "WING_0", "delta": -1},
-            {"section": "ARB_REAR", "delta": -5000}
+            {"section": "WING_0", "steps": -1},
+            {"section": "ARB_REAR", "steps": -1}
           ],
           "reason": "Rear wing at max — reduce front wing and soften rear ARB to rebalance"
         },
         {
           "deltas": [
-            {"section": "FRONT_BIAS", "delta": -1},
+            {"section": "FRONT_BIAS", "steps": 1},
             {"section": "DIFF_PRELOAD", "delta": 10}
           ],
-          "reason": "Rear wing at max — shift brake bias forward and add diff preload"
+          "reason": "Rear wing at max — brake bias forward and add diff preload"
         }
       ],
       "exit_oversteer": [
         {
           "deltas": [
-            {"section": "WING_0", "delta": -1},
-            {"section": "CUSTOM_SCRIPT_ITEM_6", "delta": 1}
+            {"section": "WING_0", "steps": -1},
+            {"section": "DIFF_EXIT", "steps": 1}
           ],
           "reason": "Rear wing at max — less front aero, more diff exit lock for traction"
         }
@@ -29,7 +29,7 @@
       "high_speed_instability": [
         {
           "deltas": [
-            {"section": "WING_0", "delta": -1}
+            {"section": "WING_0", "steps": -1}
           ],
           "reason": "Rear wing at max — trim front wing to balance high-speed aero"
         }
@@ -41,17 +41,17 @@
       "mid_understeer": [
         {
           "deltas": [
-            {"section": "ARB_FRONT", "delta": -10000},
-            {"section": "FRONT_BIAS", "delta": -1}
+            {"section": "ARB_FRONT", "steps": -1},
+            {"section": "FRONT_BIAS", "steps": -1}
           ],
-          "reason": "Front wing at max — soften front ARB and shift bias forward"
+          "reason": "Front wing at max — soften front ARB and move brake bias rearward"
         }
       ],
       "entry_understeer": [
         {
           "deltas": [
-            {"section": "FRONT_BIAS", "delta": -2},
-            {"section": "ARB_FRONT", "delta": -10000}
+            {"section": "FRONT_BIAS", "steps": -2},
+            {"section": "ARB_FRONT", "steps": -1}
           ],
           "reason": "Front wing at max — mechanical front grip via bias and ARB"
         }
@@ -61,7 +61,7 @@
       "high_speed_instability": [
         {
           "deltas": [
-            {"section": "WING_1", "delta": 5}
+            {"section": "WING_1", "steps": 1}
           ],
           "reason": "Front wing at min — add rear wing for high-speed stability"
         }
@@ -73,10 +73,17 @@
       "mid_understeer": [
         {
           "deltas": [
-            {"section": "WING_0", "delta": 1},
-            {"section": "CAMBER_LF", "delta": -1}
+            {"section": "WING_0", "steps": 1},
+            {"section": "CAMBER_LF", "steps": -1},
+            {"section": "CAMBER_RF", "steps": -1}
           ],
           "reason": "Front ARB at softest — add front wing and camber"
+        },
+        {
+          "deltas": [
+            {"section": "ARB_REAR", "steps": 1}
+          ],
+          "reason": "Front ARB at softest — stiffen rear ARB to rebalance toward the front"
         }
       ]
     },
@@ -84,8 +91,8 @@
       "entry_oversteer": [
         {
           "deltas": [
-            {"section": "ARB_REAR", "delta": 5000},
-            {"section": "WING_1", "delta": 5}
+            {"section": "ARB_REAR", "steps": 1},
+            {"section": "WING_1", "steps": 1}
           ],
           "reason": "Front ARB at stiffest — stiffen rear ARB and add rear wing"
         }
@@ -97,10 +104,16 @@
       "mid_oversteer": [
         {
           "deltas": [
-            {"section": "WING_1", "delta": 5},
+            {"section": "WING_1", "steps": 1},
             {"section": "DIFF_PRELOAD", "delta": 10}
           ],
           "reason": "Rear ARB at softest — rear wing and diff preload for stability"
+        },
+        {
+          "deltas": [
+            {"section": "ARB_FRONT", "steps": 1}
+          ],
+          "reason": "Rear ARB at softest — stiffen front ARB to rebalance toward the rear"
         }
       ]
     }

@@ -17,21 +17,9 @@
         "bootstrap_after_laps": 2
       },
       "bootstrap_hints": [
-        {
-          "section": "WING_0",
-          "delta": 2,
-          "reason": "Monaco needs high front downforce for rotation in slow corners"
-        },
-        {
-          "section": "WING_1",
-          "delta": 2,
-          "reason": "Monaco needs high rear downforce for traction and stability"
-        },
-        {
-          "section": "FRONT_BIAS",
-          "delta": -1,
-          "reason": "Forward brake bias helps short Monaco braking zones"
-        }
+        {"section": "WING_0", "steps": 2, "reason": "Monaco needs high front downforce for rotation in slow corners"},
+        {"section": "WING_1", "steps": 2, "reason": "Monaco needs high rear downforce for traction and stability"},
+        {"section": "FRONT_BIAS", "steps": -1, "reason": "Slightly rearward brake bias helps rotation into Monaco's tight corners"}
       ]
     },
     "monza": {
@@ -50,21 +38,9 @@
         "bootstrap_after_laps": 3
       },
       "bootstrap_hints": [
-        {
-          "section": "WING_0",
-          "delta": -1,
-          "reason": "Monza rewards lower front wing for straight speed"
-        },
-        {
-          "section": "WING_1",
-          "delta": -1,
-          "reason": "Reduce rear wing drag on long straights"
-        },
-        {
-          "section": "FRONT_BIAS",
-          "delta": 1,
-          "reason": "Rearward bias stabilizes heavy braking from high speed"
-        }
+        {"section": "WING_0", "steps": -1, "reason": "Monza rewards lower front wing for straight speed"},
+        {"section": "WING_1", "steps": -1, "reason": "Reduce rear wing drag on long straights"},
+        {"section": "FRONT_BIAS", "steps": 1, "reason": "Forward brake bias stabilizes heavy braking from high speed"}
       ]
     },
     "spa": {
@@ -83,16 +59,27 @@
         "bootstrap_after_laps": 2
       },
       "bootstrap_hints": [
-        {
-          "section": "WING_1",
-          "delta": 1,
-          "reason": "Spa high-speed sweepers need rear stability"
-        },
-        {
-          "section": "ARB_REAR",
-          "delta": -5000,
-          "reason": "Softer rear ARB over Spa kerbs and compressions"
-        }
+        {"section": "WING_1", "steps": 1, "reason": "Spa high-speed sweepers need rear stability"},
+        {"section": "ARB_REAR", "steps": -1, "reason": "Softer rear ARB over Spa kerbs and compressions"}
+      ]
+    },
+    "sonoma": {
+      "aliases": ["rt_sonoma", "rt_sonoma-long", "rt_sonoma-wtcc", "rt_sonoma-indy", "rt_sonoma-nascar", "sonoma", "sears_point"],
+      "display_name": "Sonoma Raceway",
+      "traits_summary": "Hilly, bumpy, off-camber road course — two slow hairpins (T7, T11) decide exit speed onto the longest straights.",
+      "character": {
+        "downforce_demand": "medium",
+        "kerb_severity": "high",
+        "corner_density": "high",
+        "straight_share": 0.22,
+        "typical_balance": "rear_limited_exit"
+      },
+      "learning": {
+        "clean_fraction": 0.60,
+        "bootstrap_after_laps": 2
+      },
+      "bootstrap_hints": [
+        {"section": "WING_1", "steps": 1, "reason": "Rear stability for traction out of the T7 and T11 hairpins"}
       ]
     },
     "balanced": {
@@ -111,16 +98,8 @@
         "bootstrap_after_laps": 3
       },
       "bootstrap_hints": [
-        {
-          "section": "WING_0",
-          "delta": 1,
-          "reason": "Baseline front downforce increase for driveability"
-        },
-        {
-          "section": "WING_1",
-          "delta": 1,
-          "reason": "Baseline rear downforce for stability"
-        }
+        {"section": "WING_0", "steps": 1, "reason": "Baseline front downforce increase for driveability"},
+        {"section": "WING_1", "steps": 1, "reason": "Baseline rear downforce for stability"}
       ]
     }
   }

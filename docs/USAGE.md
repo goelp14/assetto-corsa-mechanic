@@ -146,12 +146,21 @@ python3 -m pytest tests/ -q
 ./deploy/sync.sh               # one-shot redeploy
 ```
 
-Regenerate setup catalog after unpacking the car's `data.acd`:
+Add a car (or regenerate one) from its `data.acd`, no extra packages needed:
 
 ```bash
-pip install git+https://github.com/PhilippKosarev/acd.git
-python tools/extract_setup_catalog.py --acd path/to/data.acd --out ac_app/config/car_rss_fh_x_2026.json
+python tools/extract_car_profile.py ks_ferrari_312_67     # writes ac_app/config/cars/<car_id>.json
 ```
+
+Add a track layout from its AI line (corners come from where the AI slows down; check the `--dry-run` list, then name them):
+
+```bash
+python tools/build_track_config.py rt_sonoma --layout long --dry-run
+python tools/build_track_config.py rt_sonoma --layout long --names "Turn 2,Turn 3,..."
+python external/query_tools/build_track_geometry.py --track rt_sonoma-long   # replay map
+```
+
+Cars without a profile still get driving coaching, but no setup changes. Tracks without a `config/tracks/<track>-<layout>.json` get coaching without named corners. Learned data (baselines, phase, line references) is stored per car and layout.
 
 Replay viewer dev server: `cd replay-viewer && npm run dev` (serve bundles via `./replay.sh`).
 

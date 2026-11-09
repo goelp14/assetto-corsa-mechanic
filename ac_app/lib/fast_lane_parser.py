@@ -60,6 +60,9 @@ def parse_fast_lane(path):
     centerline = []
     left_limit = []
     right_limit = []
+    distance_m = []
+    elevation_m = []
+    ai_speed = []
     cumulative = 0.0
 
     for i in range(n):
@@ -88,6 +91,9 @@ def parse_fast_lane(path):
         centerline.append([round(cx, 2), round(cz, 2)])
         left_limit.append([round(cx + nx * sl, 2), round(cz + nz * sl, 2)])
         right_limit.append([round(cx - nx * sr, 2), round(cz - nz * sr, 2)])
+        distance_m.append(cumulative)
+        elevation_m.append(cy)
+        ai_speed.append(ex["speed"])
 
     return {
         "version": version,
@@ -96,4 +102,7 @@ def parse_fast_lane(path):
         "left_limit": left_limit,
         "right_limit": right_limit,
         "cumulative_length_m": round(cumulative, 1),
+        "distance_m": distance_m,
+        "elevation_m": elevation_m,
+        "ai_speed": ai_speed,
     }

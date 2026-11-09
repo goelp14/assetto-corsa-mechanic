@@ -6,10 +6,13 @@ import os
 import re
 
 
+_MIRROR = {"LF": "RF", "RF": "LF", "LR": "RR", "RR": "LR"}
+
+
 class SetupLever(object):
     __slots__ = (
         "section", "name", "tab", "tier", "min_val", "max_val",
-        "step", "default", "lever_id", "lut", "ext_controller",
+        "step", "default", "lever_id", "lut", "ext_controller", "encoding",
     )
 
     def __init__(self, data):
@@ -24,6 +27,7 @@ class SetupLever(object):
         self.lever_id = data.get("id")
         self.lut = data.get("lut")
         self.ext_controller = data.get("ext_controller")
+        self.encoding = data.get("encoding", "raw")
 
 
 class SetupCatalog(object):
@@ -46,7 +50,10 @@ class SetupCatalog(object):
 
     def load_car_config(self, path):
         with open(path, "r") as fh:
-            self.car_config = json.load(fh)
+            self.load_car_profile(json.load(fh))
+
+    def load_car_profile(self, profile):
+        self.car_config = profile or {}
         self.car_id = self.car_config.get("car_id", "")
         self.display_name = self.car_config.get("display_name", "")
         self.custom_script_id_map = self.car_config.get("custom_script_id_map", {})
@@ -84,6 +91,24 @@ class SetupCatalog(object):
             moves = bucket.get("any", [])
         return moves
 
+    def item_delta(self, item, section=None):
+        """Delta in setup-file units. `steps` = in-game clicks (car-agnostic); `delta` = raw units."""
+        if "steps" not in item:
+            return item.get("delta", 0)
+        lever = self.lever(self.resolve_section(section or item.get("section", "")))
+        step = lever.step if lever is not None and lever.step else 1
+        return item["steps"] * step
+
+    @staticmethod
+    def mirror_section(section):
+        """LF<->RF / LR<->RR counterpart for per-corner levers, else None."""
+        if section.startswith("PRESSURE_"):
+            return None
+        suffix = section[-2:]
+        if len(section) > 3 and section[-3] == "_" and suffix in _MIRROR:
+            return section[:-2] + _MIRROR[suffix]
+        return None
+
     def build_tradeoff_deltas(self, move, current_values):
         """Return list of (section, delta, new_val, reason) from a tradeoff move."""
         out = []
@@ -91,7 +116,7 @@ class SetupCatalog(object):
         for item in move.get("deltas", []):
             section = self.resolve_section(item.get("section", ""))
             cur = current_values.get(section, 0)
-            d, nv = self.validate_delta(section, cur, item.get("delta", 0))
+            d, nv = self.validate_delta(section, cur, self.item_delta(item, section))
             if d != 0:
                 out.append((section, d, nv, reason))
         return out
@@ -155,7 +180,7 @@ class SetupCatalog(object):
                 continue
             ranked.append({
                 "section": section,
-                "delta": item.get("delta", 0),
+                "delta": self.item_delta(item, section),
                 "tier": tier,
                 "reason": item.get("reason", ""),
                 "name": lever.name,
@@ -203,9 +228,9 @@ class SetupCatalog(object):
         return "%s: %s -> %s" % (name, old_value, new_value)
 
     @classmethod
-    def default_paths(cls):
+    def default_paths(cls, car_id="rss_formula_hybrid_x_2026"):
         base = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config")
         return (
-            os.path.join(base, "car_rss_fh_x_2026.json"),
+            os.path.join(base, "cars", "%s.json" % car_id),
             os.path.join(base, "setup_symptom_map.json"),
         )

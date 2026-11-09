@@ -32,14 +32,22 @@ class BalanceMetrics(object):
         self.wheelbase = 3.65
         self.K = 0.005
         self.max_yaw_rate = 1.2
+        self.lat_g_base = 1.5
+        self.lat_g_per_ms = 1.0 / 30.0
         self.thresholds = thresholds or {}
         self._k_history = []
         self._k_history_max = 30
         self._state = BalanceState()
         if car_config:
-            self.wheelbase = car_config.get("wheelbase_m", self.wheelbase)
-            self.K = car_config.get("understeer_gradient_K", self.K)
-            self.max_yaw_rate = car_config.get("max_yaw_rate_rad_s", self.max_yaw_rate)
+            self.load_car_config(car_config)
+
+    def load_car_config(self, car_config):
+        self.wheelbase = car_config.get("wheelbase_m", self.wheelbase)
+        self.K = car_config.get("understeer_gradient_K", self.K)
+        self.max_yaw_rate = car_config.get("max_yaw_rate_rad_s", self.max_yaw_rate)
+        self.lat_g_base = car_config.get("lat_g_base", self.lat_g_base)
+        self.lat_g_per_ms = car_config.get("lat_g_per_ms", self.lat_g_per_ms)
+        self._k_history = []
 
     def _thresh(self, key, default):
         return self.thresholds.get(key, default)
@@ -47,7 +55,7 @@ class BalanceMetrics(object):
     def _ay_max(self, speed_ms):
         if speed_ms < 5.0:
             return G * 4.0
-        lat_g_cap = min(6.0, 1.5 + speed_ms / 30.0)
+        lat_g_cap = min(6.0, self.lat_g_base + speed_ms * self.lat_g_per_ms)
         return lat_g_cap * G
 
     def update(self, frame, dynamics_state):
@@ -68,9 +76,12 @@ class BalanceMetrics(object):
             st.delta_ack = self.wheelbase * ay / (vx * vx)
         else:
             st.delta_ack = 0.0
-        st.delta_us = frame.steer - st.delta_ack
+        # Positive = understeer in either turn direction.
+        turn = 1.0 if ay >= 0 else -1.0
+        steer_road = getattr(frame, "steer_road", 0.0)
+        st.delta_us = turn * (steer_road - st.delta_ack)
 
-        st.alpha_slip_balance = dynamics_state.alpha_f - dynamics_state.alpha_r
+        st.alpha_slip_balance = turn * (dynamics_state.alpha_f - dynamics_state.alpha_r)
         slip = frame.slip
         front_slip = (slip[0] + slip[1]) * 0.5
         rear_slip = (slip[2] + slip[3]) * 0.5
@@ -91,7 +102,7 @@ class BalanceMetrics(object):
             st.ay_efficiency = 1.0
 
         if abs(ay) > 0.5:
-            k_sample = st.delta_us / ay
+            k_sample = st.delta_us / abs(ay)
             self._k_history.append(k_sample)
             if len(self._k_history) > self._k_history_max:
                 self._k_history.pop(0)

@@ -200,7 +200,7 @@ export const TrackMap = forwardRef<TrackMapHandle, Props>(function TrackMap(
     [],
   );
 
-  const transform = `translate(${W / 2}, ${H / 2}) scale(${vp.scale}, ${-vp.scale}) translate(${-vp.cx}, ${-vp.cz})`;
+  const transform = `translate(${W / 2}, ${H / 2}) scale(${vp.scale}, ${vp.scale}) translate(${-vp.cx}, ${-vp.cz})`;
 
   const plotSamples = useMemo(() => preparePlotSeries(samples), [samples]);
 

@@ -28,7 +28,7 @@ def thresholds(config_dir):
 @pytest.fixture
 def car_catalog(config_dir):
     from setup_catalog import SetupCatalog
-    car = os.path.join(config_dir, "car_rss_fh_x_2026.json")
+    car = os.path.join(config_dir, "cars", "rss_formula_hybrid_x_2026.json")
     sym = os.path.join(config_dir, "setup_symptom_map.json")
     return SetupCatalog(car, sym)
 

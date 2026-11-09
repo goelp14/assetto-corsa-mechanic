@@ -66,7 +66,7 @@ class LineStrategyEngine(object):
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
-            return data.get(car_id, data.get("rss_formula_hybrid_x_2026", {}))
+            return data.get(car_id) or data.get("default", {})
         except (IOError, ValueError):
             return {}
 

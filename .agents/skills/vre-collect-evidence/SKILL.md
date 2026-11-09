@@ -29,6 +29,19 @@ python -m external.query_tools.coach pack \
 - `session_plan.items` — drills
 - `sample_window` — playhead-scoped samples
 
+## Session-level evidence (no bundle needed)
+
+For root cause, lines, potential and live coaching, read session laps directly:
+
+```bash
+python external/query_tools/driver_lab.py coast|corner|lines|sim -s <session> [-s ...] --min-lap <a> --max-lap <b>
+python external/query_tools/driver_lab.py controls
+```
+
+- Filter laps by time to exclude spins/offs/out-laps; split groups at every controls or setup change.
+- `VRE_SESSIONS` / `VRE_AC_ROOT` / `VRE_AC_CONTROLS` override default paths.
+- Quote only numbers these commands print.
+
 ## Files
 
 - [evidence_pack.py](../../external/query_tools/coach/evidence_pack.py)

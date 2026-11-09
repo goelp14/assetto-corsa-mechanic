@@ -23,4 +23,4 @@ def test_monza_low_downforce():
     store = TrackProfileStore()
     prof = store.resolve("monza")
     assert prof.character["downforce_demand"] == "low"
-    assert prof.bootstrap_hints[0]["delta"] < 0
+    assert prof.bootstrap_hints[0]["steps"] < 0

@@ -19,6 +19,7 @@ from grip_map import GripMapStore
 from corner_investigator import CornerInvestigator
 from corner_phase_metrics import CornerPhaseMetrics
 from telemetry_ingest import TelemetryIngest
+from channel_repair import read_lap
 
 SESSIONS_ROOT = os.environ.get(
     "VRE_SESSIONS",
@@ -94,8 +95,7 @@ def root_cause_report(lap_paths, spline, thresholds, landmarks_map):
     inv = CornerInvestigator(thresholds)
     refs = {}
     for path in lap_paths:
-        with open(path) as fh:
-            d = json.load(fh)
+        d = read_lap(path)
         t = d.get("lap_time_ms", 0) / 1000.0
         if t < 79.5 or t > 84.0:
             continue
@@ -108,8 +108,7 @@ def root_cause_report(lap_paths, spline, thresholds, landmarks_map):
 
     print("\n## Root-cause investigation (evidence vs your best laps)\n")
     for path in lap_paths[-3:]:
-        with open(path) as fh:
-            d = json.load(fh)
+        d = read_lap(path)
         t = d.get("lap_time_ms", 0) / 1000.0
         label = "%s lap %s %.3fs" % (
             os.path.basename(os.path.dirname(os.path.dirname(path)))[-8:],
@@ -312,8 +311,7 @@ def main():
     all_spins = []
 
     for path in lap_files:
-        with open(path, "r") as fh:
-            data = json.load(fh)
+        data = read_lap(path)
         lap_num = data.get("lap", "?")
         sess = os.path.basename(os.path.dirname(os.path.dirname(path)))
         samples = data.get("samples", [])

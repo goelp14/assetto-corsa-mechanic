@@ -116,6 +116,7 @@ class BaselineStore(object):
 
     def load(self, track_id):
         self.track_id = track_id
+        self._baselines = [BaselineBucket() for _ in range(self.num_buckets)]
         path = self._path_for_track(track_id)
         if not os.path.isfile(path):
             return False

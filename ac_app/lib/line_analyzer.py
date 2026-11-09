@@ -16,6 +16,9 @@ class LineAnalyzer(object):
     def __init__(self, thresholds=None, car_profile=None, techniques=None):
         self._engine = LineStrategyEngine(thresholds, car_profile, techniques)
 
+    def set_car_profile(self, car_profile):
+        self._engine.car_profile = car_profile or {}
+
     @property
     def issue(self):
         return getattr(self._last, "template_key", None)

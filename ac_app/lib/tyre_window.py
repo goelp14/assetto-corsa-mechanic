@@ -70,6 +70,8 @@ class TyreWindowTracker(object):
         self.thresholds = thresholds or {}
         self._config = self._load_config(config_path)
         self._compound = "default"
+        self._car_window = {}
+        self._car_compounds = {}
         self._windows = dict(self._config.get("default", {}))
         self._tyres = [TyreSampleState() for _ in range(4)]
         self._stint_history = [[] for _ in range(4)]
@@ -93,13 +95,25 @@ class TyreWindowTracker(object):
         with open(cfg_path, "r") as fh:
             return json.load(fh)
 
+    def set_car_windows(self, default_window=None, by_compound=None):
+        """Car-specific windows derived from the car's tyre performance curves."""
+        self._car_window = dict(default_window or {})
+        self._car_compounds = dict(by_compound or {})
+        self._apply_window(self._compound)
+
     def set_compound(self, compound_name):
         if not compound_name:
             return
-        key = compound_name.strip().lower()
+        self._apply_window(compound_name.strip().lower())
+
+    def _apply_window(self, key):
         base = dict(self._config.get("default", {}))
-        overrides = self._config.get("compounds", {}).get(key, {})
-        base.update(overrides)
+        car_compounds = getattr(self, "_car_compounds", {})
+        if self._car_window or car_compounds:
+            base.update(self._car_window)
+            base.update(car_compounds.get(key, {}))
+        else:
+            base.update(self._config.get("compounds", {}).get(key, {}))
         self._compound = key
         self._windows = base
 

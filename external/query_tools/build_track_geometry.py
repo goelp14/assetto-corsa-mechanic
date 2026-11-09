@@ -29,7 +29,8 @@ def default_ac_root():
 
 def resolve_fast_lane(ac_root, track_config):
     folder = track_config.get("setup_folder", track_config.get("track_id", ""))
-    path = os.path.join(ac_root, "content", "tracks", folder, "ai", "fast_lane.ai")
+    layout = track_config.get("layout", "")
+    path = os.path.join(ac_root, "content", "tracks", folder, layout, "ai", "fast_lane.ai")
     if os.path.isfile(path):
         return path
     raise FileNotFoundError("fast_lane.ai not found at %s" % path)

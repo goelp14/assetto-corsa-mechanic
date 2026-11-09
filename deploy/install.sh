@@ -109,6 +109,9 @@ rsync_excludes() {
     echo --exclude 'data/setup_memory/*'
     echo --exclude 'data/sessions/*'
     echo --exclude 'data/grip_map/*'
+    echo --exclude 'data/line_refs/*'
+    echo --exclude 'data/session_phase/*'
+    echo --exclude 'data/import_error.log'
     echo --exclude 'data/engineer_voice.txt'
     echo --exclude '__pycache__'
     echo --exclude '*.pyc'
@@ -195,7 +198,7 @@ case "$MODE" in
     copy) install_copy ;;
 esac
 
-DATA_DIRS=(data/baselines data/setup_memory data/sessions data/grip_map)
+DATA_DIRS=(data/baselines data/setup_memory data/sessions data/grip_map data/line_refs data/session_phase)
 for d in "${DATA_DIRS[@]}"; do
     mkdir -p "${TARGET}/${d}"
 done
