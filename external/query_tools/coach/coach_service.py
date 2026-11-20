@@ -18,7 +18,7 @@ QUESTION_PATTERNS = {
     "technique": re.compile(r"\b(technique|drill|what should|how do i|fix|lose time|time loss|brake|throttle|apex|coast\w*|exit)\b", re.I),
     "mechanism": re.compile(r"\b(why|understeer|oversteer|grip|tyre|tire|aero|balance|mechanism|physics)\b", re.I),
     "stint": re.compile(r"\b(stint|session|summary|debrief|overall)\b", re.I),
-    "setup": re.compile(r"\b(setup|set-up|bias|diff|anti-?roll|arb|camber|toe|pressure|gearing|gamma|calibrat\w*)\b", re.I),
+    "setup": re.compile(r"\b(setup|set-up|bias|diff|anti-?roll|arb|camber|toe|pressure|gearing|gamma|calibrat\w*|damper\w*|rebound|spring\w*)\b", re.I),
     "line": re.compile(r"\b(line|turn-?in point|track-?out|more (left|right))\b", re.I),
 }
 

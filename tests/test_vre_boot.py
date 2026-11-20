@@ -213,3 +213,57 @@ def test_vre_switches_car_and_layout(vre, monkeypatch):
     assert vre._balance.lat_g_per_ms == 0.0
     assert abs(vre._ingest._max_road_wheel_rad - math.radians(22.5)) < 1e-9
     assert vre._tyre_tracker.ideal_temp_range() == (40, 110)
+
+
+def test_track_config_falls_back_when_ac_reports_no_layout(vre):
+    cfg = vre._load_track_config("rt_sonoma", "")
+    assert not cfg.get("generic") and len(cfg["corners"]) == 10
+    assert vre._load_track_config("rt_sonoma", "", 3974.0)["corners"] == cfg["corners"]
+    assert vre._load_track_config("no_such_track", "").get("generic")
+
+
+def test_pit_entry_applies_queued_tweak_once(vre, tmp_path, monkeypatch):
+    from lib.setup_detector import SetupDelta
+    info = sys.modules["sim_info"].info
+    monkeypatch.setattr(info.static, "carModel", "ks_ferrari_312_67", raising=False)
+    monkeypatch.setattr(info.static, "track", "rt_sonoma", raising=False)
+    monkeypatch.setattr(info.static, "trackConfiguration", "long", raising=False)
+    vre._initialized = False
+    vre.acMain(1)
+    vre.acUpdate(0.016)
+    folder = tmp_path / vre._track_folder
+    folder.mkdir(parents=True)
+    for name in ("Base.ini", "Auto_Tweak.ini"):
+        (folder / name).write_text("[DIFF_PRELOAD]\nVALUE=10\n\n[CAR]\nMODEL=ks_ferrari_312_67\n")
+    monkeypatch.setattr(vre._setup_writer, "_documents_setups_dir", lambda: str(tmp_path))
+    frame = vre._ingest.sample(0.016)
+    vre._queue_pit_tweak(SetupDelta("DIFF_PRELOAD", 10.0, "exit wheelspin", old_value=10.0, new_value=20.0),
+                         frame, corner="Turn 6", phase="exit", symptom="exit_wheelspin", notify=False)
+    pending = len(vre._setup_memory.tweaks)
+    entries = []
+    monkeypatch.setattr(vre._archive, "record_pit_transition", lambda kind, lap, spline=0.0: entries.append(kind))
+    monkeypatch.setattr(info.graphics, "isInPit", 1)
+    for _ in range(5):
+        vre.acUpdate(0.016)
+    assert entries == ["entry"]
+    assert len(vre._setup_memory.tweaks) == pending + 1
+    assert vre._pit_tweak_queue == []
+
+
+def test_stint_counter_boxes_after_target_and_resets_on_pit_exit(vre, monkeypatch):
+    info = sys.modules["sim_info"].info
+    monkeypatch.setattr(info.static, "carModel", "ks_ferrari_312_67", raising=False)
+    monkeypatch.setattr(info.static, "track", "rt_sonoma", raising=False)
+    monkeypatch.setattr(info.static, "trackConfiguration", "long", raising=False)
+    vre._initialized = False
+    vre.acMain(1)
+    vre.acUpdate(0.016)
+    monkeypatch.setattr(vre, "_completed_lap_time_ms", lambda frame: 95000)
+    frame = vre._ingest.sample(0.016)
+    for lap in range(1, 8):
+        vre._on_lap_complete(lap, frame, vre.LAP_FLYING)
+    assert vre._stint.done and vre._box_alert.remaining == 3
+    vre._update_stint_label()
+    assert vre._ui_text_cache["stint_line"] == "BOX BOX - 5/5 DONE"
+    vre._on_pit_exit(8, frame)
+    assert vre._stint.block == 2 and vre._stint.hud_text() == "SETTLE LAP 1/2"

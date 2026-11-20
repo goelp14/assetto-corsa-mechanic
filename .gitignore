@@ -15,6 +15,9 @@ ac_app/data/grip_map/**
 .tmp_*/
 dist/
 exports/
+data/sessions_acc/
+external/query_tools/acc_rpy/fixtures/*.rpy
+external/query_tools/acc_ingest/fixtures/*.ld
 replay-viewer/node_modules/
 
 # Secrets & credentials (never commit)
@@ -31,12 +34,22 @@ credentials.json
 secrets.json
 **/secrets/
 
-# Local agent skills — only the VRE coach chain is part of this repo.
-# Install other dev skills locally; they stay on disk but are not committed.
+# Local agent skills — only VRE coach + Motec workspace skills are committed.
+# RE / binary-analysis skills stay local (gitignored).
 .agents/skills/*
 !.agents/skills/README.md
 !.agents/skills/vre-*/
 !.agents/skills/vre-*/**
+!.agents/skills/motec-mt2-workspace/
+!.agents/skills/motec-mt2-workspace/**
+
+# ACC .rpy reverse-engineering tree stays out of this repo (public CLI: vre-rpy-cli).
+external/query_tools/acc_rpy/
+docs/superpowers/specs/acc-rpy-*
+docs/superpowers/specs/ghidra*
+docs/superpowers/specs/*pedal-unlock*
+docs/superpowers/scripts/
+.cursor/
 
 # Cursor/npx skills installer lockfile (lists locally installed dev skills)
 skills-lock.json

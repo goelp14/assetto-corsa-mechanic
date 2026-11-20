@@ -84,6 +84,7 @@ class TelemetryIngest(object):
         self._frame = TelemetryFrame()
         self._susp_max = (0.1, 0.1, 0.1, 0.1)
         self._max_road_wheel_rad = math.radians(20.0)
+        self._track_cache = (None, "", 0.0)
 
     def set_steer_range(self, max_road_wheel_deg):
         if max_road_wheel_deg and max_road_wheel_deg > 0:
@@ -138,8 +139,9 @@ class TelemetryIngest(object):
         f.in_pit = bool(g.isInPit)
         f.track = s.track
         f.car = s.carModel
-        f.track_config = getattr(s, "trackConfiguration", "") or ""
-        f.track_length_m = float(getattr(s, "trackSPlineLength", 0.0) or 0.0)
+        layout, length = self._track_info(f.track)
+        f.track_config = getattr(s, "trackConfiguration", "") or layout
+        f.track_length_m = float(getattr(s, "trackSPlineLength", 0.0) or 0.0) or length
         f.gear = int(p.gear)
         f.rpm = int(p.rpms)
         f.tyres_out = int(getattr(p, "numberOfTyresOut", 0) or 0)
@@ -178,6 +180,22 @@ class TelemetryIngest(object):
         self._prev_yaw_rate = f.yaw_rate
         self._prev_t = f.t
         return f
+
+    def _track_info(self, track):
+        """Layout and length via the ac API: sim_info's static page ends before trackConfiguration."""
+        if self._track_cache[0] != track:
+            layout, length = "", 0.0
+            if ac is not None:
+                try:
+                    layout = ac.getTrackConfiguration(0) or ""
+                except Exception:
+                    pass
+                try:
+                    length = float(ac.getTrackLength(0) or 0.0)
+                except Exception:
+                    pass
+            self._track_cache = (track, layout, length)
+        return self._track_cache[1], self._track_cache[2]
 
     def is_safe_for_audio(self, frame):
         if frame.in_pit:

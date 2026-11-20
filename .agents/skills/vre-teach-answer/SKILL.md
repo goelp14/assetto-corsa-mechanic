@@ -10,14 +10,16 @@ Format evidence into actionable coaching copy.
 ## Conversation answers (chat / live coaching)
 
 1. **Lead with the answer** in the first sentence ("Your Carousel time is lost on exit, and it comes from the entry").
-2. **Chain, not symptom:** what the driver does → what the car does → what it costs → the one change.
-3. **Numbers from the data only**, with comparison: fast passes vs slow passes, best vs typical.
-4. **One or two fixes.** Each fix = action + visual cue + what it should feel like.
-5. **Confidence:** say when a claim is proven on their laps vs a hypothesis to test, and what test would settle it
-   (e.g. "5 laps entering a car width wider; success = no lift on exit").
-6. **Corrections:** if an earlier cue was wrong (e.g. tyre stacks are the rotation point, not the apex), say it plainly once.
-7. Plain words over jargon (beta → rear slide, delta_us → understeer angle, spline → track position/metres).
-8. Tables only for short comparisons; the explanation goes in prose.
+2. **Open with the variance cliff** when comparing laps (“+0.4 s from LS exit to Raidillon”) — not a generic tip.
+3. **Chain, not symptom:** what the driver does → what the car does → what it costs → the one change.
+4. **Numbers from the data only**, with comparison: onset V, minV vs apex, FT-stay metre, exit V at fixed offsets.
+5. **One or two fixes.** Each fix = action + visual cue + what it should feel like + success metric.
+6. **Never** coach mid-brake throttle spikes as overlap — ACC auto-blip (see playbook + 296 `telemetry_pitfalls`).
+7. **Confidence:** proven on these laps vs hypothesis + 5-lap test.
+8. **Corrections:** if an earlier cue was wrong, say it plainly once.
+9. Plain words over jargon; tables only for short comparisons.
+
+Method authority: `docs/coach/telemetry-analysis-playbook.md`.
 
 ## App/CLI output template
 

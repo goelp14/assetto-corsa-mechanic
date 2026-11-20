@@ -68,6 +68,9 @@ try:
     from lib.telemetry_archive import TelemetryArchive
     from lib.session_phase_store import SessionPhaseStore
     from lib.shift_analyzer import ShiftAnalyzer
+    from lib.damper_histogram import DamperHistogram
+    from lib.stint_counter import StintCounter
+    from lib.alert_sound import AlertRepeater
     from lib.track_profile import TrackProfileStore
     from lib.setup_detector import SetupDelta
     from lib.setup_detection import build_detection_record
@@ -93,7 +96,7 @@ try:
         HUD_W, HUD_H, LBL_PIT_Y,
         LBL_LEARN, LBL_LEARN_DETAIL, LBL_SETUP, LBL_SPEED, LBL_SPEED_UNIT, LBL_DELTA,
         LBL_TYRE_COLS, LBL_TYRE_TAG_Y, LBL_TYRE_VAL_Y,
-        LBL_STATUS, LBL_COACH, LBL_FEEDBACK, LBL_CUE1, LBL_CUE2,
+        LBL_STATUS, LBL_COACH, LBL_FEEDBACK, LBL_CUE1, LBL_CUE2, LBL_STINT,
     )
 except Exception:
     _log_boot_error("VRE imports")
@@ -171,6 +174,9 @@ _session_phase = None
 _session_flying_laps = 0
 _session_best_lap_ms = 0
 _shift_analyzer = None
+_damper_hist = None
+_stint = None
+_box_alert = AlertRepeater()
 _shift_corner_counts = {}
 
 
@@ -238,11 +244,23 @@ def _load_car(car_id):
     )
 
 
-def _load_track_config(track, layout):
+def _load_track_config(track, layout, length_m=0.0):
+    folder = _config_path("tracks")
+    base = track.replace(" ", "_").lower()
     for name in (_track_key(track, layout), track):
-        path = _config_path(os.path.join("tracks", name.replace(" ", "_").lower() + ".json"))
+        path = os.path.join(folder, name.replace(" ", "_").lower() + ".json")
         if os.path.isfile(path):
             return _load_json(path, {})
+    # AC often reports no layout name; fall back to this track's only layout, or the closest in length.
+    try:
+        names = sorted(f for f in os.listdir(folder) if f.lower().startswith(base + "-") and f.endswith(".json"))
+    except OSError:
+        names = []
+    cands = [_load_json(os.path.join(folder, f), {}) for f in names]
+    if len(cands) == 1:
+        return cands[0]
+    if cands and length_m > 0:
+        return min(cands, key=lambda c: abs(float(c.get("length_m") or 0.0) - length_m))
     return {"track_id": _track_key(track, layout), "display_name": track,
             "setup_folder": track, "corners": [], "generic": True}
 
@@ -314,7 +332,7 @@ def _init_modules():
     global _presenter, _feedback, _voice, _archive, _track_profiles, _tyre_tracker
     global _corner_metrics, _symptom_detector, _setup_constraints, _gg_envelope, _session_analyst
     global _line_ref, _line_analyzer, _phase_pace, _driving_techniques
-    global _dashboard, _thresholds, _car_cfg, _session_phase, _shift_analyzer
+    global _dashboard, _thresholds, _car_cfg, _session_phase, _shift_analyzer, _damper_hist
     global _initialized
 
     if _initialized:
@@ -387,6 +405,7 @@ def _init_modules():
     _dashboard = EngineerDashboard()
     _session_phase = SessionPhaseStore(data_dir=_data_path("session_phase"))
     _shift_analyzer = ShiftAnalyzer(thresholds=_thresholds, spline_indexer=_spline)
+    _damper_hist = DamperHistogram()
 
     _session.on_lap_complete(_on_lap_complete)
     _session.on_pit_entry(_on_pit_entry)
@@ -450,7 +469,7 @@ def _load_track(track_name, layout="", spline_length_m=0.0):
     global _gg_envelope, _corner_metrics, _active_tyre_symptoms, _lap_corner_summaries
     global _session_flying_laps, _session_best_lap_ms, _shift_corner_counts
     global _pit_tweak_queue
-    cfg = _load_track_config(track_name, layout)
+    cfg = _load_track_config(track_name, layout, spline_length_m)
     store_key = _make_store_key(_track_key(track_name, layout), _car_id or _DEFAULT_CAR_ID)
     _store_key = store_key
     _spline.load_config(cfg)
@@ -893,11 +912,13 @@ def _apply_setup_deltas(deltas, frame, corner="", phase="", symptom="", notify=T
         "delta": primary.delta,
         "reason": primary.reason or symptom or ctx.get("detection_why", ""),
     })
+    ctx.pop("symptom", None)
+    ctx_reason = ctx.pop("reason", "")
     for d0 in deltas:
         _archive.record_setup_change(
             tweak_id if d0 is primary else "%s_%s" % (tweak_id, d0.section),
             d0.section, d0.old_value, d0.new_value,
-            symptom=symptom, reason=d0.reason or ctx.get("reason", ""),
+            symptom=symptom, reason=d0.reason or ctx_reason,
             **ctx
         )
     _archive.note_setup_tweak(len(deltas))
@@ -1329,6 +1350,14 @@ def _on_lap_complete(lap, frame, lap_type=LAP_FLYING):
             _session_best_lap_ms == 0 or _lap_time_ms < _session_best_lap_ms
         ):
             _session_best_lap_ms = _lap_time_ms
+    if counted and _stint is not None and _lap_time_ms > 0:
+        role, reached = _stint.on_lap(_lap_time_ms, _session_best_lap_ms)
+        _archive.append_record({
+            "record_type": "stint_lap", "lap": lap, "block": _stint.block, "role": role,
+            "counted": _stint.counted, "target": _stint.target_laps,
+        })
+        if reached:
+            _box_alert.trigger(3)
 
     summary = _lap_analyzer.finish_lap(
         _lap_time_ms, _lap_analyzer._lap_bucket_speed, counted=counted,
@@ -1382,7 +1411,10 @@ def _on_lap_complete(lap, frame, lap_type=LAP_FLYING):
         phase=_volatility.phase,
         in_pit=frame.in_pit,
         counted=counted,
+        lap_extras={"dampers": _damper_hist.to_dict()} if _damper_hist and _damper_hist.frames else None,
     )
+    if _damper_hist is not None:
+        _damper_hist.reset()
 
     rec = None
     if counted:
@@ -1511,6 +1543,16 @@ def _on_pit_entry(lap, frame):
 def _on_pit_exit(lap, frame):
     if _archive is not None:
         _archive.record_pit_transition("exit", lap, frame.spline)
+    if _stint is not None:
+        _stint.reset()
+
+
+def _new_stint():
+    return StintCounter(
+        _thresholds.get("STINT_SETTLE_LAPS", 2),
+        _thresholds.get("STINT_TARGET_LAPS", 5),
+        _thresholds.get("STINT_SLOW_PCT", 1.03),
+    )
 
 
 def _on_hud_render(deltaT):
@@ -1578,6 +1620,7 @@ def _build_dashboard_ui(app_window):
     _add_label(app_window, "cue1", LBL_CUE1[0], LBL_CUE1[1], 24, "right",
                color=(1.0, 0.88, 0.2, 1.0))
     _add_label(app_window, "cue2", LBL_CUE2[0], LBL_CUE2[1], 20, "right")
+    _add_label(app_window, "stint_line", LBL_STINT[0], LBL_STINT[1], 13, "right")
 
     y = LBL_PIT_Y
     _add_label(app_window, "pit_header", 8, y, 13)
@@ -1640,6 +1683,19 @@ def _update_hud_labels(snap):
         _set_ui_text("feedback_line", "")
 
 
+def _update_stint_label():
+    if _stint is None:
+        _set_ui_text("stint_line", "")
+        return
+    _set_ui_text("stint_line", _stint.hud_text())
+    if _stint.done:
+        _set_label_color("stint_line", (0.3, 1.0, 0.45, 1.0))
+    elif _stint.settled < _stint.settle_laps:
+        _set_label_color("stint_line", (1.0, 0.8, 0.3, 1.0))
+    else:
+        _set_label_color("stint_line", (0.92, 0.92, 0.95, 1.0))
+
+
 def _update_cue_labels(cue_id, corner, alpha, in_pit):
     if in_pit or not cue_id or alpha < 0.08:
         _set_ui_text("cue1", "")
@@ -1657,6 +1713,8 @@ def _update_dashboard(frame, corner, phase_name, balance, tick_result, deltaT):
     if in_pit != _last_in_pit:
         _last_in_pit = in_pit
         ac.setSize(_app_window, _HUD_W, LBL_PIT_Y + 102 if in_pit else _HUD_H)
+
+    _update_stint_label()
 
     if tick_result.get("cue"):
         _cue_alpha = 1.0
@@ -1859,7 +1917,7 @@ def acShutdown():
 
 
 def acUpdate(deltaT):
-    global _last_track, _track_folder, _session_flying_laps, _session_best_lap_ms, _combo
+    global _last_track, _track_folder, _session_flying_laps, _session_best_lap_ms, _combo, _stint
 
     if not _initialized:
         _init_modules()
@@ -1878,6 +1936,9 @@ def acUpdate(deltaT):
         _last_track = frame.track
         _load_car(frame.car or _DEFAULT_CAR_ID)
         _load_track(frame.track, frame.track_config, frame.track_length_m)
+        if _damper_hist is not None:
+            _damper_hist.reset()
+        _stint = _new_stint()
         _session_flying_laps = 0
         _session_best_lap_ms = 0
         _archive.start_session(frame.track, frame.car, _volatility.phase,
@@ -1922,3 +1983,6 @@ def acUpdate(deltaT):
     _update_dashboard(frame, corner, phase_name, bal, tick, deltaT)
 
     _archive.observe_frame(frame, corner, phase_name, dyn, bal)
+    if _damper_hist is not None:
+        _damper_hist.observe(frame, deltaT, corner, phase_name)
+    _box_alert.tick(deltaT)

@@ -9,6 +9,8 @@ Entry point for every driver-coaching question. Pick the route, gather evidence,
 
 ## Ground rules (learned the hard way)
 
+0. **ACC/GT3 lap-compare:** read `docs/coach/telemetry-analysis-playbook.md` first — distance variance → brake-to-brake →
+   three questions (brake / minV / FT-stay) → mask auto-blip. Research online when the pattern is unfamiliar; do not invent pedal myths.
 1. **Root cause before advice.** "Throttle earlier", "stop coasting", "brake later" are symptoms. Trace upstream
    (entry → rotation → line → throttle) before prescribing. The driver will push back on symptom-level advice, and be right.
 2. **Controls before technique.** If inputs feel "not registered" or light trail-braking seems absent in data,
@@ -33,6 +35,17 @@ Entry point for every driver-coaching question. Pick the route, gather evidence,
 - Car setup ranges/units: `python tools/extract_car_profile.py` → `ac_app/config/cars/<car>.json`.
 - Example numbers in these skills come from one car/track (312/67, Sonoma Long). Re-measure; keep the methods.
 
+## ACC (Competizione)
+
+When `game` is **acc**, car id is **`ferrari_296_gt3`** (or other ACC GT3), or sessions live under `data/sessions_acc/`:
+
+- KB: `ac_app/config/acc/gt3_physics_kb.json`, `ac_app/config/acc/cars/<car>.json`, `ac_app/config/acc/kb_loader.py`
+- Setup hints: `python -m external.query_tools.acc_ingest.setup_hints --symptom <key> --car <car_id>`
+- Version pin post-**1.9** (`verified_on` 1.10.x); filter legacy pressure advice with `reject_pre_19_advice`.
+- **Evidence:** coach from MoTeC/SHM + GO `.rpy` lap times only. Foreign replay pedals/pose valleys are **not** GO. Ship `vre_analysis_*.ld` when MoTeC exists (`acc_ingest.motec_analysis_ld`). See `vre-collect-evidence` ACC gates + `acc-rpy-re` evidence table.
+
+Keep AC routes below unchanged for non-ACC cars.
+
 ## Data sources
 
 | Source | When | Tool |
@@ -43,6 +56,7 @@ Entry point for every driver-coaching question. Pick the route, gather evidence,
 | Driver profile (`ac_app/data/driver_profile.json`) | Style, preferences, setup fit, trends | `driver_lab.py style` |
 | Setup A/B | Any setup or controls change | `driver_lab.py compare -a ... -b ...` |
 | Car `data.acd` / setup `.ini` | Setup ranges and units | `tools/extract_car_profile.py` |
+| Car suspension physics + lap damper histograms | Dampers, transient balance, crests/kerbs | `driver_lab.py dampers [-s <session>]` |
 
 Always pass `--min-lap/--max-lap` to drop spins, offs and out-laps, and group laps by setup/controls change
 (a gamma or brake-bias change mid-session splits the data into different cars).
@@ -56,7 +70,10 @@ Always pass `--min-lap/--max-lap` to drop spins, offs and out-laps, and group la
 | line, apex, turn-in point, "should I be more left/right" | `vre-line-analysis` |
 | technique drill for one corner, braking point, visual cues | `vre-corner-coaching` |
 | understeer/oversteer/grip mechanism | `vre-explain-dynamics` |
-| setup change, brake bias, diff, ARB, "feels wrong", input calibration | `vre-setup-and-controls` |
+| setup change, brake bias, diff, ARB, "feels wrong", input calibration | `vre-setup-and-controls` (AC) **or** `vre-acc-setup` (ACC) |
+| ACC tyre pressure, graining, hot psi, stint temps | `vre-acc-tyres` |
+| ACC TC1/TC2, ABS, ECU, "too much TC" | `vre-acc-electronics` (after tyres in window) |
+| dampers, bump/rebound, kerbs/bumps/crests unsettling the car, snappy transitions, final dial-in | `vre-dampers` (AC, after `vre-setup-and-controls`) or `vre-acc-setup` damper section (ACC) |
 | "how fast could I be", alien gap, driver comparisons | `vre-pace-potential` |
 | "what's my style", style trend, end of session | `vre-driver-profile` |
 | driver is on track and laps are arriving | `vre-live-session` |
@@ -64,6 +81,9 @@ Always pass `--min-lap/--max-lap` to drop spins, offs and out-laps, and group la
 Most real questions chain: e.g. slow exit → `vre-root-cause` → `vre-line-analysis` (entry position) → `vre-corner-coaching` (cues).
 Setup questions always chain: `vre-setup-and-controls` (controls check) → `vre-root-cause` (is it technique?) →
 `vre-driver-profile` (style fit) → one lever → `driver_lab.py compare` verdict.
+
+ACC setup questions chain: `vre-acc-setup` → (`vre-acc-tyres` if thermal/pressure) → (`vre-acc-electronics` if TC/ABS) →
+`setup_hints` CLI → `driver_lab.py compare` (A-B-A).
 
 **REQUIRED SUB-SKILL:** `vre-collect-evidence` (bundle questions) or the `driver_lab.py` commands named in the sub-skill.
 

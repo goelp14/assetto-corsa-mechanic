@@ -1,0 +1,105 @@
+{
+  "track_id": "spa_acc",
+  "display_name": "Spa-Francorchamps ACC",
+  "length_m": 7004,
+  "spline_offset": 0.0,
+  "setup_folder": "spa",
+  "direction": "clockwise",
+  "sectors": [
+    {"name": "S1", "spline_end": 0.33},
+    {"name": "S2", "spline_end": 0.66},
+    {"name": "S3", "spline_end": 1.0}
+  ],
+  "corners": [
+    {
+      "name": "Turn 1",
+      "display_name": "La Source",
+      "direction": "left",
+      "speed_class": "slow",
+      "spline_start": 0.01,
+      "spline_end": 0.05,
+      "apex_spline": 0.03
+    },
+    {
+      "name": "Turn 4",
+      "display_name": "Eau Rouge",
+      "direction": "left",
+      "speed_class": "fast",
+      "spline_start": 0.08,
+      "spline_end": 0.13,
+      "apex_spline": 0.10
+    },
+    {
+      "name": "Turn 5",
+      "display_name": "Raidillon",
+      "direction": "right",
+      "speed_class": "fast",
+      "spline_start": 0.13,
+      "spline_end": 0.18,
+      "apex_spline": 0.155
+    },
+    {
+      "name": "Turn 10",
+      "display_name": "Les Combes",
+      "direction": "right",
+      "speed_class": "medium",
+      "spline_start": 0.28,
+      "spline_end": 0.34,
+      "apex_spline": 0.31
+    },
+    {
+      "name": "Turn 11",
+      "display_name": "Bruxelles",
+      "direction": "left",
+      "speed_class": "slow",
+      "spline_start": 0.34,
+      "spline_end": 0.38,
+      "apex_spline": 0.36
+    },
+    {
+      "name": "Turn 13",
+      "display_name": "Pouhon",
+      "direction": "left",
+      "speed_class": "fast",
+      "spline_start": 0.40,
+      "spline_end": 0.48,
+      "apex_spline": 0.44
+    },
+    {
+      "name": "Turn 15",
+      "display_name": "Fagnes",
+      "direction": "right",
+      "speed_class": "medium",
+      "spline_start": 0.52,
+      "spline_end": 0.58,
+      "apex_spline": 0.55
+    },
+    {
+      "name": "Turn 18",
+      "display_name": "Stavelot",
+      "direction": "right",
+      "speed_class": "fast",
+      "spline_start": 0.62,
+      "spline_end": 0.70,
+      "apex_spline": 0.66
+    },
+    {
+      "name": "Turn 19",
+      "display_name": "Blanchimont",
+      "direction": "left",
+      "speed_class": "fast",
+      "spline_start": 0.82,
+      "spline_end": 0.90,
+      "apex_spline": 0.86
+    },
+    {
+      "name": "Turn 20",
+      "display_name": "Chicane",
+      "direction": "right",
+      "speed_class": "slow",
+      "spline_start": 0.92,
+      "spline_end": 0.98,
+      "apex_spline": 0.95
+    }
+  ]
+}

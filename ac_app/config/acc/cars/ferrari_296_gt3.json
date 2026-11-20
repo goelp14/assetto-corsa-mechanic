@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "car_id": "ferrari_296_gt3",
+  "display_name": "Ferrari 296 GT3",
+  "class": "GT3",
+  "verified_on": "1.10.3",
+  "acc_min_version": "1.9.0",
+  "steering_lock_deg": 400,
+  "steering_lock_note": "400° steering lock confirmed from ACC 1.9.3 car fix (was incorrect in earlier builds).",
+  "electronics_bands": {
+    "TC1": {
+      "description": "Power-cut aggression",
+      "typical_band": { "min": 2, "max": 5 },
+      "notes": "Lower = more intervention; pace-first picks minimum stable slip on exits."
+    },
+    "TC2": {
+      "description": "Slip tolerance / wheelspin allowance",
+      "typical_band": { "min": 4, "max": 7 },
+      "notes": "Tune with rear mechanical grip and diff exit; verify via TC spark counters in telemetry."
+    },
+    "ABS": {
+      "description": "ABS map",
+      "typical_band": { "min": 3, "max": 6 },
+      "notes": "Higher maps tolerate more slip under trail; align with brake migration."
+    }
+  },
+  "tyre_traits": {
+    "heat_character": "Front axle slow to build heat; easy to begin stint under window.",
+    "degradation_mode": "Grain on front inside shoulder when under-temp or over-steered on cold tyres.",
+    "pressure_targets_psi": {
+      "dry_hot": { "min": 26.0, "max": 27.0 },
+      "wet_hot": { "min": 30.0, "max": 31.0 }
+    },
+    "temp_window_c": { "min": 70.0, "max": 100.0 }
+  },
+  "aero_traits": {
+    "sensitivity": "Fairly rake-sensitive; rear wing changes show clearly on high-speed rotation.",
+    "platform_notes": "Keep platform stable before chasing damper extremes — mid-engine mass distribution favors rear grip on power."
+  },
+  "shift_rpm": {
+    "upshift_rpm": null,
+    "downshift_rpm": null,
+    "note": "Placeholders — measure optimal shift points from stint telemetry (throttle, gear, rpm trace) per track."
+  },
+  "telemetry_pitfalls": {
+    "auto_blip_on_downshift": {
+      "what": "ACC GT3 paddle downshifts auto-blip / rev-match. Motec THROTTLE shows brief spikes (often 20–70% for one sample) while BRAKE stays high.",
+      "not": "Driver throttle, pedal overlap, ABS applying throttle, or intentional heel-toe.",
+      "how_to_detect": "Spike coincides with GEAR decreasing under brake; thr returns to ~0 next sample. Correlate thr spike + gear−1 + brk>30.",
+      "coaching_rule": "Never treat mid-brake THROTTLE spikes as driver input or overlap advice. Mask or ignore when scoring coast/overlap/pedal-gap."
+    },
+    "ecu_maps": {
+      "what": "296 maps 1–10 change throttle linearity only; peak power/consumption unchanged (Kunos ECU maps thread).",
+      "coaching_rule": "Do not coach map changes as power levers; only pedal feel / linearity."
+    },
+    "tc3_on_dash": {
+      "what": "Dash may show TC3; not a usable garage control on 296.",
+      "coaching_rule": "Ignore TC3; use TC1/TC2 only."
+    }
+  },
+  "driving_character": {
+    "layout": "mid-engine",
+    "notes": [
+      "Fronts slow to temperature; prioritize window before balance chase (Coach Dave 296 guide).",
+      "Exits matter more than apex speed on many tracks (long next straights).",
+      "Rear can step on entry if trail is aggressive — amount of brake ≈ amount of entry OS (Nils).",
+      "Hairpins: brake mostly straight; very light deep trail; progressive throttle after car settles (~0.5 s), then commit — early power unloads front/works diff (Nils Imola notes).",
+      "Kerbs: unload inside / settle brakes before big kerbs; car recovers grip quickly after hits.",
+      "Steering lock 400° (ACC 1.9.3 fix) — ignore older 800° guides; line/apex cues assume 400°.",
+      "Rake: keep rear-front ride height delta modest; high rake can snap OS (Coach Dave).",
+      "TC: raise on green/wet track, lower as rubber comes in; don't use TC as the pace fix."
+    ],
+    "sources": [
+      "https://coachdaveacademy.com/tutorials/tips-and-tricks-to-driving-the-ferrari-296-gt3/",
+      "https://popometer.io/acc/setups/2057",
+      "docs/coach/telemetry-analysis-playbook.md"
+    ]
+  },
+  "setup_json_schema_summaries": {
+    "tyres": "PRESSURE_* (psi cold in garage; validate hot via telemetry), CAMBER_*, TOE_*",
+    "aero": "Ride height front/rear, wing front/rear angles",
+    "suspension": "SPRING_RATE_*, ARB_*",
+    "dampers": "Bump/rebound four-way click maps",
+    "differential": "DIFF_ENTRY, DIFF_MID, DIFF_EXIT, preload",
+    "electronics": "TC1, TC2, ABS, ECU map",
+    "brakes": "Bias %, pad compound, optional migration"
+  },
+  "coaching_hints": [
+    "Prioritize getting fronts into 70–100 °C before chasing rear aero balance.",
+    "26–27 psi hot dry band applies; reject legacy 27.5+ psi dogma from pre-1.9 meta."
+  ]
+}

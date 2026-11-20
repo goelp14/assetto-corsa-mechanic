@@ -13,6 +13,7 @@ from coach_service import classify_question  # noqa: E402
 
 def test_classify_routes_setup_and_line_questions():
     assert classify_question("should I move brake bias rearward?") == "setup"
+    assert classify_question("should I soften rear rebound dampers?") == "setup"
     assert classify_question("is my turn-in point too early, should I be more right?") == "line"
     assert classify_question("why did I spin at turn 7") == "incident"
     assert classify_question("I keep coasting on the exit") == "technique"

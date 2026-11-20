@@ -37,6 +37,7 @@ LBL_COACH = (10, 132)
 LBL_FEEDBACK = (10, 150)
 LBL_CUE1 = (488, 110)
 LBL_CUE2 = (488, 134)
+LBL_STINT = (488, 25)
 
 # Graphics-only bands (no labels in these Y ranges)
 GL_BARS_Y = 40

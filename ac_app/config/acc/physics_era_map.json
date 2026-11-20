@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "verified_on": "1.10.3",
+  "game": "Assetto Corsa Competizione",
+  "doctrine": "pace_first",
+  "policy": {
+    "pre_1_9_never_primary": true,
+    "notes": "Pre-1.9 tyre and damper dogma must never be used as the primary coaching source. Treat legacy forum pressures (≈27.5–29 psi hot) and old temp targets as obsolete unless explicitly tagged historical."
+  },
+  "eras": [
+    {
+      "id": "pre_1_9",
+      "label": "Pre-1.9",
+      "version_range": {
+        "min_inclusive": "0.0.0",
+        "max_exclusive": "1.9.0"
+      },
+      "primary_source_allowed": false,
+      "headline_changes": [
+        "Legacy tyre model and hot-pressure meta dominated community setup advice."
+      ],
+      "coaching_status": "historical_only"
+    },
+    {
+      "id": "1_9",
+      "label": "1.9",
+      "version_range": {
+        "min_inclusive": "1.9.0",
+        "max_exclusive": "1.10.0"
+      },
+      "primary_source_allowed": true,
+      "headline_changes": [
+        "Kunos tyre physics rewrite — new pressure windows and heating behaviour.",
+        "Steering lock and electronics baselines updated on several GT3 cars (e.g. Ferrari 296 fix in 1.9.3)."
+      ],
+      "coaching_status": "supported"
+    },
+    {
+      "id": "1_10",
+      "label": "1.10",
+      "version_range": {
+        "min_inclusive": "1.10.0",
+        "max_exclusive": null
+      },
+      "primary_source_allowed": true,
+      "headline_changes": [
+        "Damper model and setup fidelity improvements; KB verified on 1.10.3."
+      ],
+      "coaching_status": "current"
+    }
+  ],
+  "references": [
+    {
+      "topic": "tyre_rewrite",
+      "era_id": "1_9",
+      "note": "ACC 1.9 tyre physics overhaul — dry hot target band moves to ~26–27 psi; wet ~30–31 psi."
+    },
+    {
+      "topic": "damper_improvements",
+      "era_id": "1_10",
+      "note": "ACC 1.10 damper behaviour and garage fidelity — 4-way click maps remain primary levers."
+    }
+  ]
+}

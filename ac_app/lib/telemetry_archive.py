@@ -343,7 +343,7 @@ class TelemetryArchive(object):
 
     def flush_lap(self, lap, lap_time_ms, setup_snapshot=None, driving_style=None,
                   corner_deltas=None, sector_deltas=None, lap_type="flying",
-                  phase="", in_pit=False, counted=True, setup_source=""):
+                  phase="", in_pit=False, counted=True, setup_source="", lap_extras=None):
         if self.session_dir is None:
             return
 
@@ -363,6 +363,8 @@ class TelemetryArchive(object):
         if car_state:
             live["car_state"] = car_state
         payload.update(live)
+        if lap_extras:
+            payload.update(lap_extras)
         self._lap_samples = []
         self._lap_corner_summaries = []
         self._frame_counter = 0

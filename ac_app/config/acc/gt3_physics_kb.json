@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "verified_on": "1.10.3",
+  "acc_min_version": "1.9.0",
+  "class": "GT3",
+  "doctrine": "pace_first",
+  "reject_pre_1_9_pressure_dogma": true,
+  "tyre_pressure_windows_psi": {
+    "dry_hot": { "min": 26.0, "max": 27.0 },
+    "wet_hot": { "min": 30.0, "max": 31.0 }
+  },
+  "tyre_temp_window_c": {
+    "operating_min": 70.0,
+    "operating_max": 100.0
+  },
+  "facts": [
+    {
+      "id": "tyre_dry_hot_pressure",
+      "domain": "tyres",
+      "lever": "PRESSURE_FRONT / PRESSURE_REAR (dry compound, hot)",
+      "effect": "Tyre contact patch and carcass flex at operating temperature; pace-first balance vs thermal headroom.",
+      "when": "After 3–5 flying laps on slicks; adjust for stint length and ambient, not cold-pit targets.",
+      "telemetry_evidence": [
+        "Hot stint median tyre_pressure per corner within 26–27 psi",
+        "tyre_temp core 70–100 °C without persistent graining",
+        "Lap time stable across stint, not just pressure on a number"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": true
+    },
+    {
+      "id": "tyre_wet_hot_pressure",
+      "domain": "tyres",
+      "lever": "PRESSURE_FRONT / PRESSURE_REAR (wet compound, hot)",
+      "effect": "Higher hot window supports aquaplaning margin and heat retention in spray.",
+      "when": "Wet session once tyres are up to temp; avoid copying dry psi.",
+      "telemetry_evidence": [
+        "Hot wet stint pressures 30–31 psi",
+        "Slip angles controlled; no chronic front overheating in straights"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": true
+    },
+    {
+      "id": "tyre_temp_window",
+      "domain": "tyres",
+      "lever": "Camber, toe, brake migration, driving style",
+      "effect": "Core temp band drives grip level and degradation mode (grain vs blister).",
+      "when": "When diagnosing under/over temp on long runs or high kerb tracks.",
+      "telemetry_evidence": [
+        "LF/RF/LR/RR tyre_temp in 70–100 °C at pace",
+        "Grain/blister correlates with outside band + pressure mismatch"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    },
+    {
+      "id": "aero_ride_height_platform",
+      "domain": "aero",
+      "lever": "Ride height (front/rear), wing angles",
+      "effect": "Platform attitude sets floor and wing efficiency; rake changes balance through speed slices.",
+      "when": "High-speed instability or mid-corner understeer that spring-only changes cannot fix.",
+      "telemetry_evidence": [
+        "Speed vs ride attitude change at same wing",
+        "Corner entry understeer without excess rear slip on power"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    },
+    {
+      "id": "springs_arb_mechanical_balance",
+      "domain": "springs_arb",
+      "lever": "SPRING_RATE front/rear, ARB front/rear",
+      "effect": "Mechanical roll stiffness and load transfer; sets transient balance before aero fully loads.",
+      "when": "Slow-corner balance, kerb compliance, or inside-wheel lift on crests.",
+      "telemetry_evidence": [
+        "Lat G buildup vs steering trace at slow/medium corners",
+        "Suspension travel histogram extremes on kerbs"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    },
+    {
+      "id": "dampers_four_way",
+      "domain": "dampers",
+      "lever": "Bump / rebound front & rear (4-way)",
+      "effect": "Controls tyre contact patch persistence over kerbs and platform decay in transitions.",
+      "when": "1.10+ builds: refine after springs/ARB; entry/exit behavior still oscillates.",
+      "telemetry_evidence": [
+        "Damper-speed bucket histogram peaks (low-speed platform, high-speed kerb)",
+        "Coast/oversteer on throttle lift tied to rear rebound"
+      ],
+      "acc_min_version": "1.10.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    },
+    {
+      "id": "diff_entry_mid_exit",
+      "domain": "differential",
+      "lever": "DIFF_ENTRY, DIFF_MID, DIFF_EXIT, preload",
+      "effect": "Traction on throttle vs rotation on entry; mid corner stability under combined load.",
+      "when": "Traction exits, mid-corner push, or violent power snaps.",
+      "telemetry_evidence": [
+        "Throttle vs yaw_rate on corner exit",
+        "Rear slip spike when opening throttle early"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    },
+    {
+      "id": "electronics_tc_abs",
+      "domain": "electronics",
+      "lever": "TC1, TC2, ABS maps",
+      "effect": "Pedal aggression bandwidth; TC1 cuts power, TC2 reduces slip tolerance; ABS shapes trail-brake limit.",
+      "when": "After mechanical balance is sane — electronics amplify, not fix, roll stiffness errors.",
+      "telemetry_evidence": [
+        "TC intervention counts vs throttle trace",
+        "ABS activation during trail brake without tyre lock spikes"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    },
+    {
+      "id": "brakes_bias_migration",
+      "domain": "brakes",
+      "lever": "Brake bias, pad compound, migration",
+      "effect": "Entry stability, steering authority, and front tyre temp on heavy stops.",
+      "when": "Forward entry understeer, rear instability under trail, or chronic LF overheating.",
+      "telemetry_evidence": [
+        "Brake pressure/lines vs speed into braking zones",
+        "Front tyre temp rise only under braking, not mid-corner"
+      ],
+      "acc_min_version": "1.9.0",
+      "verified_on": "1.10.3",
+      "rejects_pre_1_9_dogma": false
+    }
+  ]
+}

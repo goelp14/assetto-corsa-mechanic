@@ -36,10 +36,14 @@ export interface SetupEpisode {
   action?: string;
 }
 
+export type ReplayGame = "ac" | "acc";
+
 export interface Manifest {
   session_id: string;
   track_id: string;
   track_display: string;
+  game?: ReplayGame;
+  source?: string;
   track_length_m?: number;
   car_id?: string;
   laps: { lap: number; lap_time_ms: number; file: string }[];

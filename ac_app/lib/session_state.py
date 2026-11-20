@@ -99,9 +99,8 @@ class SessionState(object):
             self._prev_corner = ""
             self._reset_lap_pit_flags(frame.in_pit)
 
-        if self.was_in_pit is None:
-            self.was_in_pit = frame.in_pit
-            self.in_pit = frame.in_pit
+        first_frame = self.was_in_pit is None
+        if first_frame:
             self._lap_started_in_pit = frame.in_pit
             self.current_lap = frame.lap
             self.lap_start_t = frame.t
@@ -110,18 +109,21 @@ class SessionState(object):
             self.pit_entry_lap = frame.lap
             if not self._lap_started_in_pit:
                 self._pit_entry_this_lap = True
-            for cb in self._pit_entry_callbacks:
-                cb(frame.lap, frame)
         elif not frame.in_pit and self.was_in_pit:
             pit_exit = True
             self.pit_exit_lap = frame.lap
             self._pit_exit_this_lap = True
-            for cb in self._pit_exit_callbacks:
-                cb(frame.lap, frame)
 
+        # Commit pit state before callbacks: a raising callback must not re-fire every frame.
         self._ended_in_pit = frame.in_pit
         self.was_in_pit = frame.in_pit
         self.in_pit = frame.in_pit
+        if pit_entry:
+            for cb in self._pit_entry_callbacks:
+                cb(frame.lap, frame)
+        elif pit_exit:
+            for cb in self._pit_exit_callbacks:
+                cb(frame.lap, frame)
 
         corner = spline_indexer.corner_name(frame.spline)
         phase = "straight"

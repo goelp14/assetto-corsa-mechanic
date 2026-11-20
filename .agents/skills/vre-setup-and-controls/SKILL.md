@@ -36,6 +36,7 @@ Read real ranges/units from the car first (`tools/extract_car_profile.py`, car `
 | **Pace / grip** | tyre pressures into the window, camber for even temps, gearing per corner/straight, ride height/rake, spring/damper balance for bumps & kerbs, aero balance (aero cars) | **Try these first** — they add grip or drive without removing rotation |
 | **Rotation / response** | rearward brake bias, less diff coast/preload, stiffer rear bar, softer front bar, front toe-out | Use when the driver wants more rotation or fights mid-corner push |
 | **Stability** | forward brake bias, more diff coast/preload, softer rear bar, stiffer front bar, rear toe-in, more rear wing | **Pace-costly.** Only with evidence the instability costs more time than the lost rotation, and never for a rotation-first driver whose fast passes include rear slide |
+| **Transient (dampers)** | bump/rebound per axle, fast dampers | Grip over crests/bumps/kerbs and *how fast* balance shifts (not mid-corner balance). Any calming effect is a trade judged on pace. See `vre-dampers` (`driver_lab.py dampers`) |
 
 ## A/B protocol (mandatory before calling a change good or bad)
 

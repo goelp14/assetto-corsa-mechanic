@@ -1,0 +1,78 @@
+{
+  "track_id": "monza_acc",
+  "display_name": "Monza ACC",
+  "length_m": 5793,
+  "spline_offset": 0.0,
+  "setup_folder": "monza",
+  "direction": "clockwise",
+  "sectors": [
+    {"name": "S1", "spline_end": 0.33},
+    {"name": "S2", "spline_end": 0.66},
+    {"name": "S3", "spline_end": 1.0}
+  ],
+  "corners": [
+    {
+      "name": "Turn 1",
+      "display_name": "Variante del Rettifilo",
+      "direction": "right",
+      "speed_class": "slow",
+      "spline_start": 0.02,
+      "spline_end": 0.07,
+      "apex_spline": 0.045
+    },
+    {
+      "name": "Turn 4",
+      "display_name": "Curva Grande",
+      "direction": "right",
+      "speed_class": "fast",
+      "spline_start": 0.12,
+      "spline_end": 0.18,
+      "apex_spline": 0.15
+    },
+    {
+      "name": "Turn 6",
+      "display_name": "Variante della Roggia",
+      "direction": "right",
+      "speed_class": "medium",
+      "spline_start": 0.22,
+      "spline_end": 0.28,
+      "apex_spline": 0.25
+    },
+    {
+      "name": "Turn 7",
+      "display_name": "Lesmo 1",
+      "direction": "right",
+      "speed_class": "medium",
+      "spline_start": 0.30,
+      "spline_end": 0.36,
+      "apex_spline": 0.33
+    },
+    {
+      "name": "Turn 8",
+      "display_name": "Lesmo 2",
+      "direction": "right",
+      "speed_class": "medium",
+      "spline_start": 0.38,
+      "spline_end": 0.44,
+      "apex_spline": 0.41
+    },
+    {
+      "name": "Turn 10",
+      "display_name": "Ascari",
+      "direction": "left",
+      "speed_class": "medium",
+      "spline_start": 0.52,
+      "spline_end": 0.62,
+      "apex_spline": 0.57
+    },
+    {
+      "name": "Turn 11",
+      "display_name": "Parabolica",
+      "direction": "right",
+      "speed_class": "fast",
+      "spline_start": 0.78,
+      "spline_end": 0.92,
+      "apex_spline": 0.86
+    }
+  ]
+}

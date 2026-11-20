@@ -16,6 +16,7 @@ class SplineIndexer(object):
         self.spline_offset = spline_offset
         self.corners = []
         self.sectors = []
+        self.line_chains_meta = []
         self.track_id = ""
         self.display_name = ""
         self.length_m = 0.0

@@ -9,6 +9,8 @@ Subcommands
   sim       Quasi-steady-state lap sim calibrated on the driver's own envelopes + elevation.
   compare   Pace-first A/B of two lap groups (setup/controls variants) with confound warnings.
   style     Driving-style metrics for these laps, appended to the persistent driver profile.
+  dampers   Damper physics from the car files (damping ratios, transient balance, per-click what-ifs)
+            plus damper-velocity histograms and wheel-unload per corner from the laps.
 
 Car/track agnostic: track from session.jsonl, corners from ac_app/config/tracks/<track>-<layout>.json
 (generate with tools/build_track_config.py), geometry from the track's ai/fast_lane.ai.
@@ -22,6 +24,7 @@ Examples
   python external/query_tools/driver_lab.py sim    -s <session>
   python external/query_tools/driver_lab.py compare -a <session>:1-12 -b <session>:14-30 --max-lap 100
   python external/query_tools/driver_lab.py style  -s <session> --max-lap 100
+  python external/query_tools/driver_lab.py dampers -s <session> [--setup <file.ini>]
 """
 
 from __future__ import print_function
@@ -941,12 +944,202 @@ def cmd_style(ctx, args):
     return 0
 
 
+# ---------------------------------------------------------------- dampers
+
+WHEELS = ("FL", "FR", "RL", "RR")
+
+
+def _setups_roots():
+    env = os.environ.get("VRE_AC_SETUPS")
+    if env:
+        return [env]
+    return sorted(glob.glob("/mnt/c/Users/*/OneDrive/Documents/Assetto Corsa/setups")
+                  + glob.glob("/mnt/c/Users/*/Documents/Assetto Corsa/setups"))
+
+
+def read_setup_ini(path):
+    vals, section = {}, None
+    with open(path) as fh:
+        for line in fh:
+            line = line.strip()
+            if line.startswith("[") and line.endswith("]"):
+                section = line[1:-1]
+            elif section and line.upper().startswith("VALUE="):
+                vals[section] = line.split("=", 1)[1].strip()
+    return vals
+
+
+def default_setup_path(car):
+    """AC rewrites setups/<car>/generic/last.ini with whatever setup was last driven."""
+    for root in _setups_roots():
+        p = os.path.join(root, car, "generic", "last.ini")
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def damper_moves(files, saved, report_fn):
+    """Every single-click damper move (both sides of an axle) and what it does to the numbers."""
+    from acd_reader import parse_ini
+    setup = parse_ini(files.get("setup.ini", ""))
+    base = report_fn(saved)
+    out = []
+    for axle, sides in (("FRONT", ("LF", "RF")), ("REAR", ("LR", "RR"))):
+        for kind in ("BUMP", "REBOUND"):
+            sec = "DAMP_%s_%s" % (kind, sides[0])
+            props = setup.get(sec)
+            if not props or str(props.get("SHOW_CLICKS", "0")).strip() != "2":
+                continue
+            lo, step = float(props["MIN"]), float(props.get("STEP", 1)) or 1.0
+            top = int(round((float(props["MAX"]) - lo) / step))
+            if sec in saved:
+                cur = int(float(saved[sec]))
+            else:
+                cur = int(round((base["axles"][axle][kind.lower()] - lo) / step))
+            for d in (-1, 1):
+                if not 0 <= cur + d <= top:
+                    continue
+                s2 = dict(saved)
+                for side in sides:
+                    s2["DAMP_%s_%s" % (kind, side)] = str(cur + d)
+                r = report_fn(s2)
+                a = r["axles"][axle]
+                z = a["zeta_ride_%s" % kind.lower()]
+                out.append(dict(move="%s %s %+d (click %d)" % (axle.lower(), kind.lower(), d, cur + d),
+                                zeta=z, roll_damp_front=r["roll_damping_front"], flags=len(r["flags"])))
+    return out
+
+
+def damper_telemetry(ctx, report):
+    laps = [L for L in ctx.laps if L.get("dampers")]
+    if not laps:
+        return None
+    import damper_histogram as DH
+    merged = DH.merge([L["dampers"] for L in laps])
+    knees = []
+    for w in range(4):
+        a = report["axles"]["FRONT" if w < 2 else "REAR"] if report else {}
+        knees.append((a.get("fast_bump_knee_mm_s") or 25.0, a.get("fast_rebound_knee_mm_s") or 25.0))
+    print("\ndamper velocity histograms (%d laps, ~%.0f Hz):" % (len(laps), med(L["dampers"].get("rate_hz", 0) for L in laps)))
+    print("  %-8s %-3s %6s %6s %6s %6s %7s %7s %7s %7s %6s" % (
+        "phase", "whl", "sd", "median", "bump%", "reb%", "fastB%", "fastR%", "+-10%", "kurt", "n"))
+    for ph in DH.PHASES:
+        rows = merged["hist"].get(ph)
+        if not rows:
+            continue
+        for w in range(4):
+            s = DH.wheel_stats(rows[w], *knees[w])
+            if not s or s["n"] < 200:
+                continue
+            print("  %-8s %-3s %6.0f %6.0f %6.1f %6.1f %7.1f %7.1f %7.1f %7.1f %6d" % (
+                ph, WHEELS[w], s["sd"], s["median"], s["bump_pct"], s["rebound_pct"], s["fast_bump_pct"],
+                s["fast_rebound_pct"], s["within_10_pct"], s["kurtosis"], s["n"]))
+    print("  read: sd = how hard that corner works; fastB%/fastR% = share above the car's fast-damper knee;")
+    print("        a tall narrow peak (high +-10%, high kurt) = stiff for this track, flat and wide = soft;")
+    print("        rebound share << bump share on one axle = that rebound is slowing the wheel's return.")
+    by_corner = {}
+    for L in laps:
+        for c in ctx.corners:
+            nm = ctx.cname(c)
+            u = L["dampers"].get("unload_s", {}).get(c["name"]) or L["dampers"].get("unload_s", {}).get(nm)
+            if not u:
+                continue
+            m0, m1 = c["spline_start"] * ctx.length, c["spline_end"] * ctx.length
+            by_corner.setdefault(nm, []).append((u, ctx.section_time(ctx.window(L, m0, m1))))
+    if by_corner:
+        print("\nwheel unload (<150 N) per corner, median s per pass and r(section time):")
+        for nm, rows in by_corner.items():
+            t = [r[1] for r in rows]
+            print("  %-22s " % nm + "  ".join("%s %.2f (%+.2f)" % (WHEELS[w], med(r[0][w] for r in rows),
+                                                              corr([r[0][w] for r in rows], t)) for w in range(4)))
+    return merged
+
+
+def damper_lowrate(ctx):
+    """Fallback for laps recorded before the damper histograms existed: wheel unload from 12 Hz samples."""
+    print("\nno damper histograms in these laps (recorded before capture existed); 12 Hz fallback:")
+    for c in ctx.corners:
+        m0, m1 = c["spline_start"] * ctx.length, c["spline_end"] * ctx.length
+        inner = (1, 3) if ctx.direction(c) > 0 else (0, 2)
+        rows = []
+        for L in ctx.laps:
+            s = [x for x in ctx.window(L, m0, m1) if "wheel_load" in x]
+            if len(s) < 5:
+                continue
+            lift = [sum(ctx.dt(p, q) for p, q in zip(s, s[1:]) if p["wheel_load"][w] < 150) for w in inner]
+            rows.append((lift, ctx.section_time(s)))
+        if rows:
+            print("  %-22s inner front lifted %.2f s, inner rear %.2f s per pass" % (
+                ctx.cname(c), med(r[0][0] for r in rows), med(r[0][1] for r in rows)))
+
+
+def cmd_dampers(args):
+    from acd_reader import read_car_data
+    from damper_model import damper_report, is_aero_car
+
+    ctx = None
+    car = args.car
+    if args.session:
+        ctx = Context(args.session, args.min_lap, args.max_lap, args.track_config, args.layout)
+        car = car or ctx.car
+    if not car:
+        raise SystemExit("pass --car or -s <session>")
+    files = read_car_data(os.path.join(AC_ROOT, "content", "cars", car))
+    if not files:
+        raise SystemExit("no car data for %s under %s" % (car, AC_ROOT))
+    aero = is_aero_car(files) if args.aero == "auto" else args.aero == "yes"
+    path = args.setup or default_setup_path(car)
+    saved = read_setup_ini(path) if path else {}
+
+    def report_fn(s):
+        return damper_report(files, s, aero)
+
+    r = report_fn(saved)
+    print("damper physics — %s (%s), setup: %s" % (car, "aero" if aero else "mechanical grip", path or "car defaults"))
+    print("  sprung mass %.0f kg + fuel %.1f kg" % (r["mass_kg"], r["fuel_kg"]))
+    for axle in ("FRONT", "REAR"):
+        a = r["axles"][axle]
+        print("  %-5s corner %5.1f kg  wheel rate %6.0f  arb %6.0f  ride %.2f Hz  roll %.2f Hz  hop %.1f Hz" % (
+            axle.lower(), a["sprung_corner_kg"], a["wheel_rate"], a["arb"], a["ride_hz"], a["roll_hz"], a["hop_hz"]))
+        print("        bump %5.0f (zeta ride %.2f / roll %.2f)  rebound %5.0f (zeta ride %.2f / roll %.2f)  R/B %.2f" % (
+            a["bump"], a["zeta_ride_bump"], a["zeta_roll_bump"], a["rebound"], a["zeta_ride_rebound"],
+            a["zeta_roll_rebound"], a["rebound_to_bump"]))
+        print("        fast dampers (fixed): bump %.0f above %.0f mm/s, rebound %.0f above %.0f mm/s; wheel-hop zeta %.2f" % (
+            a["fast_bump"], a["fast_bump_knee_mm_s"], a["fast_rebound"], a["fast_rebound_knee_mm_s"], a["zeta_hop_fast_bump"]))
+    print("  roll stiffness %.0f%% front, roll damping %.0f%% front" % (
+        100 * r["roll_stiffness_front"], 100 * r["roll_damping_front"]))
+    print("flags:")
+    for f in r["flags"] or ["none: every damping ratio is inside the usual window"]:
+        print("  - " + f)
+    moves = damper_moves(files, saved, report_fn)
+    if moves:
+        print("\nsingle-click moves (both sides of the axle):")
+        print("  %-30s %6s %16s %6s" % ("move", "zeta", "roll damp front", "flags"))
+        for m in moves:
+            print("  %-30s %6.2f %15.0f%% %6d" % (m["move"], m["zeta"], 100 * m["roll_damp_front"], m["flags"]))
+    if ctx is not None:
+        if damper_telemetry(ctx, r) is None:
+            damper_lowrate(ctx)
+    print("\ntest any move with A-B-A, >=5 clean laps each, and judge with `compare`: pace first —"
+          " keep only if the median lap is faster; calmer but slower = reject.")
+    return 0
+
+
 # ---------------------------------------------------------------- main
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("controls")
+    p = sub.add_parser("dampers")
+    p.add_argument("-s", "--session", action="append", help="sessions for histograms / unload (optional)")
+    p.add_argument("--car", help="car id (default: from the session)")
+    p.add_argument("--setup", help="setup .ini (default: setups/<car>/generic/last.ini = last driven)")
+    p.add_argument("--aero", choices=("auto", "yes", "no"), default="auto", help="override aero detection")
+    p.add_argument("--min-lap", type=float, default=0.0)
+    p.add_argument("--max-lap", type=float, default=1e9)
+    p.add_argument("--track-config")
+    p.add_argument("--layout")
     p = sub.add_parser("compare")
     p.add_argument("-a", action="append", required=True, help="group A session spec (repeatable)")
     p.add_argument("-b", action="append", required=True, help="group B session spec (repeatable)")
@@ -976,6 +1169,8 @@ def main(argv=None):
         return cmd_controls(args)
     if args.cmd == "compare":
         return cmd_compare(args)
+    if args.cmd == "dampers":
+        return cmd_dampers(args)
     ctx = Context(args.session, args.min_lap, args.max_lap, args.track_config, args.layout)
     return {"coast": cmd_coast, "corner": cmd_corner, "lines": cmd_lines, "sim": cmd_sim, "style": cmd_style}[args.cmd](ctx, args)
 

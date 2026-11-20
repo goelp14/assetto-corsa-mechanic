@@ -17,11 +17,16 @@ Rules for coach agent responses (`vre-teach-answer`, `vre-corner-coaching`).
 
 ## Analysis order
 
+Full method: [telemetry-analysis-playbook.md](telemetry-analysis-playbook.md).
+
 1. Controls sanity (pedal curves, wheel lock)
 2. KPI strip — potential gap, best vs typical lap
-3. Where — time-loss ranking, fast-vs-slow pass gap
-4. Why — cause chain for the selected corner only
-5. Drill — one action + cue + what it should feel like
+3. **Variance first (distance axis)** — rank 100–150 m cliffs; pick top 1–3
+4. **Brake → next brake** for the chosen cliff (loss often after apex / on the straight)
+5. Three questions: brake onset → minV (vs apex) → full-throttle **stay**
+6. Mask ACC auto-blip before judging overlap/coast
+7. Why — cause chain for that section only (entry → rotation → exit → straight)
+8. Drill — one action + landmark cue + success metric; retest 5 laps
 
 ## Tone
 

@@ -407,6 +407,27 @@ def car_id_from_session(records):
     return ""
 
 
+def game_from_session(records):
+    """Replay game id from session_start (default ac)."""
+    for r in records:
+        if r.get("record_type") == "session_start":
+            game = (r.get("game") or "ac").strip().lower()
+            if game in ("acc", "ac"):
+                return game
+            return "ac"
+    return "ac"
+
+
+def source_from_session(records):
+    """Optional provenance string from session_start (e.g. acc_rpy import)."""
+    for r in records:
+        if r.get("record_type") == "session_start":
+            src = r.get("source")
+            if src:
+                return str(src)
+    return ""
+
+
 def load_track_config(track_id):
     path = os.path.join(CFG, "tracks", "%s.json" % track_id)
     if not os.path.isfile(path):
@@ -502,6 +523,8 @@ def export_session(session_dir, output_dir, standalone=False):
     track_id = track_id_from_session(records)
     track_key = track_key_from_session(records, track_id)
     car_id = car_id_from_session(records)
+    session_game = game_from_session(records)
+    session_source = source_from_session(records)
     track_cfg = load_track_config(track_key) or load_track_config(track_id)
     spline = SplineIndexer(track_cfg)
     thresholds = load_thresholds()
@@ -811,6 +834,7 @@ def export_session(session_dir, output_dir, standalone=False):
         "track_display": track_cfg.get("display_name", track_id),
         "track_length_m": track_cfg.get("length_m", 3337),
         "car_id": car_id,
+        "game": session_game,
         "laps": lap_manifest,
         "best_lap_ms": best_ms,
         "theoretical_best_ms": theoretical_ms,
@@ -830,6 +854,8 @@ def export_session(session_dir, output_dir, standalone=False):
             )
         ),
     }
+    if session_source:
+        manifest["source"] = session_source
     coach_notes_path = os.path.join(analysis_dir, "coach_notes.json")
     if os.path.isfile(coach_notes_path):
         manifest["coach_notes"] = "analysis/coach_notes.json"
@@ -909,14 +935,68 @@ def sync_session(session_dir, exports_root, force=False):
         return json.load(fh)
 
 
+def _index_entry_from_manifest(name, manifest):
+    entry = {
+        "id": name,
+        "track": manifest.get("track_display", manifest.get("track_id", "")),
+        "track_id": manifest.get("track_id", ""),
+        "best_lap_ms": manifest.get("best_lap_ms"),
+        "theoretical_best_ms": manifest.get("theoretical_best_ms"),
+        "lap_count": len(manifest.get("laps", [])),
+        "bundle_url": "/bundles/%s" % name,
+        "game": manifest.get("game") or "ac",
+        "archive_note": manifest.get("archive_note", ""),
+        "has_world_coords": manifest.get("has_world_coords", False),
+        "has_projected_coords": manifest.get("has_projected_coords", False),
+    }
+    if manifest.get("source"):
+        entry["source"] = manifest["source"]
+    return entry
+
+
+def rebuild_sessions_index_from_exports(exports_root=None, sessions_root=None):
+    """Rebuild sessions_index.json from every exported manifest (AC + ACC)."""
+    exports_root = exports_root or os.path.join(REPO, "exports")
+    sessions_root = sessions_root or default_sessions_root()
+    index = []
+    if os.path.isdir(exports_root):
+        for name in sorted(os.listdir(exports_root), reverse=True):
+            man_path = os.path.join(exports_root, name, "manifest.json")
+            if not os.path.isfile(man_path):
+                continue
+            try:
+                with open(man_path) as fh:
+                    manifest = json.load(fh)
+            except (OSError, ValueError):
+                continue
+            index.append(_index_entry_from_manifest(name, manifest))
+    payload = {
+        "sessions": index,
+        "sessions_root": sessions_root,
+        "exports_root": exports_root,
+        "latest_id": index[0]["id"] if index else None,
+        "count": len(index),
+    }
+    index_path = os.path.join(exports_root, "sessions_index.json")
+    with open(index_path, "w") as fh:
+        json.dump(payload, fh, indent=2)
+    return payload
+
+
 def sync_all_sessions(exports_root=None, sessions_root=None, force=False, quiet=False):
-    """Export every VRE session under sessions_root (incremental). Returns API index."""
+    """Export every VRE session under sessions_root (incremental). Returns API index.
+
+    Also merges any other already-exported bundles under exports_root (e.g. ACC
+    sessions living in data/sessions_acc) so a single-root sync cannot wipe the
+    picker index for the other game.
+    """
     exports_root = exports_root or os.path.join(REPO, "exports")
     sessions_root = sessions_root or default_sessions_root()
     os.makedirs(exports_root, exist_ok=True)
 
     sessions = list_sessions(sessions_root)
-    index = []
+    synced_ids = set()
+    index_by_id = {}
     for name, path in sessions:
         if not glob_laps(path):
             if not quiet:
@@ -928,24 +1008,34 @@ def sync_all_sessions(exports_root=None, sessions_root=None, force=False, quiet=
             manifest = sync_session(path, exports_root, force=force)
             if not quiet:
                 print("ok (%.3fs best)" % (manifest.get("best_lap_ms", 0) / 1000.0))
-            index.append({
-                "id": name,
-                "track": manifest.get("track_display", manifest.get("track_id", "")),
-                "track_id": manifest.get("track_id", ""),
-                "best_lap_ms": manifest.get("best_lap_ms"),
-                "theoretical_best_ms": manifest.get("theoretical_best_ms"),
-                "lap_count": len(manifest.get("laps", [])),
-                "bundle_url": "/bundles/%s" % name,
-                "archive_note": manifest.get("archive_note", ""),
-                "has_world_coords": manifest.get("has_world_coords", False),
-                "has_projected_coords": manifest.get("has_projected_coords", False),
-            })
+            index_by_id[name] = _index_entry_from_manifest(name, manifest)
+            synced_ids.add(name)
         except Exception as exc:
             if not quiet:
                 print("FAILED: %s" % exc, file=sys.stderr)
             else:
                 print("Sync failed for %s: %s" % (name, exc), file=sys.stderr)
 
+    # Preserve / include other game bundles already exported
+    if os.path.isdir(exports_root):
+        for name in os.listdir(exports_root):
+            if name in index_by_id:
+                continue
+            man_path = os.path.join(exports_root, name, "manifest.json")
+            if not os.path.isfile(man_path):
+                continue
+            try:
+                with open(man_path) as fh:
+                    manifest = json.load(fh)
+            except (OSError, ValueError):
+                continue
+            index_by_id[name] = _index_entry_from_manifest(name, manifest)
+
+    index = sorted(
+        index_by_id.values(),
+        key=lambda e: e.get("id") or "",
+        reverse=True,
+    )
     payload = {
         "sessions": index,
         "sessions_root": sessions_root,

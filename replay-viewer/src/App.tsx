@@ -20,7 +20,12 @@ import {
   type SessionIndexEntry,
   type SessionsIndex,
 } from "./components/SessionPicker";
-import { computeDelta, computeStitchedDelta, useReplayData } from "./hooks/useReplayData";
+import {
+  computeDelta,
+  computeStitchedDelta,
+  fetchBestLapSamples,
+  useReplayData,
+} from "./hooks/useReplayData";
 import {
   detectChannelAvailability,
   mergeLayersWithAvailability,
@@ -29,7 +34,15 @@ import { preparePlotSeries } from "./utils/telemetryDerived";
 import { contractViewRange, expandViewRange, MIN_SELECT_SPAN, normalizeSplineRange, padSplineRange } from "./utils/viewRange";
 import { throttle } from "./utils/throttle";
 import { lapTimeLabel } from "./utils/formatCoachDrill";
-import { defaultLayers, type Annotation, type ChannelAvailability, type CornerTimeLoss, type LayerState } from "./types";
+import {
+  defaultLayers,
+  type Annotation,
+  type ChannelAvailability,
+  type CornerTimeLoss,
+  type LayerState,
+  type LapSample,
+  type ReplayGame,
+} from "./types";
 import "uplot/dist/uPlot.min.css";
 
 function cleanLapTrap(summary: { potential_gap_s?: number } | null) {
@@ -52,6 +65,14 @@ function setSessionUrl(id: string) {
     url.searchParams.delete("bundle");
   }
   window.history.replaceState({}, "", url.toString());
+}
+
+function entryGame(entry: SessionIndexEntry): ReplayGame {
+  return entry.game ?? "ac";
+}
+
+function manifestGame(manifest: { game?: ReplayGame } | undefined): ReplayGame {
+  return manifest?.game ?? "ac";
 }
 
 function loadViewMode(): "guided" | "explore" {
@@ -83,6 +104,9 @@ export default function App() {
 
   const [selectedLap, setSelectedLap] = useState<number | null>(null);
   const [compareLap, setCompareLap] = useState<number | null>(null);
+  const [externalRefId, setExternalRefId] = useState<string | null>(null);
+  const [externalRefSamples, setExternalRefSamples] = useState<LapSample[]>([]);
+  const [externalRefLoading, setExternalRefLoading] = useState(false);
   const [playheadSpline, setPlayheadSpline] = useState(0);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [selectedCorner, setSelectedCorner] = useState<string | null>(null);
@@ -122,6 +146,8 @@ export default function App() {
       setSessionUrl(entry.id);
       setSelectedLap(null);
       setCompareLap(null);
+      setExternalRefId(null);
+      setExternalRefSamples([]);
       setSelectedAnnotation(null);
       load(entry.bundle_url);
     },
@@ -182,9 +208,57 @@ export default function App() {
   const activeLap = selectedLap ?? bestLapNum ?? lapNums[lapNums.length - 1] ?? null;
 
   const compareSamples = useMemo(() => {
+    if (externalRefSamples.length) return externalRefSamples;
     if (compareLap == null || activeLap == null || compareLap === activeLap || !data) return [];
     return data.laps.get(compareLap)?.samples ?? [];
-  }, [compareLap, activeLap, data]);
+  }, [compareLap, activeLap, data, externalRefSamples]);
+
+  const currentBestMs =
+    data?.manifest.best_lap_ms ??
+    data?.stintSummary?.best_lap_ms ??
+    activeSession?.best_lap_ms ??
+    null;
+
+  const fasterAccReferences = useMemo(() => {
+    if (!sessionsIndex || !data || manifestGame(data.manifest) !== "acc") return [];
+    const trackId = data.manifest.track_id;
+    const selfId = activeSession?.id ?? data.manifest.session_id;
+    return sessionsIndex.sessions
+      .filter(
+        (s) =>
+          entryGame(s) === "acc" &&
+          s.track_id === trackId &&
+          s.id !== selfId &&
+          s.best_lap_ms != null &&
+          (currentBestMs == null || s.best_lap_ms < currentBestMs),
+      )
+      .sort((a, b) => (a.best_lap_ms ?? Infinity) - (b.best_lap_ms ?? Infinity));
+  }, [sessionsIndex, data, activeSession?.id, currentBestMs]);
+
+  const externalRefEntry = useMemo(
+    () => fasterAccReferences.find((s) => s.id === externalRefId) ?? null,
+    [fasterAccReferences, externalRefId],
+  );
+
+  useEffect(() => {
+    if (!externalRefId || !externalRefEntry) {
+      setExternalRefSamples([]);
+      return;
+    }
+    let cancelled = false;
+    setExternalRefLoading(true);
+    fetchBestLapSamples(externalRefEntry.bundle_url)
+      .then((samples) => {
+        if (cancelled) return;
+        setExternalRefSamples(samples);
+      })
+      .finally(() => {
+        if (!cancelled) setExternalRefLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [externalRefId, externalRefEntry]);
   const allBundleSamples = useMemo(() => {
     if (!data) return [];
     const out: typeof samples = [];
@@ -237,6 +311,12 @@ export default function App() {
       setCompareLap(null);
     }
   }, [activeLap, compareLap]);
+
+  useEffect(() => {
+    if (externalRefId && !fasterAccReferences.some((s) => s.id === externalRefId)) {
+      setExternalRefId(null);
+    }
+  }, [externalRefId, fasterAccReferences]);
 
   const activeTimeLoss = useMemo(() => {
     if (!data?.timeLoss || activeLap == null) return null;
@@ -478,9 +558,12 @@ export default function App() {
     );
   }
 
+  const isAccSession = manifestGame(data?.manifest) === "acc";
+
   return (
-    <div className="app-shell">
+    <div className={isAccSession ? "app-shell app-shell--acc" : "app-shell"}>
       <header
+        className={isAccSession ? "app-header app-header--acc" : "app-header"}
         style={{
           padding: "12px 20px",
           borderBottom: "1px solid #334155",
@@ -491,6 +574,11 @@ export default function App() {
         }}
       >
         <strong>
+          {isAccSession && (
+            <span className="acc-badge" title="Assetto Corsa Competizione" style={{ marginRight: 8 }}>
+              ACC
+            </span>
+          )}
           {data?.manifest.track_display ?? "VRE Replay"}
           {data?.manifest.car_id && (
             <span style={{ fontWeight: 400, color: "#64748b", marginLeft: 8, fontSize: 12 }}>
@@ -507,7 +595,9 @@ export default function App() {
             }}
             style={{ maxWidth: 280 }}
           >
-            {sessionsIndex.sessions.map((s) => (
+            {sessionsIndex.sessions
+              .filter((s) => !data || entryGame(s) === manifestGame(data.manifest))
+              .map((s) => (
               <option key={s.id} value={s.id}>
                 {s.track} — {s.id.slice(0, 10)}… ({((s.best_lap_ms ?? 0) / 1000).toFixed(3)}s)
               </option>
@@ -565,6 +655,7 @@ export default function App() {
             Compare trace
             <select
               value={compareLap ?? ""}
+              disabled={!!externalRefId}
               onChange={(e) => {
                 const v = e.target.value;
                 setCompareLap(v === "" ? null : Number(v));
@@ -581,8 +672,37 @@ export default function App() {
                 ))}
             </select>
           </label>
+          {isAccSession && fasterAccReferences.length > 0 && (
+            <label className="lap-select-label" title="Overlay a faster best lap from another ACC session on this track">
+              Faster reference
+              <select
+                value={externalRefId ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setExternalRefId(v === "" ? null : v);
+                  if (v) setCompareLap(null);
+                }}
+              >
+                <option value="">None — in-stint compare only</option>
+                {fasterAccReferences.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.id.slice(0, 14)}… · {((s.best_lap_ms ?? 0) / 1000).toFixed(3)}s best
+                  </option>
+                ))}
+              </select>
+              {externalRefLoading && (
+                <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: 6 }}>loading…</span>
+              )}
+            </label>
+          )}
         </div>
-        {compareLap != null && activeLap != null && (
+        {externalRefEntry && activeLap != null && externalRefSamples.length > 0 && (
+          <span className="compare-legend">
+            Green = {lapTimeLabel(data!.manifest.laps, activeLap)} · dashed blue = faster ref (
+            {((externalRefEntry.best_lap_ms ?? 0) / 1000).toFixed(3)}s · {externalRefEntry.id.slice(0, 12)}…)
+          </span>
+        )}
+        {compareLap != null && activeLap != null && !externalRefId && (
           <span className="compare-legend">
             Green = {lapTimeLabel(data!.manifest.laps, activeLap)} · dashed blue ={" "}
             {lapTimeLabel(data!.manifest.laps, compareLap)}

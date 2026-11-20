@@ -27,7 +27,7 @@ export interface ReplayBundle {
   sessionPlan: SessionPlan | null;
 }
 
-async function fetchJson<T>(base: string, path: string): Promise<T | null> {
+export async function fetchBundleJson<T>(base: string, path: string): Promise<T | null> {
   try {
     const root = base.replace(/\/$/, "");
     const rel = path.replace(/^\//, "");
@@ -60,30 +60,30 @@ export function useReplayData(bundleBase: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const manifest = await fetchJson<Manifest>(base, "manifest.json");
+      const manifest = await fetchBundleJson<Manifest>(base, "manifest.json");
       if (!manifest) throw new Error("manifest.json not found");
 
-      const geometry = await fetchJson<Geometry>(base, manifest.geometry);
+      const geometry = await fetchBundleJson<Geometry>(base, manifest.geometry);
       const annotations =
-        (await fetchJson<Annotation[]>(base, "analysis/annotations.json")) ?? [];
+        (await fetchBundleJson<Annotation[]>(base, "analysis/annotations.json")) ?? [];
       const coachNotesPayload = manifest.coach_notes
-        ? await fetchJson<{ notes?: Annotation[] }>(base, manifest.coach_notes)
+        ? await fetchBundleJson<{ notes?: Annotation[] }>(base, manifest.coach_notes)
         : null;
       const coachNotes = coachNotesPayload?.notes ?? [];
-      const stintSummary = await fetchJson<StintSummary>(
+      const stintSummary = await fetchBundleJson<StintSummary>(
         base,
         "analysis/stint_summary.json",
       );
       const setupEpisodes =
-        (await fetchJson<SetupEpisode[]>(base, "analysis/setup_episodes.json")) ?? [];
+        (await fetchBundleJson<SetupEpisode[]>(base, "analysis/setup_episodes.json")) ?? [];
       const setupTimeline =
-        (await fetchJson<SetupEpisode[]>(base, "analysis/setup_timeline.json")) ??
+        (await fetchBundleJson<SetupEpisode[]>(base, "analysis/setup_timeline.json")) ??
         setupEpisodes;
-      const ggEnvelope = await fetchJson<{ peak_ay: number[] }>(
+      const ggEnvelope = await fetchBundleJson<{ peak_ay: number[] }>(
         base,
         "analysis/gg_envelope.json",
       );
-      const narrativeJson = await fetchJson<{
+      const narrativeJson = await fetchBundleJson<{
         markdown?: string;
         sections?: { corner_id?: string; heading: string; body: string }[];
       }>(base, "analysis/narrative.json");
@@ -92,12 +92,12 @@ export function useReplayData(bundleBase: string | null) {
       if (!narrative) {
         narrative = await fetchText(base, "analysis/narrative.md");
       }
-      const timeLoss = await fetchJson<TimeLossAnalysis>(base, "analysis/time_loss.json");
-      const sessionPlan = await fetchJson<SessionPlan>(base, "analysis/session_plan.json");
+      const timeLoss = await fetchBundleJson<TimeLossAnalysis>(base, "analysis/time_loss.json");
+      const sessionPlan = await fetchBundleJson<SessionPlan>(base, "analysis/session_plan.json");
 
       const laps = new Map<number, LapData>();
       for (const entry of manifest.laps) {
-        const lap = await fetchJson<LapData>(base, entry.file);
+        const lap = await fetchBundleJson<LapData>(base, entry.file);
         if (lap) laps.set(entry.lap, lap);
       }
 
@@ -128,6 +128,25 @@ export function useReplayData(bundleBase: string | null) {
   }, [bundleBase, load]);
 
   return { data, loading, error, load };
+}
+
+/** Best-lap samples from another export bundle (ACC faster-reference overlay). */
+export async function fetchBestLapSamples(bundleUrl: string): Promise<LapSample[]> {
+  const manifest = await fetchBundleJson<Manifest>(bundleUrl, "manifest.json");
+  if (!manifest?.laps.length) return [];
+
+  let bestEntry = manifest.laps[0];
+  if (manifest.best_lap_ms != null) {
+    const match = manifest.laps.find((l) => l.lap_time_ms === manifest.best_lap_ms);
+    if (match) bestEntry = match;
+  } else {
+    for (const entry of manifest.laps) {
+      if (entry.lap_time_ms < bestEntry.lap_time_ms) bestEntry = entry;
+    }
+  }
+
+  const lap = await fetchBundleJson<LapData>(bundleUrl, bestEntry.file);
+  return lap?.samples ?? [];
 }
 
 export function computeStitchedDelta(

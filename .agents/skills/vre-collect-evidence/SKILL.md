@@ -29,6 +29,24 @@ python -m external.query_tools.coach pack \
 - `session_plan.items` — drills
 - `sample_window` — playhead-scoped samples
 
+## ACC evidence gates (no guessing)
+
+- **MoTeC `.ld`:** full native-rate channels via `acc_ingest.motec_analysis_ld.load_ld_channels`; never truncate all series to the shortest length. Analysis overlays: `python -m external.query_tools.acc_ingest.motec_analysis_ld FILE.ld --out /tmp/vre_analysis.ld`.
+- **`.rpy` laps:** GO via `extract_lap_times_ms` only.
+- **`.rpy` pedals/speed/validity/named weather:** NO-GO until Motec/SHM locked — do not cite. Raw `RPY_WEATHER_*` OK as floats; hypothesis names are not setup proof.
+- EN_* Motec channels: pass-through only until named.
+
+## Lap-compare evidence (required method)
+
+Follow `docs/coach/telemetry-analysis-playbook.md` before writing advice:
+
+1. Align on **distance** (Motec corrected distance and/or pose `dist_m` / spline) — never time overlays for technique claims.
+2. Build **cumulative variance** vs reference; cite top cliffs (Δt and metre range).
+3. For each cliff, export a **brake → next brake** window with: brake onset (m, V), peak brake, turn-in sync, minV (m vs apex), sustained FT≥95 distance, exit speeds at +100/+200/+400 m.
+4. **Mask auto-blip** on THROTTLE (`brk>30` + downshift or 1-sample spike) before coast/overlap claims.
+5. Prefer same-car reference; if gap ≫ 1 s, only coach the steepest variance cliffs.
+6. Online refresh when stuck: Popometer patterns, SOLOX Compare 3Q, MoTeC variance — do not invent new “overlap” myths.
+
 ## Session-level evidence (no bundle needed)
 
 For root cause, lines, potential and live coaching, read session laps directly:
