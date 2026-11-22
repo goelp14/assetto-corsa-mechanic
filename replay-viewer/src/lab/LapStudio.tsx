@@ -670,7 +670,7 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
             <MapLegend colorBy={mapColor} hasB={!!pb} />
             {scene && (
               <div className="lab-caption">
-                <b>{scene.title}</b> {scene.narration}
+                <b>{scene.title}</b> {!active?.pauseText && scene.narration}
                 {active?.pauseText && (
                   <div className="lab-caption-pause">
                     {active.pauseText}{" "}
