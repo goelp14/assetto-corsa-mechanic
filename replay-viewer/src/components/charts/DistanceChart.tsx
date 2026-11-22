@@ -348,7 +348,7 @@ export function DistanceChart({
         sync: { key: SYNC_KEY, setSeries: true },
         drag: { x: true, y: false, setScale: false },
       },
-      select: { show: true },
+      select: { show: true, left: 0, top: 0, width: 0, height: 0 },
       hooks: {
         drawClear: [
           (u) => {
@@ -373,7 +373,7 @@ export function DistanceChart({
             const hi = Math.min(1, Math.max(x0, x1));
             const pad = Math.max(0.002, (hi - lo) * 0.03);
             onZoomRef.current?.([Math.max(0, lo - pad), Math.min(1, hi + pad)]);
-            u.setSelect({ left: 0, width: 0 }, false);
+            u.setSelect({ left: 0, top: 0, width: 0, height: 0 }, false);
           },
         ],
       },

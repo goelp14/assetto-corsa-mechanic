@@ -131,9 +131,9 @@ export function CoachPanel({
               <p>{response.drill || response.how}</p>
             </div>
           )}
-          {response.citations?.length > 0 && (
+          {(response.citations?.length ?? 0) > 0 && (
             <div className="coach-citations">
-              {response.citations.map((c) => (
+              {(response.citations ?? []).map((c) => (
                 <span key={c} className="coach-cite">
                   {c}
                 </span>

@@ -141,6 +141,10 @@ export default function App() {
 
   const openSession = useCallback(
     (entry: SessionIndexEntry) => {
+      if ((entry as SessionIndexEntry & { schema?: string }).schema === "vre.replay_bundle.acc.v2") {
+        window.location.search = `?session=${encodeURIComponent(entry.id)}`;
+        return;
+      }
       setActiveSession(entry);
       setShowPicker(false);
       setSessionUrl(entry.id);

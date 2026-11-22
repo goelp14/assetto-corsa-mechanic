@@ -40,7 +40,7 @@ export function initialViewport(b: MapBounds): MapViewport {
 }
 
 export function viewportForWorldRect(
-  b: MapBounds,
+  _b: MapBounds,
   minX: number,
   maxX: number,
   minZ: number,

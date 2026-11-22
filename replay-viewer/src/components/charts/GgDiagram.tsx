@@ -45,7 +45,6 @@ function usageArcPath(
 
 export function GgDiagram({
   samples,
-  compareSamples,
   playheadSpline,
   viewRange,
   peakAy,

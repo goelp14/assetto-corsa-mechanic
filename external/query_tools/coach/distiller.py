@@ -36,8 +36,8 @@ MENTAL_MODELS: List[Dict[str, Any]] = [
      "correct": "Once the car is pointed, go to throttle and unwind the wheel with it; the throttle and the "
                 "unwind happen together.",
      "why": "Waiting for a straight wheel delays the acceleration phase that carries onto the straight.",
-     "drill": "Reach full throttle {ft_where_ref}, {ft_gap:.0f} m ({ft_gap_cl}) {ft_dir} than now, unwinding as you squeeze.",
-     "metric": "full throttle within a car length of {ft_where_ref} on 4 of 5 laps", "group": "exit"},
+     "drill": "Commit to full throttle with lock still on: the reference is flat {ref_ft_phrase}; you are flat {you_ft_phrase}. Squeeze to full as you unwind.",
+     "metric": "full throttle before the wheel is straight on 4 of 5 laps", "group": "exit"},
     {"id": "brake_through_crest", "habits": ["braking_over_crest"],
      "belief": "Keep braking the same over every part of the braking zone",
      "correct": "A crest takes load off the tyres: brake hard before it and be done (or very light) over it.",
@@ -111,6 +111,13 @@ def build_fix(mm, habit, analysis) -> Optional[Dict[str, Any]]:
     gap = nums["you_ft"] - nums["ref_ft"]
     nums.update(ft_gap=abs(gap), ft_gap_cl=landmarks.car_lengths(gap, cl), ft_dir="earlier" if gap > 0 else "later",
                 ft_where_ref="where the reference does", crest_where=f"at {nums['crest_m']:.0f} m")
+    ev = inst.get("evidence") or {}
+    if "you_full_throttle_vs_straight_m" in ev:
+        def _ph(d: float) -> str:  # d = full-throttle point minus wheel-straight point (m)
+            if abs(d) < 3:
+                return "as the wheel straightens"
+            return f"{abs(d):.0f} m ({landmarks.car_lengths(d, cl)}) {'before' if d < 0 else 'after'} the wheel is straight"
+        nums.update(you_ft_phrase=_ph(ev["you_full_throttle_vs_straight_m"]), ref_ft_phrase=_ph(ev.get("ref") or 0.0))
     if corners and nums["ref_ft"]:
         anc = landmarks.anchor_corner(nums["ref_ft"], "full_throttle_m", corners, corners[0])
         nums["ft_where_ref"] = landmarks.anchor_phrase(nums["ref_ft"], anc)["text"]
