@@ -5,6 +5,8 @@ description: Use when the driver is on track and laps are arriving (monitor noti
 
 # VRE Live Session
 
+**Scope: AC/VRE live telemetry (ACC live via the shared-memory logger).**
+
 ## Setup
 
 - Run a background monitor over the live session dir that prints one block per lap

@@ -5,6 +5,8 @@ description: Use when the user asks why they spun, crashed, lost control, or had
 
 # VRE Incident Analysis
 
+**Scope: Cross-game method (AC sessions today; ACC replays carry slip angle and yaw rate for the same checks).**
+
 Deep-read loss-of-control evidence.
 
 ## Steps

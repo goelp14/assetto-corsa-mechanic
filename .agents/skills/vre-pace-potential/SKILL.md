@@ -5,6 +5,8 @@ description: Use when the driver asks how fast they could go, how far from alien
 
 # VRE Pace Potential and Style
 
+**Scope: Cross-game (ACC replays: `analysis.drivers.<d>.theoretical`).**
+
 ## Achievable lap time
 
 ```bash

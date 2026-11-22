@@ -5,6 +5,8 @@ description: Use for ACC GT3 garage setup (aero, springs/ARB, dampers, diff, bra
 
 # VRE ACC Setup
 
+**Scope: ACC only.**
+
 **Assetto Corsa Competizione** GT3. Goal: **repeatable stint pace**, not a calmer car.
 
 ## Sources (read first)
@@ -19,6 +21,15 @@ description: Use for ACC GT3 garage setup (aero, springs/ARB, dampers, diff, bra
 | `vre-setup-and-controls` / `vre-root-cause` | Sonoma 312/67: controls first, coast B+C ≠ soft car |
 
 Filter any free-text advice through `reject_pre_19_advice`; reject legacy hot-pressure meta (~27.5–29 psi) without citing **26–27 psi** dry hot window.
+
+## From a replay (no setup file in the .rpy)
+
+ACC replays do not contain the setup. `vre-rpy setup --rpy ME --ref REF --out s.json --setups-dir <ACC Setups>` gives:
+exact gearing per gear, tyre radii, mass and weight split; estimated aero load and balance, braking slip front share
+(balanced = 0.5, not the load share), roll stiffness share, diff inside-wheel spin, TC/ABS activity; and the library
+setups for this car/track sorted by date. A difference inside 2× the lap-to-lap noise is "can't tell" — say so.
+Magnitudes per click need per-car calibration (A-B-A runs) — until then give direction + mechanism only.
+Note: `external/query_tools/acc_rpy/` is a local, gitignored RE workspace; the public decoder is `vre_rpy`.
 
 ## Doctrine
 

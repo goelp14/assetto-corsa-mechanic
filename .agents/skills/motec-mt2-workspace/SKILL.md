@@ -82,3 +82,12 @@ Pass criteria:
 | Workspace writer | `external/query_tools/acc_rpy/motec_workspace.py` |
 | Size-safe .mt2 labels | `external/query_tools/acc_rpy/mt2_sections.py` |
 | Pristine Spa map | `external/query_tools/acc_rpy/track_pack/mt2/Spa.mt2` |
+
+## VRE pose channels (vre-rpy export v2, ACC)
+
+Exports add, beside the native lanes: `GPS_LAT/LONG` from pose, wrap-safe `LAP_DIST`, `VRE_BETA_DEG` (body slip),
+`VRE_YAW_RATE`, `VRE_UNDERSTEER_DEG` (steering ratio assumed 11:1 — compare, don't read absolutely), `VRE_ELEV/GRADE/VERT_CURV`
+(terrain), `VRE_EDGE_ALL4/ANY_L/R_M` and `VRE_LAT_OFFSET_M` (line + limits), `VRE_CORNER_ID`, `VRE_VALID`, `VRE_CUT_JUDGED`,
+`VRE_PRED_LAP_S/DELTA_S`, `VRE_SYNC_OK` (only trust laps where it is 1), `VRE_LOAD_TOTAL`, `VRE_TC_EST`/`VRE_ABS_EST`
+(slip-based estimates, not the game's flags). Worksheets: **VRE Corner**, **VRE Terrain**, **VRE Limits**.
+`vre-rpy verify` checks all-zero channels, LAP_DIST resets and GPS vs LAP_DIST scale.

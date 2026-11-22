@@ -5,6 +5,8 @@ description: Use when the driver loses time at a corner, hesitates on throttle, 
 
 # VRE Root Cause
 
+**Scope: Cross-game method. `driver_lab.py` commands read AC/VRE live sessions; for ACC replays use the same reasoning on `analysis.json` events.**
+
 Late throttle, coasting and running wide are almost always **outputs**. The driver lifts or waits because the car is not
 pointed, is on the wrong part of the road, or is about to step out. Find which, and what upstream input caused it.
 

@@ -5,6 +5,8 @@ description: Use for ACC GT3 tyre pressures, temps, graining, and cold-stint beh
 
 # VRE ACC Tyres
 
+**Scope: ACC only.**
+
 ACC **1.9+** tyre model. Cold garage psi is a starting point; **hot stint telemetry** is the truth.
 
 ## Sources

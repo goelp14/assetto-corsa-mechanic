@@ -5,6 +5,8 @@ description: Use when the user asks about lap telemetry, spins, corner technique
 
 # VRE Coach Router
 
+**Scope: Cross-game (AC + ACC) entry point; routes to game-specific skills.**
+
 Entry point for every driver-coaching question. Pick the route, gather evidence, find the root cause, then answer.
 
 ## Ground rules (learned the hard way)
@@ -22,8 +24,10 @@ Entry point for every driver-coaching question. Pick the route, gather evidence,
    is better — propose a 5-lap test instead.
 5. **Corners are coupled.** Check the next corner before praising a faster exit/min speed: T3→T3a and T8→T8a traded time
    (r ≈ −0.4…−0.6). Treat complexes as one corner.
-6. **Visual cues, not metres.** Drivers have no distance boards. Translate every point into a landmark
-   (`objs_on_track.json`-style object scan, kerbs, pit-lane split, crests) and say when a cue is unverified.
+6. **Driver language, not lap metres.** "Brake at 266 m" is useless in the car. Say where relative to what the driver
+   sees: braking boards (ACC tracks have them at most braking zones — use only curated positions), the corner's apex,
+   kerbs, crests, track objects, and gaps in car lengths ("the faster lap reaches full brake 7 car lengths earlier").
+   `external/query_tools/coach/landmarks.py` does this for replay coaching; mark unverified cues as such.
 7. **Pace first, always.** Never recommend a setup or technique change because it makes the car calmer; only because it
    makes the driver faster (or equally fast and more confident). "More stable but slower" is a failed change.
 8. **Fit the driver, not a template.** Read the driver profile before setup or style advice; extend their natural style.
@@ -46,12 +50,23 @@ When `game` is **acc**, car id is **`ferrari_296_gt3`** (or other ACC GT3), or s
 
 Keep AC routes below unchanged for non-ACC cars.
 
+## Game scope
+
+| Applies to both AC and ACC | AC only | ACC only |
+|---|---|---|
+| router, collect-evidence (method), root-cause, line-analysis, corner-coaching, incident-analysis, explain-dynamics, driver-profile, pace-potential, teach-answer, annotate-replay, video-review, car-research | setup-and-controls, dampers (workflow), driver_lab commands on VRE sessions | acc-replay-analysis, acc-setup, acc-tyres, acc-electronics, `.rpy` gates, motec-mt2-workspace (ACC exports) |
+
+Technique and physics are universal; numbers (click units, pressure windows, bias offsets, magnitudes per click) are
+car- and game-specific — research or measure them (`vre-car-research`), never carry them across cars.
+
 ## Data sources
 
 | Source | When | Tool |
 |--------|------|------|
 | Live/archived session dirs (`.../VirtualRaceEngineer/data/sessions/<id>/laps/lap_NN.json`) | Live coaching, root cause, lines, sim | `python external/query_tools/driver_lab.py <cmd> -s <session> ...` |
 | Replay bundles (`exports/<session_id>/`) | Replay viewer questions, citations | `python -m external.query_tools.coach pack/ask` |
+| ACC `.rpy` replays → Lap Studio bundle (`exports/lab_*/`) | Lap compare vs a faster replay, corners, limits, setup read-out | `./replay.sh --rpy me.rpy:You --ref fast.rpy:Ref`, `vre-rpy` CLI |
+| Lap Studio viewer (open in the browser) | Video review, live annotations | MCP `vre-viewer` (`external/query_tools/viewer_mcp.py`) |
 | AC `controls.ini` | Input feel, "miscalibration" | `driver_lab.py controls` |
 | Driver profile (`ac_app/data/driver_profile.json`) | Style, preferences, setup fit, trends | `driver_lab.py style` |
 | Setup A/B | Any setup or controls change | `driver_lab.py compare -a ... -b ...` |
@@ -77,6 +92,9 @@ Always pass `--min-lap/--max-lap` to drop spins, offs and out-laps, and group la
 | "how fast could I be", alien gap, driver comparisons | `vre-pace-potential` |
 | "what's my style", style trend, end of session | `vre-driver-profile` |
 | driver is on track and laps are arriving | `vre-live-session` |
+| ACC `.rpy` replays (own and/or a faster driver's): compare, corners, limits, setup read-out | `vre-acc-replay-analysis` |
+| "show me", video review, annotate the replay, Lap Studio is open | `vre-video-review` |
+| car-specific facts: setup ranges, units, bias offsets, traits, a car with no profile | `vre-car-research` |
 
 Most real questions chain: e.g. slow exit → `vre-root-cause` → `vre-line-analysis` (entry position) → `vre-corner-coaching` (cues).
 Setup questions always chain: `vre-setup-and-controls` (controls check) → `vre-root-cause` (is it technique?) →

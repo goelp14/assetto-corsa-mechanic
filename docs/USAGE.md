@@ -51,6 +51,28 @@ Hard-refresh after viewer updates (`Ctrl+Shift+R`).
 
 Optional coach chat: set `VRE_COACH=1` when running `./replay.sh`.
 
+### ACC Lap Studio (replays)
+
+```bash
+pip install -e .[acc]                                          # vre-rpy decoder + numpy
+./replay.sh --rpy "<ACC>/Replay/Saved/mine.rpy:You" --ref "faster.rpy:Ref"   # build a bundle, then open it
+vre-rpy cars mine.rpy                                          # race/MP replays: pick cars with --car-index / --ref-car-index
+```
+
+Bundles land in `exports/lab_*` and show first on the home page. Works with one replay (compares your own laps) or two.
+
+| Feature | How |
+|---------|-----|
+| Laps | **A** / **B** selectors (any lap of either driver; ★ = best, ✕ = invalid) |
+| Playback | Space, ← → frame step (Shift = 1 s), `[` `]` rate 0.1–4×, scrubber |
+| Same place / same moment | `m` — compare inputs metre by metre, or release both cars together and watch the gap |
+| Map | Scroll zoom, drag pan, click the line to seek, double-click fit, `f` follow; colour by gain/loss, speed, pedals, gear, lat g |
+| Traces | Drag = zoom range, scroll = zoom, Shift-scroll = pan, double-click = full lap; lanes toggle above |
+| Corners | Click a corner (strip, loss bars, coaching) to frame it; **▶** plays it side by side at 0.5× |
+| Notes | **+ Note** pins a note at the cursor (saved in the bundle) |
+| Video review | Play the automatic breakdown or AI/your reviews; build scenes from the current view |
+| AI control | `claude mcp add vre-viewer -- python3 external/query_tools/viewer_mcp.py` — the AI can seek, play, annotate and save reviews (numbers checked against the data) |
+
 ---
 
 ## Setup tweaks

@@ -5,6 +5,8 @@ description: Use when the driver asks about their racing line, turn-in point, ap
 
 # VRE Line Analysis
 
+**Scope: Cross-game method. Commands read AC/VRE sessions; ACC replays give the same line data (`lat_m`, edge margins) in Lap Studio frames.**
+
 Judge lines from the driver's **own** passes, not from the AI line. The AI line is only a fixed ruler for measuring
 lateral position.
 

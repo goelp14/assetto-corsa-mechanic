@@ -5,6 +5,8 @@ description: Use when the user asks why something happened mechanically — unde
 
 # VRE Explain Dynamics
 
+**Scope: Cross-game physics (universal; magnitudes are car-specific — see `vre-car-research`).**
+
 Ground mechanism explanations in evidence + glossary.
 
 ## Rules
@@ -37,3 +39,14 @@ Don't use raw `acc_g_lat` as a grip ceiling — kerbs and compressions inflate i
 the driven path (`driver_lab.py sim` prints per-corner values).
 
 **REQUIRED SUB-SKILL:** Use `vre-teach-answer`
+
+## Measured mechanisms (replays, any car)
+
+`external/query_tools/coach/physics.py` turns measured car state into mechanisms — use these instead of generic claims:
+
+- `crest_effect(expected_dg)` — load change over a crest/dip from track curvature × speed² (`pack.terrain[].dg_at_100kmh`
+  scales with (v/100)²). Crest = light car: finish braking before it. Dip = loaded car: a place to brake, turn or apply power.
+- `braking_balance_check` — braking slip front share vs **0.5** (equal slip = both axles near peak; the force split then
+  follows the dynamic load split by itself). Not vs the load share.
+- `load_transfer(car_state, lat_g)`, `aero_at(car_state, speed)` — measured lateral transfer split and downforce.
+- `MECHANISM` — direction + why for each setup lever; magnitudes only from per-car calibration (`vre-car-research`).

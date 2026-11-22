@@ -5,6 +5,8 @@ description: Use when answering any VRE coaching question that needs session or 
 
 # VRE Collect Evidence
 
+**Scope: Cross-game; ACC replay gates below are ACC-only.**
+
 Build the citation-tagged evidence pack before analysis.
 
 ## Steps
@@ -34,8 +36,15 @@ python -m external.query_tools.coach pack \
 - **MoTeC `.ld`:** full native-rate channels via `acc_ingest.motec_analysis_ld.load_ld_channels`; never truncate all series to the shortest length. Analysis overlays: `python -m external.query_tools.acc_ingest.motec_analysis_ld FILE.ld --out /tmp/vre_analysis.ld`.
 - **`.rpy` laps + validity:** GO (`extract_lap_times_ms`, `lap_validity` arr_24 flag — empirical).
 - **`.rpy` inputs (arr_30):** GO — MoTeC gold 2026-11-21, aligned: SPEED 1.000, BRAKE 0.999, GEAR 0.999, RPMS 0.999, STEERANGLE 0.996 (steering-wheel °), THROTTLE 0.996, G_LAT 0.992, G_LON 0.986; unity scale, zero lag. Native rate 8–11 Hz (state it; ±5–7 m on braking points at 200 km/h).
-- **`.rpy` pose (rec_68):** GO — car centre + 4 wheel contact points (true yaw, slip, edge margin), elevation. Pose clock ≠ input clock: fit the offset per file (Spa replays: +0.6 s), never assume it.
-- **NO-GO in `.rpy`:** tyre pressure/air temp, SUS_TRAVEL mm, TC/ABS in-action (code-proved not packed). Named weather = hypothesis; raw `RPY_WEATHER_*` floats OK.
+- **`.rpy` pose (rec_68):** GO — car centre + 4 wheel contact points (true yaw, slip, edge margin), elevation. Pose and inputs
+  run on separate clocks; `vre-rpy frames` fits a per-lap lag field and reports `sync.lap_r` / `lap_sync_go` (gate 0.95).
+  Only cite laps that pass. (The old "+0.6 s Spa offset" was a spatial gap between the spline origin and the timing line.)
+- **`.rpy` extra lanes:** world velocity XYZ, vertical G, per-record timestamp, ACC predicted lap, per-lap sector splits,
+  lap-validity flag → official track-limit verdicts; `vre-rpy limits` attributes each verdict to the excursion that caused it.
+- **Race/MP replays:** all cars have pose + inputs (per-wheel data only for the player): `vre-rpy cars FILE`.
+- **NO-GO in `.rpy`:** the car setup (not stored — use `vre-rpy setup` fingerprint + setup library), tyre pressure/air temp,
+  SUS_TRAVEL mm, TC/ABS in-action (only slip-based `*_EST`). Named weather = hypothesis; raw `RPY_WEATHER_*` floats OK.
+- Full ACC replay workflow: `vre-acc-replay-analysis`.
 - Source of truth for lane status: `docs/superpowers/specs/acc-rpy-pedal-unlock-playbook.md`.
 - EN_* Motec channels: pass-through only until named.
 

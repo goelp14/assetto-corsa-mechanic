@@ -5,6 +5,8 @@ description: Use when the driver asks for a setup change, says the car or inputs
 
 # VRE Setup and Controls
 
+**Scope: AC only (controls.ini, AC setup files). ACC: `vre-acc-setup`.**
+
 Any car, any track. The goal of setup is **lap time the driver can repeat**, never "fewer slides".
 
 ## The mistake this skill exists to prevent

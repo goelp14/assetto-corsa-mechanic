@@ -90,3 +90,16 @@ def test_commands_and_annotations(server):
     assert _post(f"{base}/api/viewer/command", {"cmd": "nope"})[0] == 400
     code, body = _post(f"{base}/api/bundles/lab_x/annotations", {"annotations": [{"at_m": 200, "text": "hi"}]})
     assert code == 200 and json.loads((b / "annotations.json").read_text())["annotations"][0]["at_m"] == 200
+
+
+def test_viewer_mcp_protocol():
+    from external.query_tools import viewer_mcp as vm
+
+    init = vm.handle({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    assert init["result"]["serverInfo"]["name"] == "vre-viewer"
+    tools = vm.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
+    names = {t["name"] for t in tools}
+    assert {"get_state", "focus_corner", "annotate", "create_review", "get_corner"} <= names
+    bad = vm.handle({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "nope"}})
+    assert bad["error"]["code"] == -32602
+    assert vm.handle({"jsonrpc": "2.0", "method": "notifications/initialized"}) is None

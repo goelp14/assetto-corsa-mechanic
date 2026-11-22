@@ -5,6 +5,8 @@ description: Use when the driver asks about dampers (bump, rebound, fast/slow), 
 
 # VRE Dampers
 
+**Scope: Physics cross-game; commands and car-file workflow are AC. ACC dampers: `vre-acc-setup`.**
+
 Any car, any track. Dampers do not change how much grip or load transfer the car has in steady state — they change
 **how fast** load and ride height move. Tune them for transients (turn-in, brake release, direction changes, crests,
 kerbs), and judge them on lap time like any other lever (`vre-setup-and-controls`).

@@ -5,6 +5,8 @@ description: Use after giving lap- or corner-specific coaching feedback so notes
 
 # VRE Annotate Replay
 
+**Scope: Cross-game: classic bundles and Lap Studio bundles.**
+
 When you discuss **specific laps and corners** with the user, persist the feedback so it appears in the replay viewer on next boot.
 
 ## When to annotate
@@ -40,3 +42,13 @@ Use track config names (`Final Corner`, `Tabac`) or display names (`Anthony Nogh
 Notes load from `analysis/coach_notes.json`, show as **sky-blue pins** on the map, shaded regions on charts, and in the **Coach notes** sidebar list. Toggle with **Coach notes** in Layers.
 
 Re-exporting a session does **not** wipe coach notes.
+
+## Lap Studio bundles (ACC replays)
+
+Annotations are metres from the S/F line, drawn on both the map (at the car's real position on that lap) and the traces:
+
+```bash
+curl -XPOST localhost:8765/api/bundles/<bundle_id>/annotations -d '{"annotations":[{"kind":"pin","at_m":286,"driver":"me","text":"full brake here — Ref 7 car lengths earlier"}]}'
+```
+
+or the MCP tool `annotate(..., persist=true)`. For a walkthrough, write a review instead (`vre-video-review`).

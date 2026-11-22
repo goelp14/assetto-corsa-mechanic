@@ -5,6 +5,8 @@ description: Use when the user asks about time loss, corner technique, braking p
 
 # VRE Corner Coaching
 
+**Scope: Cross-game.**
+
 Corner-scoped technique and pace coaching. The answer is one drill plus a visual cue the driver can actually see.
 
 ## Evidence priority
@@ -23,9 +25,17 @@ Corner-scoped technique and pace coaching. The answer is one drill plus a visual
    and that has low spread; avoid cues taken from one outlier lap.
 5. **Coupled corners:** check the next corner's time before recommending more speed (complexes = one corner).
 
-## Visual cues (mandatory)
+## Driver language (mandatory)
 
-Drivers have no distance boards. For each point (brake, turn-in, release, rotation point, apex, commit):
+Never give raw lap metres. Translate each point (brake, full pressure, release, turn-in, slowest point, full throttle):
+
+- **Boards** where they exist (ACC: most braking zones have 50/100/150/200 m boards). Only name a board from a curated
+  position (`boards_m` in the track notes); geometry-estimated boards were tested and land in the wrong place.
+- **Apex-relative:** "117 m before the La Source apex", "13 m after the apex" (track-fixed, exact).
+- **Car lengths for differences:** "half a car length later", "7 car lengths earlier (32 m)" — car length ≈ 1.72 × wheelbase.
+- ACC replays: `coaching.landmarks.<corner>` and each fix's `where` already say this; reuse those sentences.
+
+Then add a visual cue:
 
 - Scan track objects near the metre value (`kn5` object dump → `objs_on_track.json`: track metre, name, lateral offset)
   and AI/pit-lane geometry (pit-lane split, cones, walls, tyre stacks, kerb starts, crests).

@@ -5,6 +5,8 @@ description: Use for ACC GT3 TC1/TC2, ABS, ECU maps — especially ferrari_296_g
 
 # VRE ACC Electronics
 
+**Scope: ACC only.**
+
 Electronics **amplify** balance; they do not fix wrong springs, pressures, or diff.
 
 ## Sources

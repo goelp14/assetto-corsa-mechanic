@@ -5,10 +5,18 @@ description: Use at the end of every session, before any setup recommendation, a
 
 # VRE Driver Profile
 
+**Scope: Cross-game: one profile, entries tagged with `game`.**
+
 A persistent, car-agnostic record of how this driver drives, built from data every session and used to tailor coaching
 and setup. Stored at `ac_app/data/driver_profile.json` (gitignored; override with `VRE_DRIVER_PROFILE`).
 
 ## Update it
+
+ACC replays: `python -m external.query_tools.coach.acc_coach --analysis analysis.json --setup setup.json --out coaching.json --update-profile`
+adds an entry tagged `"game": "acc"` (habits with polarity and pace impact, car state). Habits seen on ≥ 2 track/car
+combinations become `persistent_habits` — coach those first.
+
+AC/VRE sessions:
 
 ```bash
 python external/query_tools/driver_lab.py style -s <session> [-s ...] --min-lap <a> --max-lap <b>

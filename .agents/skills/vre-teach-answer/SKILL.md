@@ -5,6 +5,8 @@ description: Use when formatting the final driver-facing coaching response from 
 
 # VRE Teach Answer
 
+**Scope: Cross-game.**
+
 Format evidence into actionable coaching copy.
 
 ## Conversation answers (chat / live coaching)

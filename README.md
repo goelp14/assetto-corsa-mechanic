@@ -18,6 +18,14 @@ Setup profiles ship for the **RSS Formula Hybrid X 2026** and **Ferrari 312/67**
 | **Drive** | Load `Auto_Tweak.ini` in pits when the ticker prompts (`Documents/Assetto Corsa/setups/rss_formula_hybrid_x_2026/<track>/`) |
 | **Replay** *(optional)* | Clone this repo → `./replay.sh` — **not included in the zip** |
 
+| **ACC Lap Studio** *(optional)* | `pip install -e .[acc]` → `./replay.sh --rpy mine.rpy:You --ref faster.rpy:Ref` |
+
+**ACC Lap Studio** turns two ACC replays (any car, any track) into a frame-accurate side-by-side review: both cars on the
+map at their real position and heading, linked telemetry with a time-delta lane, corner-by-corner breakdown with braking
+points described in driver language ("you reach full brake 7 car lengths after the reference"), coaching fixes for habits
+and wrong mental models, track-limit verdicts, a setup read-out measured from the car's behaviour, and coach-style video
+reviews that an AI can write and drive through the viewer MCP server (`external/query_tools/viewer_mcp.py`).
+
 **[Install guide](docs/INSTALL.md)** — where the zip goes, where laps are saved, zip vs git clone.  
 **[Usage guide](docs/USAGE.md)** — HUD, replay viewer, CLI tools, development.
 
