@@ -27,6 +27,16 @@ acceleration and per-corner lateral grip (from v²·κ of their own path — nev
 4. **Elevation:** list compressions (commit/brake harder) and crests (be light/patient). Tie them to the driver's
    observed behaviour (e.g. brake-coast-brake on the Carousel crest).
 
+## Ideal lap (stitched best) — sanity rules
+
+- ACC `theoretical` is the sum of the driver's best **corner sectors** (brake point to brake point, ~14 at Spa), each
+  from whichever lap was fastest there (`sectors[].best_lap`, `spread_s`). Never stitch short fixed slices: along-line
+  position jitters a few metres lap to lap, and the minimum of many short noisy slices manufactures time (Spa: 50 m
+  slices gave a 2:18.5 driver a 2:14.9 "ideal", faster than the top of the leaderboard; corner sectors give 2:17.4).
+- Sanity-check against reality before quoting it: an ideal lap faster than a known benchmark for the same car/track,
+  or more than ~1.5% under the driver's best, means the method is wrong, not that the pace is there.
+- With one valid lap the ideal equals the lap: say there is no consistency evidence.
+
 ## Alien comparison
 
 - Search for a public leaderboard for the exact car+track (Track Titan, AssettoGrid, acleaderboard, VenueLaps). Many pages

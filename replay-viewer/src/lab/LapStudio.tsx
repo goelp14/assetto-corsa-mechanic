@@ -614,7 +614,7 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
           {lapB && <Kpi label="B lap" value={fmtLap(lapB.lap_ms)} color={COLORS.B} />}
           {gap != null && <Kpi label="Gap" value={`${fmtDelta(gap, 3)} s`} color={gap > 0 ? COLORS.lose : COLORS.gain} />}
           {theo?.ok && theo.theoretical_best_s != null && (
-            <Kpi label="A theoretical" value={fmtLap(theo.theoretical_best_s * 1000)} hint={`${theo.potential_s?.toFixed(2)} s potential from ${theo.laps_used} laps`} />
+            <Kpi label="A ideal lap" value={fmtLap(theo.theoretical_best_s * 1000)} hint={`best corner sectors from ${theo.laps_used} lap${theo.laps_used === 1 ? "" : "s"}: ${theo.potential_s?.toFixed(2)} s to find`} />
           )}
         </div>
         <span className={`lab-live ${live ? "on" : ""}`} title={live ? "AI connected: it can drive this view" : "Not connected to the launcher"}>

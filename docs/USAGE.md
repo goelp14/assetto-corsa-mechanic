@@ -53,6 +53,11 @@ Optional coach chat: set `VRE_COACH=1` when running `./replay.sh`.
 
 ### ACC Lap Studio (replays)
 
+**No terminal (Windows):** double-click **`Lap Studio.cmd`** in the repo folder in File Explorer
+(`\\wsl.localhost\Ubuntu\...\assetto-corsa-mechanic`), or a desktop shortcut to it. It starts the viewer in WSL,
+rebuilds it if the source changed, and opens your browser; keep the window open while viewing, close it to stop.
+Double-clicking again while it runs just reopens the browser.
+
 ```bash
 pip install -e .[acc]                                          # vre-rpy decoder + numpy
 ./replay.sh --rpy "<ACC>/Replay/Saved/mine.rpy:You" --ref "faster.rpy:Ref"   # build a bundle, then open it

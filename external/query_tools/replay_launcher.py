@@ -62,15 +62,30 @@ def open_browser(url):
     return False
 
 
+def _viewer_stale(index):
+    """True when the built viewer is missing or older than any viewer source file."""
+    if not os.path.isfile(index):
+        return True
+    built = os.path.getmtime(index)
+    app = os.path.join(REPO, "replay-viewer")
+    paths = [os.path.join(app, f) for f in ("index.html", "package.json", "vite.config.ts")]
+    for base, _dirs, files in os.walk(os.path.join(app, "src")):
+        paths.extend(os.path.join(base, f) for f in files)
+    return any(os.path.isfile(p) and os.path.getmtime(p) > built for p in paths)
+
+
 def ensure_viewer_built():
     index = os.path.join(VIEWER_DIST, "index.html")
-    if os.path.isfile(index):
+    if not _viewer_stale(index):
         return True
-    print("Building replay viewer (first run only)...")
+    app = os.path.join(REPO, "replay-viewer")
+    print("Building replay viewer (source changed since the last build)...")
     try:
+        if not os.path.isdir(os.path.join(app, "node_modules")):
+            subprocess.check_call(["npm", "install"], cwd=app)
         subprocess.check_call(
             ["npm", "run", "build"],
-            cwd=os.path.join(REPO, "replay-viewer"),
+            cwd=app,
         )
         return os.path.isfile(index)
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
@@ -425,7 +440,14 @@ def main():
     ReplayHTTPRequestHandler.viewer_root = VIEWER_DIST
 
     url = "http://127.0.0.1:%d/" % args.port
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)
+    except OSError:
+        # already running (e.g. the launcher was double-clicked twice): just show it
+        print("Replay viewer is already running: %s" % url)
+        if not args.no_open:
+            open_browser(url)
+        return 0
     server.daemon_threads = True
     print("\nReplay viewer: %s" % url)
     print("Press Ctrl+C to stop.\n")
