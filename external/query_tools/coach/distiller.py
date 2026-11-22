@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from . import physics
+from . import landmarks, physics
 
 SCHEMA = "vre.coaching.v1"
 
@@ -21,8 +21,8 @@ MENTAL_MODELS: List[Dict[str, Any]] = [
                 "load and downforce; then bleed it off as speed falls (HPAcademy brake-trace practice).",
      "why": "Grip is highest at the start of the braking zone; pressure that arrives late wastes it and the car "
             "reaches turn-in too fast, so you brake again or over-slow.",
-     "drill": "Same braking point, but hit full pressure within ~{ref_ramp:.0f} m instead of {you_ramp:.0f} m.",
-     "metric": "brake_ramp_m at or under {target:.0f} m on 4 of 5 laps", "group": "braking"},
+     "drill": "Same braking point, but reach full pressure within ~{ref_ramp:.0f} m ({ref_ramp_cl}) of touching the pedal; you take {you_ramp:.0f} m ({you_ramp_cl}).",
+     "metric": "full pressure within {target:.0f} m ({target_cl}) of touching the brake, on 4 of 5 laps", "group": "braking"},
     {"id": "brake_later_is_faster", "habits": ["hero_entry", "second_brake_application"],
      "belief": "Braking later / carrying more speed to turn-in is faster",
      "correct": "Minimum speed and exit decide the time, not the turn-in speed. Arrive at turn-in slower, "
@@ -36,13 +36,13 @@ MENTAL_MODELS: List[Dict[str, Any]] = [
      "correct": "Once the car is pointed, go to throttle and unwind the wheel with it; the throttle and the "
                 "unwind happen together.",
      "why": "Waiting for a straight wheel delays the acceleration phase that carries onto the straight.",
-     "drill": "Full throttle at about {ref_ft:.0f} m (you: {you_ft:.0f} m), unwinding as you squeeze.",
-     "metric": "full_throttle_m within 5 m of {ref_ft:.0f} m", "group": "exit"},
+     "drill": "Reach full throttle {ft_where_ref}, {ft_gap:.0f} m ({ft_gap_cl}) {ft_dir} than now, unwinding as you squeeze.",
+     "metric": "full throttle within a car length of {ft_where_ref} on 4 of 5 laps", "group": "exit"},
     {"id": "brake_through_crest", "habits": ["braking_over_crest"],
      "belief": "Keep braking the same over every part of the braking zone",
      "correct": "A crest takes load off the tyres: brake hard before it and be done (or very light) over it.",
      "why": "With less load the tyres lock or slide earlier, so braking over the crest stops you less and unsettles the car.",
-     "drill": "Finish the hard braking before the crest at {crest_m:.0f} m.", "metric": "brake < 30% at the crest on 4 of 5 laps",
+     "drill": "Finish the hard braking before the crest {crest_where}.", "metric": "brake < 30% at the crest on 4 of 5 laps",
      "group": "terrain"},
     {"id": "coasting_is_neutral", "habits": ["coasting"],
      "belief": "Coasting between the pedals is harmless",
@@ -50,12 +50,12 @@ MENTAL_MODELS: List[Dict[str, Any]] = [
                 "release of the brake with the start of the throttle.",
      "why": "Unloaded tyres give less grip for the same steering; the car drifts wide and you wait longer for throttle.",
      "drill": "Cut the gap between brake release and throttle from {you_coast:.2f} s to under 0.2 s.",
-     "metric": "coast_s < 0.2", "group": "exit"},
+     "metric": "under 0.2 s between brake release and throttle, on 4 of 5 laps", "group": "exit"},
     {"id": "one_commitment", "habits": ["throttle_lifts"],
      "belief": "Feeding the throttle in and out is careful driving",
      "correct": "Wait until the car is pointed, then one committed application that stays.",
      "why": "Each lift unloads the rear and restarts the acceleration.", "drill": "One throttle application per exit.",
-     "metric": "throttle_lifts = 0 on 4 of 5 laps", "group": "exit"},
+     "metric": "one throttle application per exit (no lifts) on 4 of 5 laps", "group": "exit"},
     {"id": "consistency_first", "habits": ["inconsistent_corner"],
      "belief": "Each lap is a fresh attempt at the corner",
      "correct": "Lock in one reference (braking marker, turn-in point) and repeat it; spread is where the time is.",
@@ -101,6 +101,22 @@ def build_fix(mm, habit, analysis) -> Optional[Dict[str, Any]]:
     nums["target_vmin"] = nums["ref_vmin"] - 1.0 if nums["ref_vmin"] else nums["you_vmin"] + 2.0
     crest = next((t for l in (a.get("laps") or []) for t in (l.get("terrain") or []) if t["kind"] == "crest"), None)
     nums["crest_m"] = crest["at_m"] if crest else 0
+    # driver-language positions: relative to the corner apex and in car lengths, not raw lap metres
+    corners = [dict(c, start_m=c.get("start_m", c["apex_m"] - 50.0), end_m=c.get("end_m", c["apex_m"] + 50.0))
+               for c in (analysis.get("pack") or {}).get("corners") or [] if isinstance(c.get("apex_m"), (int, float))]
+    cl = landmarks.car_length_m((analysis.get("car_state") or {}).get(me))
+    nums["you_ramp_cl"] = landmarks.car_lengths(nums["you_ramp"], cl)
+    nums["ref_ramp_cl"] = landmarks.car_lengths(nums["ref_ramp"], cl)
+    nums["target_cl"] = landmarks.car_lengths(nums["target"], cl)
+    gap = nums["you_ft"] - nums["ref_ft"]
+    nums.update(ft_gap=abs(gap), ft_gap_cl=landmarks.car_lengths(gap, cl), ft_dir="earlier" if gap > 0 else "later",
+                ft_where_ref="where the reference does", crest_where=f"at {nums['crest_m']:.0f} m")
+    if corners and nums["ref_ft"]:
+        anc = landmarks.anchor_corner(nums["ref_ft"], "full_throttle_m", corners, corners[0])
+        nums["ft_where_ref"] = landmarks.anchor_phrase(nums["ref_ft"], anc)["text"]
+    if corners and crest:
+        anc = landmarks.anchor_corner(crest["at_m"], "turn_in_m", corners, corners[0])
+        nums["crest_where"] = landmarks.anchor_phrase(crest["at_m"], anc)["text"]
     try:
         drill = mm["drill"].format(**nums)
         metric = mm["metric"].format(**nums)

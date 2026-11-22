@@ -20,6 +20,16 @@ from typing import Any, Dict, List, Optional
 from .diagnosis import diagnose
 from .distiller import distill
 from .habits import detect
+from .landmarks import all_landmarks
+
+# Which corner events to phrase (boards / car lengths) for each fix group.
+GROUP_EVENTS = {
+    "braking": ("brake_on_m", "brake_full_m", "brake_off_m"),
+    "entry": ("brake_on_m", "turn_in_m", "vmin_m"),
+    "exit": ("vmin_m", "throttle_on_m", "full_throttle_m"),
+    "terrain": ("brake_on_m", "brake_off_m", "turn_in_m"),
+    "consistency": ("brake_on_m", "turn_in_m"),
+}
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -81,6 +91,11 @@ def run(analysis: Dict[str, Any], setup: Optional[Dict[str, Any]] = None, *, upd
     coaching = distill(analysis, habits, profile=prof, setup=setup)
     coaching["habits"] = habits
     coaching["diagnosis"] = diagnose(analysis, habits, setup)
+    coaching["landmarks"] = all_landmarks(analysis)
+    for f in (coaching.get("fixes") or []) + (coaching.get("later") or []):
+        lm = coaching["landmarks"].get(f.get("corner_key") or "")
+        evs = GROUP_EVENTS.get(f.get("group"), ())
+        f["where"] = [lm["events"][e]["text"] for e in evs if lm and e in lm["events"]]
     if update_profile:
         prof.setdefault("entries", []).append(profile_entry(analysis, habits))
         p = profile_path()
@@ -103,7 +118,7 @@ def main(argv=None) -> int:
     out = run(analysis, setup, update_profile=a.update_profile)
     a.out.write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")
     for f in out["fixes"]:
-        print(f"FIX  {f['title']}  ({f['pace_impact_s']:.2f}s, {f['confidence']})\n     drill: {f['drill']}\n     success: {f['success_metric']}")
+        print(f"FIX  {f['title']}  ({f['pace_impact_s']:.2f}s, {f['confidence']})\n     drill: {f['drill']}\n" + "".join(f"     where: {w}\n" for w in f.get("where") or []) + f"     success: {f['success_metric']}")
     for r in out["diagnosis"]["setup_recommendations"]:
         print(f"SETUP {r['lever'].split('.')[-1]}: {r['direction']} — {r['why']}")
     return 0

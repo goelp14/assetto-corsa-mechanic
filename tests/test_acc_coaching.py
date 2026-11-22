@@ -64,3 +64,15 @@ def test_run_and_persistent_habits(tmp_path, monkeypatch):
     ids = {p["id"] for p in out["persistent_habits"]}
     assert "slow_brake_build" in ids
     assert out["diagnosis"]["corners"][0]["cause"] == "technique"
+
+
+def test_landmark_phrasing():
+    from external.query_tools.coach.landmarks import car_lengths, compare_event
+
+    corner = {"display_name": "T1", "start_m": 300.0, "apex_m": 380.0, "end_m": 450.0}
+    r = compare_event("brake_on_m", 266.0, 268.3, corner, 4.6, "you", "Ref", [corner])
+    assert "114 m before the T1 apex" in r["text"] and "half a car length later" in r["text"]
+    curated = dict(corner, notes={"boards_m": {"100": 266.0}})
+    r = compare_event("brake_on_m", 266.0, 266.5, curated, 4.6, "you", "Ref", [curated])
+    assert r["text"].startswith("You start braking at the 100 m board") and "same place" in r["text"]
+    assert car_lengths(13.8, 4.6) == "3 car lengths"

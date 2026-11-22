@@ -147,18 +147,29 @@ def auto_breakdown(analysis: Dict[str, Any], coaching: Dict[str, Any], *, max_sc
         if loss_idx is not None:
             cites.append(f"analysis.corner_loss_best_vs_ref.{loss_idx}")
         pauses, overlays = [], []
+        lm = (coaching.get("landmarks") or {}).get(key)
+        if lm:
+            cites.append(f"coaching.landmarks.{key}")
+            for ev in ("brake_on_m", "brake_full_m", "turn_in_m", "throttle_on_m"):
+                row = lm["events"].get(ev)
+                if row:
+                    pauses.append({"at_m": row["me_m"], "driver": "me", "event": ev, "text": row["text"]})
+        else:
+            for who, ev, color in ((ref, theirs, "ref"), (me, mine, "me")):
+                if who and ev and ev.get("brake_full_m") is not None:
+                    pauses.append({"at_m": ev["brake_full_m"], "driver": color,
+                                   "text": f"{who}: full brake at {_fmt(ev['brake_full_m'])} m ({_fmt(ev.get('brake_ramp_m'))} m after braking starts)"})
         for who, ev, color in ((ref, theirs, "ref"), (me, mine, "me")):
             if not who or not ev:
                 continue
-            if ev.get("brake_full_m") is not None:
-                pauses.append({"at_m": ev["brake_full_m"], "driver": color,
-                               "text": f"{who}: full brake at {_fmt(ev['brake_full_m'])} m ({_fmt(ev.get('brake_ramp_m'))} m after braking starts)"})
             if ev.get("vmin_m") is not None:
                 overlays.append({"kind": "pin", "at_m": ev["vmin_m"], "driver": color,
                                  "text": f"{who} slowest {_fmt(ev.get('vmin_kmh'), 1)} km/h"})
-            if ev.get("full_throttle_m") is not None:
-                overlays.append({"kind": "pin", "at_m": ev["full_throttle_m"], "driver": color,
-                                 "text": f"{who} full throttle {_fmt(ev['full_throttle_m'])} m"})
+        for ev_name, color in (("brake_on_m", "me"),):
+            row = (lm or {}).get("events", {}).get(ev_name) if lm else None
+            if row and row.get("ref_m") is not None and abs(row["gap_m"]) >= 1:
+                overlays.append({"kind": "zone", "s0_m": min(row["me_m"], row["ref_m"]), "s1_m": max(row["me_m"], row["ref_m"]),
+                                 "driver": color, "text": "braking-point gap"})
         fix = next((f for f in coaching.get("fixes") or [] if f["corner_key"] == key), None)
         narration = (f"{w['corner']}: {_fmt(loss, 2)} s lost to {ref} through this section." if ref and loss is not None
                      else f"{w['corner']}.")
