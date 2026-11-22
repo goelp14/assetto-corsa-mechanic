@@ -6,6 +6,8 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
+# ACC replay decoding (public CLI package)
+acc = ["vre-rpy @ git+https://github.com/goelp14/vre-rpy-cli.git", "numpy>=1.24"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -42,7 +42,7 @@ When `game` is **acc**, car id is **`ferrari_296_gt3`** (or other ACC GT3), or s
 - KB: `ac_app/config/acc/gt3_physics_kb.json`, `ac_app/config/acc/cars/<car>.json`, `ac_app/config/acc/kb_loader.py`
 - Setup hints: `python -m external.query_tools.acc_ingest.setup_hints --symptom <key> --car <car_id>`
 - Version pin post-**1.9** (`verified_on` 1.10.x); filter legacy pressure advice with `reject_pre_19_advice`.
-- **Evidence:** coach from MoTeC/SHM + GO `.rpy` lap times only. Foreign replay pedals/pose valleys are **not** GO. Ship `vre_analysis_*.ld` when MoTeC exists (`acc_ingest.motec_analysis_ld`). See `vre-collect-evidence` ACC gates + `acc-rpy-re` evidence table.
+- **Evidence:** MoTeC/SHM, or `.rpy` file-GO lanes (inputs, laps, validity, pose + wheels) — including a faster driver's replay as the reference. Never cite NO-GO lanes (tyre P/T, SUS mm, TC/ABS active); see `vre-collect-evidence` ACC gates. Ship `vre_analysis_*.ld` when MoTeC exists (`acc_ingest.motec_analysis_ld`). See `vre-collect-evidence` ACC gates + `acc-rpy-re` evidence table.
 
 Keep AC routes below unchanged for non-ACC cars.
 

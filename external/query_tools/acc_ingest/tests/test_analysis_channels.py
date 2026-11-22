@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from analysis_channels import (
+from external.query_tools.acc_ingest.analysis_channels import (
     coast_mask,
     damper_velocity_mm_s,
     pedal_gap_s,

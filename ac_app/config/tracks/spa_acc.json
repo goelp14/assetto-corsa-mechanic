@@ -14,7 +14,7 @@
     {
       "name": "Turn 1",
       "display_name": "La Source",
-      "direction": "left",
+      "direction": "right",
       "speed_class": "slow",
       "spline_start": 0.01,
       "spline_end": 0.05,
@@ -68,7 +68,7 @@
     {
       "name": "Turn 15",
       "display_name": "Fagnes",
-      "direction": "right",
+      "direction": "left",
       "speed_class": "medium",
       "spline_start": 0.52,
       "spline_end": 0.58,
