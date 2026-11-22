@@ -72,13 +72,7 @@ def test_extract_lap_times_erik_hotlap():
     from vre_rpy.parse_rpy import extract_lap_times_ms
 
     # Uploaded AOR Spa quali replay (Erik) — path may be absent in CI
-    candidates = [
-        Path(
-            "/home/pranav/.cursor/projects/home-pranav-github-assetto-corsa-mechanic/"
-            "uploads/74064037-afe0-4b60-9e27-c8421fb30110/ACCReplay_240418-223443_Q_Spa_ERIK.rpy"
-        ),
-        FIX / "ACCReplay_240418-223443_Q_Spa_ERIK.rpy",
-    ]
+    candidates = [FIX / "ACCReplay_240418-223443_Q_Spa_ERIK.rpy"]
     path = next((p for p in candidates if p.is_file()), None)
     if path is None:
         pytest.skip("Erik Spa rpy not present")

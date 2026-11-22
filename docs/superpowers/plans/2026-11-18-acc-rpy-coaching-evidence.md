@@ -74,7 +74,7 @@
 ### Task 6: Skills update
 
 **Files:**
-- Modify: `/home/pranav/.agents/skills/acc-rpy-re/SKILL.md` and repo copy if any
+- Modify: `~/.agents/skills/acc-rpy-re/SKILL.md` and repo copy if any
 - Modify: `.agents/skills/vre-coach-router/SKILL.md`, `vre-collect-evidence`, `vre-acc-setup`
 
 - [x] Evidence gates in acc-rpy-re, collect-evidence, coach-router, acc-setup, dampers
