@@ -190,6 +190,9 @@ export interface Grid {
   b: Record<Channel, Float64Array> | null;
   delta: Float64Array | null; // tA - tB at s (positive = A slower so far)
   deltaRate: Float64Array | null; // d(delta)/ds per 100 m, smoothed (positive = A losing here)
+  /** Recorded samples (not resampled): shown as dots when zoomed in, so gaps between samples are visible. */
+  rawA: { s: Float64Array; ch: Record<Channel, Float64Array>; dtMs: number };
+  rawB: { s: Float64Array; ch: Record<Channel, Float64Array>; dtMs: number } | null;
 }
 
 export function buildGrid(a: PreparedLap, b: PreparedLap | null, length: number, step = 2): Grid {
@@ -222,7 +225,14 @@ export function buildGrid(a: PreparedLap, b: PreparedLap | null, length: number,
       deltaRate[i] = ((delta[i1] - delta[i0]) / ((i1 - i0) * step || 1)) * 100;
     }
   }
-  return { step, s, a: A, b: B, delta, deltaRate };
+  const raw = (p: PreparedLap) => {
+    const t = p.ch.t;
+    const d: number[] = [];
+    for (let i = 1; i < t.length; i++) d.push(t[i] - t[i - 1]);
+    d.sort((x, y) => x - y);
+    return { s: p.s, ch: p.ch, dtMs: Math.round((d[d.length >> 1] ?? 0) * 1000) };
+  };
+  return { step, s, a: A, b: B, delta, deltaRate, rawA: raw(a), rawB: b ? raw(b) : null };
 }
 
 export function gridValue(g: Grid, arr: Float64Array | null, s: number): number {

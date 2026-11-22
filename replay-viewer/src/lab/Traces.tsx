@@ -224,6 +224,23 @@ export function Traces(p: Props) {
         };
         if (g.b) plot(g.b[lane.ch], COLORS.B, 1.4);
         plot(g.a[lane.ch], COLORS.A, 1.6);
+        // zoomed in: mark the recorded samples, so a straight run between two samples isn't read as data
+        const pxPerM = plotW / (v1 - v0 || 1);
+        const dots = (r: Grid["rawA"] | null, color: string) => {
+          if (!r) return;
+          const arr = r.ch[lane.ch!];
+          const n = r.s.length;
+          if (n < 2 || ((r.s[n - 1] - r.s[0]) / n) * pxPerM < 5) return;
+          ctx.fillStyle = color;
+          for (let i = 0; i < n; i++) {
+            if (r.s[i] < v0 || r.s[i] > v1 || !Number.isFinite(arr[i])) continue;
+            ctx.beginPath();
+            ctx.arc(xOf(r.s[i]), Yv(arr[i]), 2.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        };
+        dots(g.rawB, COLORS.B);
+        dots(g.rawA, COLORS.A);
       }
       ctx.restore();
       // labels + values at cursor
@@ -284,6 +301,16 @@ export function Traces(p: Props) {
     }
 
     // cursors
+    {
+      const r = g.rawB ?? g.rawA;
+      const n = r.s.length;
+      if (n > 1 && ((r.s[n - 1] - r.s[0]) / n) * (plotW / (v1 - v0 || 1)) >= 5) {
+        const txt = `● = recorded sample · A every ${g.rawA.dtMs} ms${g.rawB ? ` · B every ${g.rawB.dtMs} ms` : ""}`;
+        ctx.font = "10px ui-sans-serif, system-ui";
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText(txt, w - RIGHT - ctx.measureText(txt).width - 4, h - 4);
+      }
+    }
     const drawCursor = (s: number, color: string, label: string) => {
       if (s < v0 || s > v1) return;
       const x = xOf(s);
