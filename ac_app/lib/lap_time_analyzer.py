@@ -21,6 +21,8 @@ class LapTimeAnalyzer(object):
         self._lap_corner_deltas = {}
         self._lap_sector_deltas = {}
         self._lap_bucket_speed = [0.0] * num_buckets
+        self._lap_bucket_time = [0.0] * num_buckets
+        self._lap_bucket_seen = [False] * num_buckets
 
     def set_reference_from_lap(self, bucket_speeds, lap_time_ms):
         self._ref_speed = list(bucket_speeds)
@@ -35,12 +37,17 @@ class LapTimeAnalyzer(object):
         self._lap_corner_deltas = {}
         self._lap_sector_deltas = {}
         self._lap_bucket_speed = [0.0] * self.num_buckets
+        self._lap_bucket_time = [0.0] * self.num_buckets
+        self._lap_bucket_seen = [False] * self.num_buckets
 
     def observe(self, bucket, speed_kmh, dt):
         if bucket < 0 or bucket >= self.num_buckets:
             return
         if speed_kmh > self._lap_bucket_speed[bucket]:
             self._lap_bucket_speed[bucket] = speed_kmh
+        if dt is not None and dt > 0:
+            self._lap_bucket_time[bucket] += float(dt)
+            self._lap_bucket_seen[bucket] = True
         speed_ms = max(speed_kmh / 3.6, 1.0)
         ref_kmh = self._ref_speed[bucket]
         ref_ms = ref_kmh / 3.6 if ref_kmh > 0 else speed_ms
@@ -65,14 +72,43 @@ class LapTimeAnalyzer(object):
                 self._lap_sector_deltas.get(sector, 0.0) + delta_t
             )
 
+    def _lap_bucket_times(self, lap_time_ms, bucket_speeds):
+        """Per-bucket time for this lap, summing to the real lap time.
+
+        Uses the time actually observed in each bucket; buckets with no samples (sparse logs) are
+        filled from neighbouring speeds. Scaling to the lap time keeps a stitched best honest.
+        """
+        n = self.num_buckets
+        times = [None] * n
+        for i in range(n):
+            if self._lap_bucket_seen[i] and self._lap_bucket_time[i] > 0:
+                times[i] = self._lap_bucket_time[i]
+        if not any(t is not None for t in times):
+            for i in range(n):  # speed-only fallback (callers that never passed dt)
+                spd = bucket_speeds[i] if i < len(bucket_speeds) else 0.0
+                if spd > 0:
+                    times[i] = self.bucket_length_m / (spd / 3.6)
+        known = [i for i in range(n) if times[i] is not None]
+        if len(known) < max(10, n // 10) or not lap_time_ms:
+            return None
+        for i in range(n):
+            if times[i] is None:
+                # nearest known buckets on each side (circular)
+                lo = next((times[(i - k) % n] for k in range(1, n) if times[(i - k) % n] is not None), None)
+                hi = next((times[(i + k) % n] for k in range(1, n) if times[(i + k) % n] is not None), None)
+                times[i] = (lo + hi) / 2.0 if lo is not None and hi is not None else (lo or hi)
+        total = sum(times)
+        if total <= 0:
+            return None
+        k = (lap_time_ms / 1000.0) / total
+        return [t * k for t in times]
+
     def finish_lap(self, lap_time_ms, bucket_speeds, counted=True):
         if counted:
             self._lap_times_ms.append(lap_time_ms)
-            for i in range(self.num_buckets):
-                spd = bucket_speeds[i] if i < len(bucket_speeds) else 0.0
-                if spd <= 0:
-                    continue
-                t_bin = self.bucket_length_m / (spd / 3.6)
+            times = self._lap_bucket_times(lap_time_ms, bucket_speeds)
+            for i in range(self.num_buckets if times else 0):
+                t_bin = times[i]
                 if self._best_bucket_time[i] is None or t_bin < self._best_bucket_time[i]:
                     self._best_bucket_time[i] = t_bin
 
@@ -98,11 +134,14 @@ class LapTimeAnalyzer(object):
         return sigma < 2000.0
 
     def theoretical_best_ms(self):
-        total_s = 0.0
-        for t in self._best_bucket_time:
-            if t is not None:
-                total_s += t
-        return int(total_s * 1000.0)
+        """Sum of per-bucket bests, or 0 when it cannot be trusted (missing buckets / fails gate)."""
+        if any(t is None for t in self._best_bucket_time) or not self._lap_times_ms:
+            return 0
+        total_ms = int(sum(self._best_bucket_time) * 1000.0)
+        best = min(self._lap_times_ms)
+        if total_ms > best or total_ms < 0.9 * best:
+            return 0
+        return total_ms
 
     def consistency_sigma_ms(self):
         if len(self._lap_times_ms) < 2:
