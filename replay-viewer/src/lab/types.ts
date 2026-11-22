@@ -172,6 +172,7 @@ export interface Fix {
   drill: string;
   success_metric: string;
   cues: string[];
+  technique?: string;
   physics: unknown[];
   pace_impact_s: number;
   corner_loss_s: number | null;

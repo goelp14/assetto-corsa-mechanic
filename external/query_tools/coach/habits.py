@@ -143,6 +143,43 @@ def _rules():
         a, b = _med(me, "coast_s"), _med(ref, "coast_s") if ref else None
         return {"coast_s": a, "ref_coast_s": b} if a is not None and a > 0.3 and (b is None or a > b + 0.2) else None
 
+    def _dt(c):
+        return _med(c, "input_dt_s") or 0.0
+
+    def overlap_more(me, ref):
+        """You brake with the throttle still past half for longer than the reference (left-foot handover)."""
+        a, b = _med(me, "brake_overlap_s"), _med(ref, "brake_overlap_s") if ref else None
+        if a is None:
+            return None
+        res = max(_dt(me), _dt(ref) if ref else 0.0)
+        if a > max(0.10, 1.5 * _dt(me)) and (b is None or a > b + max(res, 0.05)):
+            return {"brake_overlap_s": a, "ref_brake_overlap_s": b, "input_dt_s": round(res, 3)}
+        return None
+
+    def ref_overlaps(me, ref):
+        """The reference is already braking while still on the throttle; you lift first."""
+        if not ref:
+            return None
+        a, b = _med(me, "brake_overlap_s"), _med(ref, "brake_overlap_s")
+        if None in (a, b):
+            return None
+        res = max(_dt(me), _dt(ref))
+        if b > max(0.10, 1.5 * _dt(ref)) and b > a + max(res, 0.05):
+            ev = {"brake_overlap_s": a, "ref_brake_overlap_s": b, "input_dt_s": round(res, 3)}
+            ba, bb = _med(me, "brake_at_lift"), _med(ref, "brake_at_lift")
+            if ba is not None and bb is not None:
+                ev.update(brake_at_lift=ba, ref_brake_at_lift=bb)
+            return ev
+        return None
+
+    def lift_gap(me, ref):
+        a, b = _med(me, "lift_gap_s"), _med(ref, "lift_gap_s") if ref else None
+        if a is None:
+            return None
+        if a > max(0.15, 1.5 * _dt(me)) and (b is None or a > b + 0.10):
+            return {"lift_gap_s": a, "ref_lift_gap_s": b}
+        return None
+
     def waits_straight(me, ref):
         a, s = _med(me, "full_throttle_m"), _med(me, "wheel_straight_m")
         b, sr = (_med(ref, "full_throttle_m"), _med(ref, "wheel_straight_m")) if ref else (None, None)
@@ -180,6 +217,9 @@ def _rules():
     return [
         ("slow_brake_build", "braking", "Slow brake build", "Full brake pressure arrives late after the braking point", slow_build, "weakness", "brake_ramp_m"),
         ("second_brake_application", "braking", "Brake, release, brake again", "A second brake application near turn-in (classic 'brake too early, then re-brake')", rebrake, "weakness", "rebrake_peak"),
+        ("lift_gap_before_brake", "braking", "Lift, pause, then brake", "Neither pedal between lifting and braking: coasting at top speed", lift_gap, "weakness", "lift_gap_s"),
+        ("brake_overlap", "braking", "Brake while still on throttle", "Braking starts with the throttle still past half, longer than the reference (left-foot handover)", overlap_more, "style", "brake_overlap_s"),
+        ("ref_brake_overlap", "braking", "Reference brakes before lifting", "The reference is already braking with the throttle still past half; you lift first, so pressure starts building later", ref_overlaps, "style", "brake_at_lift"),
         ("no_trail", "braking", "No trail braking", "Brake fully released before turn-in where the reference trails", no_trail, "style", "brake_at_turn_in"),
         ("heavy_trail_lock", "braking", "Heavy trail locks the fronts", "Front wheels lock on entry on most laps", heavy_trail, "weakness", "entry_lock_min"),
         ("hero_entry", "entry", "Hero entry, slower middle", "Faster at turn-in but lower minimum speed", hero_entry, "weakness", "vmin_kmh"),

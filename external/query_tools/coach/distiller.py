@@ -51,6 +51,12 @@ MENTAL_MODELS: List[Dict[str, Any]] = [
      "why": "Unloaded tyres give less grip for the same steering; the car drifts wide and you wait longer for throttle.",
      "drill": "Cut the gap between brake release and throttle from {you_coast:.2f} s to under 0.2 s.",
      "metric": "under 0.2 s between brake release and throttle, on 4 of 5 laps", "group": "exit"},
+    {"id": "lift_then_brake", "habits": ["lift_gap_before_brake"],
+     "belief": "Lift first, then find the brake",
+     "correct": "Go straight from throttle to brake: the pause between them is coasting at the highest speed of the lap.",
+     "why": "Every tenth with neither pedal is spent at top speed without slowing the car, so the braking point effectively moves earlier.",
+     "drill": "Close the gap between lifting and braking from {you_lift_gap:.2f} s to under 0.1 s; same braking marker.",
+     "metric": "under 0.1 s between lift and brake on 4 of 5 laps", "group": "braking"},
     {"id": "one_commitment", "habits": ["throttle_lifts"],
      "belief": "Feeding the throttle in and out is careful driving",
      "correct": "Wait until the car is pointed, then one committed application that stays.",
@@ -96,6 +102,7 @@ def build_fix(mm, habit, analysis) -> Optional[Dict[str, Any]]:
         "you_vmin": _val(a, "vmin_kmh") or 0, "ref_vmin": _val(b, "vmin_kmh") or 0,
         "you_ft": _val(a, "full_throttle_m") or 0, "ref_ft": _val(b, "full_throttle_m") or 0,
         "you_coast": _val(a, "coast_s") or 0,
+        "you_lift_gap": _val(a, "lift_gap_s") or 0,
     }
     nums["target"] = max(nums["ref_ramp"] * 1.2, 10.0)
     nums["target_vmin"] = nums["ref_vmin"] - 1.0 if nums["ref_vmin"] else nums["you_vmin"] + 2.0
@@ -168,6 +175,24 @@ def distill(analysis: Dict[str, Any], habits: Dict[str, Any], *, profile: Option
         if fix:
             fix["score"] = round(score, 3)
             cands.append(fix)
+    # the reference's pedal handover explains part of a slow brake build: say how, with its numbers
+    ov = next((h for h in habits.get("habits") or [] if h["id"] == "ref_brake_overlap"), None)
+    if ov:
+        for f in cands:
+            if f["mental_model"] != "build_brake_smoothly":
+                continue
+            inst = next((i for i in ov["instances"] if i["key"] == f["corner_key"]), None) or ov["instances"][0]
+            e = inst["evidence"]
+            ref = habits.get("reference") or "the reference"
+            line = (f"Handover at {inst['corner']}: {ref} is already braking while the throttle is still past half "
+                    f"for {e['ref_brake_overlap_s']:.2f} s (you {e['brake_overlap_s']:.2f} s)")
+            if e.get("ref_brake_at_lift") is not None:
+                line += (f"; when the throttle drops below half {ref} already has {e['ref_brake_at_lift'] * 100:.0f}% brake, "
+                         f"you {e['brake_at_lift'] * 100:.0f}%")
+            line += (". Left-footed, start squeezing the brake as you come off the throttle instead of after it. "
+                     f"Timing resolution ±{e['input_dt_s']:.2f} s (replay sample interval).")
+            f["technique"] = line
+            f["citations"].append(f"habits.ref_brake_overlap")
     cands.sort(key=lambda f: -f["score"])
     fixes, used = [], set()
     for f in cands:

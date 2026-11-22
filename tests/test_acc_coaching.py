@@ -76,3 +76,38 @@ def test_landmark_phrasing():
     r = compare_event("brake_on_m", 266.0, 266.5, curated, 4.6, "you", "Ref", [curated])
     assert r["text"].startswith("You start braking at the 100 m board") and "same place" in r["text"]
     assert car_lengths(13.8, 4.6) == "3 car lengths"
+
+
+def test_pedal_handover_habits():
+    """Reference brakes before lifting (left-foot overlap): style habit, explained inside the brake-build fix."""
+    a = _analysis()
+    for drv, ov, bal, dt in (("You", 0.04, 0.45, 0.037), ("Ref", 0.21, 0.83, 0.069)):
+        for c in a["drivers"][drv]["corners"].values():
+            for r in c["laps"]:
+                r.update(brake_overlap_s=ov, brake_at_lift=bal, input_dt_s=dt, lift_gap_s=0.0)
+            c["best_lap"] = c["laps"][0]
+            if c["consistency"]:
+                c["consistency"]["brake_overlap_s"] = {"median": ov, "iqr": 0.01, "n": 6, "r_with_time": 0.0}
+                c["consistency"]["brake_at_lift"] = {"median": bal, "iqr": 0.01, "n": 6, "r_with_time": 0.0}
+    h = {x["id"]: x for x in detect(a)["habits"]}
+    assert h["ref_brake_overlap"]["polarity"] == "style" and h["ref_brake_overlap"]["repeats"] == 3
+    assert "brake_overlap" not in h and "lift_gap_before_brake" not in h
+    f = next(f for f in distill(a, detect(a))["fixes"] if f["mental_model"] == "build_brake_smoothly")
+    assert "0.21 s" in f["technique"] and "83%" in f["technique"] and "45%" in f["technique"]
+    # inside one sample interval: not a habit
+    for c in a["drivers"]["Ref"]["corners"].values():
+        for r in c["laps"]:
+            r["brake_overlap_s"] = 0.09
+    assert "ref_brake_overlap" not in {x["id"] for x in detect(a)["habits"]}
+
+
+def test_lift_gap_is_a_weakness():
+    a = _analysis()
+    for drv, gap in (("You", 0.35), ("Ref", 0.0)):
+        for c in a["drivers"][drv]["corners"].values():
+            for r in c["laps"]:
+                r.update(lift_gap_s=gap, brake_overlap_s=0.0, input_dt_s=0.037)
+            if c["consistency"]:
+                c["consistency"]["lift_gap_s"] = {"median": gap, "iqr": 0.01, "n": 6, "r_with_time": 0.0}
+    h = {x["id"]: x for x in detect(a)["habits"]}
+    assert h["lift_gap_before_brake"]["polarity"] == "weakness"

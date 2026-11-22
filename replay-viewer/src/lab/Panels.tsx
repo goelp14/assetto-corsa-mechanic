@@ -26,7 +26,7 @@ export function CoachingPanel({ api }: { api: StudioApi }) {
   const c = api.bundle.coaching;
   if (!c) return <Empty text="No coaching in this bundle." />;
   const habits = c.habits?.habits ?? [];
-  const maxImpact = Math.max(0.01, ...habits.map((h) => Math.abs(h.pace_impact_s)));
+  const maxImpact = Math.max(0.01, ...habits.filter((h) => h.polarity !== "style").map((h) => Math.abs(h.pace_impact_s)));
   return (
     <div className="lab-panel">
       <h3>Fix these first</h3>
@@ -46,19 +46,21 @@ export function CoachingPanel({ api }: { api: StudioApi }) {
       <div className="lab-habits">
         {habits
           .slice()
-          .sort((a, b) => Math.abs(b.pace_impact_s) - Math.abs(a.pace_impact_s))
+          .sort((a, b) => Number(a.polarity === "style") - Number(b.polarity === "style") || Math.abs(b.pace_impact_s) - Math.abs(a.pace_impact_s))
           .map((h) => (
             <div key={h.id} className={`lab-habit lab-habit--${h.polarity}`} title={h.detail}>
               <div className="lab-habit-row">
-                <span className="lab-habit-tag">{h.polarity === "strength" ? "strength" : "habit"}</span>
+                <span className="lab-habit-tag">{h.polarity === "weakness" ? "habit" : h.polarity}</span>
                 <b>{h.title}</b>
-                <span className="lab-habit-impact">{h.pace_impact_s.toFixed(2)} s</span>
+                <span className="lab-habit-impact" title={h.polarity === "style" ? "different from the reference, no measured cost" : "time lost in the corners where it shows"}>
+                  {h.polarity === "style" ? `${h.repeats} corner${h.repeats === 1 ? "" : "s"}` : `${h.pace_impact_s.toFixed(2)} s`}
+                </span>
               </div>
               <div className="lab-bar">
                 <i
                   style={{
-                    width: `${(Math.abs(h.pace_impact_s) / maxImpact) * 100}%`,
-                    background: h.polarity === "strength" ? COLORS.gain : COLORS.lose,
+                    width: h.polarity === "style" ? "0%" : `${(Math.abs(h.pace_impact_s) / maxImpact) * 100}%`,
+                    background: h.polarity === "strength" ? COLORS.gain : h.polarity === "style" ? "#64748b" : COLORS.lose,
                   }}
                 />
               </div>
@@ -136,6 +138,11 @@ function FixCard({ f, n, api, primary }: { f: Fix; n: number; api: StudioApi; pr
       <div className="lab-fix-metric">
         <b>Success</b> {f.success_metric}
       </div>
+      {f.technique && (
+        <div className="lab-fix-drill">
+          <b>Technique</b> {f.technique}
+        </div>
+      )}
       {f.cues?.length > 0 && <div className="lab-muted lab-small">Cues: {f.cues.join(" · ")}</div>}
     </div>
   );
