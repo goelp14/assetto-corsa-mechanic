@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACC Mechanic</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --line: #262b35; --text: #e7e9ee; --muted: #8b93a3;
+    --good: #3ddc84; --warn: #ffcc4d; --bad: #ff5c5c; --cold: #5ab0ff; --accent: #8fb8ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 12px;
+         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; }
+  h1 { font-size: 18px; margin: 0; letter-spacing: .02em; }
+  .pill { padding: 2px 10px; border-radius: 99px; background: var(--line); color: var(--muted); font-size: 13px; }
+  .pill.live { background: #173d28; color: var(--good); }
+  .pill.paused { background: #3d3417; color: var(--warn); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+  section h2 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+  .wide { grid-column: 1 / -1; }
+  .big { font-size: 22px; font-weight: 650; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+  .kv span:nth-child(odd) { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  .phase { font-size: 20px; font-weight: 600; min-height: 1.4em; }
+  .coach { color: var(--accent); min-height: 1.4em; }
+  .fb { color: var(--warn); font-weight: 600; min-height: 1.4em; }
+  .tyres { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tyre { background: var(--bg); border-radius: 8px; padding: 10px; border: 1px solid var(--line); }
+  .tyre b { display: block; font-size: 12px; color: var(--muted); }
+  .tyre .t { font-size: 24px; font-weight: 650; }
+  .good { color: var(--good); } .hot { color: var(--bad); } .cold { color: var(--cold); } .warnc { color: var(--warn); }
+  .delta { font-size: 30px; font-weight: 700; }
+  ul { margin: 0; padding: 0; list-style: none; max-height: 260px; overflow: auto; }
+  li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  li time { color: var(--muted); font-size: 12px; margin-right: 8px; }
+  .muted { color: var(--muted); }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  #waiting { grid-column: 1 / -1; text-align: center; padding: 40px 16px; color: var(--muted); }
+  @media (max-width: 420px) { .delta { font-size: 24px; } .tyre .t { font-size: 20px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ACC Mechanic</h1>
+    <span id="status" class="pill">connecting…</span>
+    <span id="where" class="muted"></span>
+  </header>
+
+  <div id="waiting" hidden>Start a session in ACC — the mechanic picks it up automatically.<br>
+    <span class="muted">Replays and the main menu don't publish telemetry.</span></div>
+
+  <section id="s-engineer" class="wide">
+    <h2>Engineer</h2>
+    <div class="row" style="justify-content: space-between">
+      <div style="min-width:0; flex:1">
+        <div class="phase" id="phase"></div>
+        <div class="coach" id="coach"></div>
+        <div class="fb" id="fb"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="delta num" id="delta">–</div>
+        <div class="muted num" id="laps"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-tyres">
+    <h2>Tyres <span class="muted" id="window" style="text-transform:none; letter-spacing:0"></span></h2>
+    <div class="tyres" id="tyres"></div>
+  </section>
+
+  <section id="s-setup">
+    <h2>Setup</h2>
+    <div id="setup-note" class="big"></div>
+    <div id="setup-why" style="margin-top:6px"></div>
+    <div id="setup-action" class="good" style="margin-top:6px"></div>
+    <div class="kv" style="margin-top:12px; font-size:13px">
+      <span>Base setup</span><span id="base">–</span>
+      <span>Auto_Tweak.json</span><span id="tweak">not written yet</span>
+      <span>Queued for pit</span><span id="queued">0</span>
+    </div>
+  </section>
+
+  <section id="s-learn">
+    <h2>Session</h2>
+    <div class="kv num">
+      <span>Engineer</span><span id="learn"></span>
+      <span>Stint</span><span id="stint"></span>
+      <span>Electronics</span><span id="elec"></span>
+      <span>Fuel</span><span id="fuel"></span>
+      <span>Compound</span><span id="compound"></span>
+    </div>
+    <div class="bar"><i id="learnbar" style="width:0"></i></div>
+  </section>
+
+  <section id="s-voice">
+    <h2>Radio</h2>
+    <ul id="voice"><li class="muted">Nothing said yet.</li></ul>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const W = ["LF", "RF", "LR", "RR"];
+const rgb = (c) => c ? `rgb(${c.map((v, i) => i < 3 ? Math.round(v * 255) : null).filter(v => v !== null).join(",")})` : "";
+const lab = (s, k) => (s.labels && s.labels[k] && s.labels[k].text) || "";
+
+function tempClass(t, h) {
+  if (!t) return "muted";
+  if (t < h.tyre_cold_c) return "cold";
+  if (t > h.tyre_hot_c) return "hot";
+  if (t < h.tyre_ideal_lo || t > h.tyre_ideal_hi) return "warnc";
+  return "good";
+}
+const psiClass = (p) => !p ? "muted" : p < 25.5 ? "cold" : p > 27.5 ? "hot" : (p >= 26 && p <= 27) ? "good" : "warnc";
+
+function render(s) {
+  const live = s.status === "live";
+  $("status").textContent = s.status;
+  $("status").className = "pill " + (live ? "live" : s.status === "paused" ? "paused" : "");
+  $("where").textContent = s.connected ? `${s.car} @ ${s.track} · ${s.session || ""}` : "";
+  const ready = s.connected && s.hud;
+  $("waiting").hidden = !!ready;
+  for (const id of ["s-engineer", "s-tyres", "s-setup", "s-learn"]) $(id).hidden = !ready;
+  if (!ready) return;
+
+  const o = s.overlay, h = s.hud;
+  $("phase").textContent = o.phase;
+  $("coach").textContent = o.coach;
+  $("fb").textContent = o.feedback;
+  const d = s.labels.delta_val || {};
+  $("delta").textContent = d.text || "–";
+  $("delta").style.color = rgb(d.color);
+  $("laps").textContent = `Lap ${s.lap} · last ${s.last_lap || "–"} · best ${s.best_lap || "–"}`;
+
+  $("window").textContent = `ideal ${h.tyre_ideal_lo}–${h.tyre_ideal_hi}°C · 26–27 psi hot`;
+  $("tyres").innerHTML = W.map((w, i) => {
+    const t = s.tyres.core_c[i], p = s.tyres.psi[i], b = s.tyres.brake_c[i];
+    return `<div class="tyre"><b>${w}</b><span class="t num ${tempClass(t, h)}">${t ? Math.round(t) + "°" : "–"}</span>
+      <span class="num ${psiClass(p)}"> ${p ? p.toFixed(1) + " psi" : ""}</span>
+      <div class="muted num" style="font-size:12px">brake ${b || "–"}°C · pad ${s.tyres.pad_mm[i] || "–"} mm</div></div>`;
+  }).join("");
+
+  const n = s.setup.note;
+  $("setup-note").textContent = n ? `${n.section_display}: ${n.old_value} → ${n.new_value}` : "No setup change yet";
+  $("setup-why").textContent = n ? (n.why || n.reason || "") : "The engineer learns your baseline first, then suggests one change at a time.";
+  $("setup-action").textContent = n ? n.action : "";
+  $("base").textContent = s.setup.base || "–";
+  $("tweak").textContent = s.setup.auto_tweak ? "ready — load it in the setup screen" : "not written yet";
+  $("queued").textContent = s.setup.queued;
+
+  $("learn").textContent = `${h.volatility_phase} · ${h.clean_laps}/${h.target_laps} clean laps · consistency ${h.consistency_pct}%`;
+  $("learnbar").style.width = Math.min(100, 100 * h.clean_laps / Math.max(1, h.target_laps)) + "%";
+  $("stint").textContent = lab(s, "stint_line") || "–";
+  $("elec").textContent = `TC ${s.tc} · TC cut ${s.tc_cut} · ABS ${s.abs} · map ${s.engine_map}`;
+  $("fuel").textContent = `${s.fuel_l} L`;
+  $("compound").textContent = s.tyre_compound || "–";
+}
+
+function renderVoice(s) {
+  if (!s.spoken || !s.spoken.length) return;
+  $("voice").innerHTML = s.spoken.map(v =>
+    `<li><time>${new Date(v.t * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}</time>${v.text.replace(/</g, "&lt;")}</li>`).join("");
+}
+
+async function poll() {
+  try {
+    const s = await (await fetch("/state", {cache: "no-store"})).json();
+    render(s); renderVoice(s);
+  } catch (e) {
+    $("status").textContent = "mechanic stopped"; $("status").className = "pill";
+  }
+  setTimeout(poll, 300);
+}
+poll();
+</script>
+</body>
+</html>

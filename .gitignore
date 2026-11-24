@@ -16,6 +16,9 @@ ac_app/data/grip_map/**
 dist/
 exports/
 data/sessions_acc/
+data/acc_live/
+data/obs_password.txt
+data/acc_session_staging.json
 external/query_tools/acc_rpy/fixtures/*.rpy
 external/query_tools/acc_ingest/fixtures/*.ld
 replay-viewer/node_modules/
