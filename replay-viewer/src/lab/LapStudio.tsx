@@ -24,6 +24,7 @@ import { GgPlot, Hud } from "./Hud";
 import { relPos } from "./landmarks";
 import { CoachingPanel, CornersPanel, LimitsPanel, SetupPanel, type StudioApi } from "./Panels";
 import { ReviewPanel } from "./ReviewPanel";
+import { VideoPanel } from "./VideoPanel";
 import { TrackCanvas, type MapColor, type MapMarker } from "./TrackCanvas";
 import { ALL_LANES, Traces } from "./Traces";
 import type { Annotation, LabBundle, Overlay, Review, Scene, Slot } from "./types";
@@ -78,6 +79,7 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
   const [lanes, setLanes] = useState<string[]>(() => loadPref("lanes", DEFAULT_LANES));
   const [mapColor, setMapColor] = useState<MapColor>(() => loadPref("mapColor", "delta" as MapColor));
   const [follow, setFollow] = useState(false);
+  const [showVideo, setShowVideo] = useState<boolean>(() => loadPref("video", false));
   const [fitNonce, setFitNonce] = useState(0);
   const [tab, setTab] = useState<Tab>(() => loadPref("tab", "coaching" as Tab));
   const [showNotes, setShowNotes] = useState(true);
@@ -156,6 +158,7 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
     const tSyncB = timeAtS(pb, syncS);
     return sAtTime(pb, tSyncB + (tA - tSyncA));
   }, [pa, pb, mode, sA, tA, syncS]);
+  const tB = pb && sB != null ? timeAtS(pb, sB) : null;
   const deltaAtCursor = grid?.delta ? gridValue(grid, grid.delta, sA) : null;
 
   const seek = useCallback(
@@ -624,6 +627,21 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
 
       <div className="lab-body">
         <main className="lab-main">
+          <div className={showVideo ? "lab-stagerow" : "lab-stagewrap"}>
+          {showVideo && bundle && (
+            <VideoPanel
+              bundleId={bundleIdFromBase(bundle.base)}
+              A={A}
+              B={B}
+              tA={tA}
+              tB={tB}
+              playing={playing}
+              rate={rate}
+              colors={{ A: COLORS.A, B: COLORS.B }}
+              drivers={bundle.manifest.drivers.map((d) => d.label)}
+              onPickLap={(which, slot) => (which === "A" ? setA(slot) : setB(slot))}
+            />
+          )}
           <section className="lab-stage">
             <TrackCanvas
               track={bundle.track}
@@ -662,6 +680,13 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
               <button className="lab-btn" onClick={() => setFitNonce((n) => n + 1)} title="Fit view">
                 Fit
               </button>
+              <button
+                className={`lab-btn ${showVideo ? "lab-btn--on" : ""}`}
+                onClick={() => setShowVideo((v) => { savePref("video", !v); return !v; })}
+                title="Replay video beside the map, synced to the cursor (recorded from ACC with OBS)"
+              >
+                Video
+              </button>
               <button className={`lab-btn ${showNotes ? "lab-btn--on" : ""}`} onClick={() => setShowNotes((s) => !s)}>
                 Notes
               </button>
@@ -683,6 +708,7 @@ export function LapStudio({ base, onBack }: { base: string; onBack: () => void }
             )}
             {toast && <div className="lab-toast">{toast}</div>}
           </section>
+          </div>
 
           <section className="lab-transport">
             <button className="lab-btn lab-btn--accent lab-play" onClick={() => (active?.pauseText ? resume() : setPlaying((p) => !p))} aria-label={playing ? "Pause" : "Play"}>

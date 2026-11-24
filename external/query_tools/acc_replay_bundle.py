@@ -29,6 +29,19 @@ EXPORTS = REPO / "exports"
 SCHEMA = "vre.replay_bundle.acc.v2"
 
 
+
+def _replay_end_s(rf) -> Optional[float]:
+    """Last recorded moment on the decoder clock. ACC's replay ends at the same instant, so ACC's
+    'replay time remaining' maps onto this clock as end − remaining (used to sync recorded video)."""
+    ends = []
+    for arr in (getattr(rf, "t", None), (rf.inputs or {}).get("time_s") if isinstance(rf.inputs, dict) else None):
+        try:
+            if arr is not None and len(arr):
+                ends.append(float(arr[-1]))
+        except TypeError:
+            continue
+    return round(max(ends), 4) if ends else None
+
 def _spec(s: str) -> Tuple[Path, str]:
     if ":" in s:
         p, _, label = s.rpartition(":")
@@ -91,10 +104,12 @@ def build(me_spec: Tuple[Path, str], ref_spec: Optional[Tuple[Path, str]] = None
             lap_rows.append({"lap_index": l["lap_index"], "lap_ms": l["lap_ms"], "valid": l.get("valid"),
                              "flying": l.get("flying_candidate"), "partial": fr["meta"].get("partial"),
                              "sync_ok": fr["meta"]["sync"].get("lap_sync_go"),
+                             "start_s": round(float(l.get("sf_time_s", l["session_start_s"])), 4),
                              "frames": f"frames/{rf.label}/{fn.name}"})
         drivers_meta.append({"label": rf.label, "role": role, "identity": rf.ident, "car": rf.car,
                              "best_lap_index": best, "laps": lap_rows, "sync": rf.sync,
-                             "pose_hz": rf.clock["hz"]})
+                             "pose_hz": rf.clock["hz"], "replay_end_s": _replay_end_s(rf),
+                             "rpy_file": Path(str(rf.path)).name})
 
     try:
         rep = limits([x for x in (me, ref) if x is not None])
@@ -148,6 +163,12 @@ def build(me_spec: Tuple[Path, str], ref_spec: Optional[Tuple[Path, str]] = None
                   "reviews": "reviews/"},
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1, default=float), encoding="utf-8")
+    try:  # an improved lap or a replaced reference makes old footage stale
+        from .video_store import prune
+
+        prune(out.name, exports=str(exports))
+    except Exception:
+        pass
     _refresh_index(exports)
     return out
 

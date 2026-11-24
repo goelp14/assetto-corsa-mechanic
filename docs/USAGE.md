@@ -77,6 +77,26 @@ Bundles land in `exports/lab_*` and show first on the home page. Works with one 
 | Notes | **+ Note** pins a note at the cursor (saved in the bundle) |
 | Video review | Play the automatic breakdown or AI/your reviews; build scenes from the current view |
 | AI control | `claude mcp add vre-viewer -- python3 external/query_tools/viewer_mcp.py` — the AI can seek, play, annotate and save reviews (numbers checked against the data) |
+| Replay video | **Video** (map toolbar) shows the ACC replay recording beside the map, synced to the cursor (±1 frame) |
+
+#### Replay video (OBS + ACC)
+
+One-time setup:
+- OBS: Tools → WebSocket Server Settings → enable (port 4455). If authentication is on, put the password in
+  `data/obs_password.txt` (git-ignored).
+- ACC replay control (optional, for "jump to lap"): close ACC, then
+  `python3 -m external.query_tools.acc_ue4ss install --zip UE4SS_v4.0.0.zip` (zip from the UE4SS-RE/RE-UE4SS
+  GitHub release). It adds `dwmapi.dll` + `ue4ss/` to ACC's `AC2/Binaries/Win64`, runs only the
+  `VREReplayControl` script, and only acts while a replay is loaded. `... acc_ue4ss uninstall` removes exactly
+  what was added. Consider uninstalling before racing online.
+
+Recording: open the replay in ACC. Lap Studio detects which `.rpy` is loaded (ACC's log + the file's last-access
+time) and which bundle/driver it belongs to. With replay control installed, **● Record … fastest lap** makes ACC
+jump to the lap (its own `SetCurrentReplayTimeToSeconds`), sets the Dash camera, records with OBS, and pauses
+after the lap. Without it, press play yourself; laps are matched automatically.
+
+CLI: `python3 -m external.query_tools.acc_replay_capture --bundle <id> --lap best` · re-sync a recording from its
+saved samples: `--resync <video_id>`.
 
 ---
 
