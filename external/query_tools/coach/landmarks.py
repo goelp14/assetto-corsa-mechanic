@@ -29,6 +29,7 @@ EVENT_WORDS = {
     "brake_off_m": "release the brake",
     "turn_in_m": "turn in",
     "vmin_m": "reach minimum speed",
+    "mrp_m": "reach peak rotation",
     "throttle_on_m": "pick up the throttle",
     "full_throttle_m": "reach full throttle",
 }

@@ -42,6 +42,35 @@ Then add a visual cue:
 - Express timing relative to the car ("intersection just ahead of the nose", "as the pit lane peels away").
 - Mark unverified cues as such ("I haven't seen it from the cockpit").
 
+## Rotation model (read [rotation-and-corner-structure.md](../../docs/coach/rotation-and-corner-structure.md))
+
+Every corner: **braking → closing spiral → MRP (peak yaw rate) → opening spiral**. Rotation should rise as speed
+falls; throttle after the MRP. Bundles built since 2026-11 carry per-lap `mrp_m`, `mrp_kmh`, `rotation_jerk_dps2`,
+`kmh_lost_turn_in_to_mrp`, `grip_gap_frac`, `last_downshift_vs_apex_m` (`coach/rotation.py`; older bundles:
+`python -m external.query_tools.coach.rotation exports/<bundle>`). Use them to say *how* the car is rotated:
+
+- **Snapped vs built** (`rotation_snap`): "1 → 3" jump after turn-in → slide → correction → understeer. Cue: small
+  first input, add lock only as the brake bleeds off.
+- **Brake straight, then turn** (`brakes_then_turns`): no speed shed while rotating. Cue: carry some brake past
+  turn-in and let it go *with* the steering.
+- **Grip gap** (`grip_gap_braking_to_turning`): release with no steering waiting. Cue: turn a fraction before each
+  step of release; release as long as the steering build. In-car tell: the tyres go quiet.
+- **Downshift spread** (`inconsistent_downshifts`): engine braking changes rear bias; same downshift point every lap.
+- **Turned in too early** (no metric yet — look for a "waiting" stretch under the limit and a second steering build):
+  ask "could the car have taken more steering or trail at turn-in?"
+- Steering reductions before the MRP: classify as too slow / no room (losing) vs oversteer (may be fine).
+- Never compare raw steering angles between two drivers (wheel lock/ratio settings differ); compare yaw, speed,
+  position, and each driver's own balance trend.
+
+- MRP placement guide (share of corner): fast ≈ 49 % MRP / 51 % apex, medium 47/53, slow 45/55; at least half the
+  rotation on the brakes before throttle (`rotation_before_throttle_frac`); MRP should coincide with the slowest
+  point (`mrp_vs_vmin_m`); a long hold near peak rotation before throttle (`rotation_plateau_s`) is the "maximum
+  rotation line" — waiting at half throttle.
+- Track-specific knowledge: `docs/coach/tracks/<track>.md` (e.g. Spa) before giving cues.
+- Theory and the problem → cause → try table: [car-handling-theory.md](../../docs/coach/car-handling-theory.md).
+
+Give at most **2–3 driving targets per corner** (apex, slowest point, apex 2) — not a list of input changes.
+
 ## Lessons from Sonoma 312/67
 
 - "Brake 5 m later" pushed the driver into heavy trail at turn-in → inside-front lock and over-slowing. Brake *where* the

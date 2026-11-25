@@ -62,6 +62,74 @@ MENTAL_MODELS: List[Dict[str, Any]] = [
      "correct": "Wait until the car is pointed, then one committed application that stays.",
      "why": "Each lift unloads the rear and restarts the acceleration.", "drill": "One throttle application per exit.",
      "metric": "one throttle application per exit (no lifts) on 4 of 5 laps", "group": "exit"},
+    {"id": "build_rotation", "habits": ["rotation_snap", "brakes_then_turns", "rotates_at_lower_speed"],
+     "belief": "Brake in a straight line, then turn the car in",
+     "correct": "Build the rotation as the speed falls: release the brake as the steering goes on, so the car keeps "
+                "slowing while it rotates (closing spiral) and peaks once at the maximum rotation point, then the "
+                "throttle opens the spiral.",
+     "why": "Speed buys rotation: the slower the car, the tighter it can turn, so rotation should rise as speed drops. "
+            "Snapping it in at turn-in asks for more yaw than the speed allows; the rear slides, you correct, then it "
+            "understeers. Finishing the braking before turning wastes the part of the corner where slowing and "
+            "rotating happen together.",
+     "drill": "Small first steering input, then add lock only as you bleed the brake off.",
+     "metric": "peak rotation reached at ≥ {ref_mrp_kmh:.0f} km/h (you {you_mrp_kmh:.0f}) on 4 of 5 laps",
+     "by_habit": {
+         "rotation_snap": (
+             "Small first steering input, then add lock in steps only as you bleed the brake off; no single big input. "
+             "Right after turn-in your rotation jumps (peak yaw acceleration {you_rotation_jerk_dps2:.0f} °/s²); the "
+             "reference builds it at {ref_rotation_jerk_dps2:.0f} °/s².",
+             "peak yaw acceleration on entry ≤ {target_jerk:.0f} °/s² with no steering correction, on 4 of 5 laps"),
+         "brakes_then_turns": (
+             "Keep a little brake on as you turn in and release it as the lock goes on, so the car is still slowing while "
+             "it rotates: the reference loses {ref_kmh_lost_turn_in_to_mrp:.0f} km/h between turn-in and peak rotation, "
+             "you {you_kmh_lost_turn_in_to_mrp:.0f}.",
+             "≥ {target_kmh_lost:.0f} km/h shed between turn-in and peak rotation, on 4 of 5 laps"),
+         "rotates_at_lower_speed": (
+             "Brake less so the car reaches peak rotation at {ref_mrp_kmh:.0f} km/h (you {you_mrp_kmh:.0f}); speed you "
+             "throw away before the rotation doesn't buy any more of it.",
+             "peak rotation reached at ≥ {target_mrp_kmh:.0f} km/h on 4 of 5 laps"),
+     },
+     "group": "rotation"},
+    {"id": "steer_into_the_release", "habits": ["grip_gap_braking_to_turning"],
+     "belief": "Release the brake, then turn",
+     "correct": "Brake release and steering are one motion: a little steering goes in a fraction of a second before "
+                "each step of brake release, so the grip the brake gives up is used straight away for turning.",
+     "why": "Released brake with no steering waiting means the tyres do nothing for a moment: no slowing, no turning, "
+            "then understeer when the lock arrives. Brake release only rotates the car if there's steering in it.",
+     "drill": "Turn first, then release: add the first bit of lock while still on the brake, and let the pedal come up "
+              "only as fast as the steering goes in. Your combined grip dips {you_grip_gap_pct:.0f}% between braking and "
+              "turning (reference {ref_grip_gap_pct:.0f}%), and the laps with the bigger dip are your slower ones.",
+     "metric": "grip dip under {target_grip_gap_pct:.0f}% between braking and peak rotation, on 4 of 5 laps", "group": "entry"},
+    {"id": "engine_braking_is_a_tool", "habits": ["inconsistent_downshifts"],
+     "belief": "Downshifts are just about being in the right gear",
+     "correct": "Engine braking slows only the rear axle, so downshift timing is a brake-bias change (dynamic brake bias): "
+                "earlier, harder downshifts rotate the car more, later ones calm it. Decide it per corner and repeat it.",
+     "why": "If the last downshift lands somewhere different every lap, the entry balance is different every lap and you "
+            "can't build a repeatable corner on top of it.",
+     "drill": "Pick one downshift point per gear and hit it every lap; your last downshift moves by {you_downshift_iqr:.0f} m lap to lap.",
+     "metric": "last-downshift spread (IQR) under 8 m over 5 laps", "group": "braking"},
+    {"id": "rotate_then_throttle", "habits": ["throttle_before_rotation", "accelerates_before_half_rotation"],
+     "by_habit": {
+         "accelerates_before_half_rotation": (
+             "Get at least half the corner's rotation done on the brakes before the throttle: the reference has "
+             "{ref_rot_before_pct:.0f}% done when it picks up the throttle, you {you_rot_before_pct:.0f}%. Rotation is cheap "
+             "while slowing and expensive while accelerating.",
+             "≥ 50% of the corner's rotation done before the throttle, on 4 of 5 laps"),
+     },
+     "belief": "Get on the throttle as early as possible",
+     "correct": "Throttle comes after the maximum rotation point and grows as the wheel unwinds.",
+     "why": "Throttle moves weight to the rear and widens the line; before the car has rotated it creates understeer "
+            "(or wheelspin with lock on), and the exit gets later, not earlier.",
+     "drill": "Wait for the car to point, then squeeze: the reference picks up the throttle {ref_throttle_on_vs_mrp_m:.0f} m after "
+              "peak rotation; you {you_throttle_on_vs_mrp_m:.0f} m.",
+     "metric": "throttle on at or after peak rotation on 4 of 5 laps", "group": "exit"},
+    {"id": "commit_or_rotate", "habits": ["maintenance_throttle"],
+     "belief": "A bit of throttle mid-corner keeps the car balanced",
+     "correct": "Part throttle that doesn't accelerate only cancels engine braking and unloads the front. Either let the "
+                "car rotate (off the throttle, a touch of brake) or commit to accelerating.",
+     "why": "The car neither slows (no rotation) nor gains speed; it drifts wide and the full-throttle point comes later.",
+     "drill": "Replace the {you_maintenance_throttle_s:.1f} s of holding throttle with either a touch of brake to point the car or one committed squeeze.",
+     "metric": "under 0.3 s of non-accelerating part throttle per corner on 4 of 5 laps", "group": "exit"},
     {"id": "consistency_first", "habits": ["inconsistent_corner"],
      "belief": "Each lap is a fresh attempt at the corner",
      "correct": "Lock in one reference (braking marker, turn-in point) and repeat it; spread is where the time is.",
@@ -90,7 +158,9 @@ def _val(c, k):
     return (c.get("best_lap") or {}).get(k)
 
 
-def build_fix(mm, habit, analysis) -> Optional[Dict[str, Any]]:
+def build_fix(mm, habit, analysis, siblings: Optional[List[Dict[str, Any]]] = None) -> Optional[Dict[str, Any]]:
+    """``siblings``: other habits of the same mental model; when one also shows at this corner its drill
+    sentence is added, so one fix tells the whole story of the corner (e.g. snapped rotation *and* low speed)."""
     labels = analysis.get("labels") or {}
     me, ref = labels.get("me"), labels.get("ref")
     inst = max(habit["instances"], key=lambda i: (i.get("loss_s") or 0))
@@ -104,6 +174,18 @@ def build_fix(mm, habit, analysis) -> Optional[Dict[str, Any]]:
         "you_coast": _val(a, "coast_s") or 0,
         "you_lift_gap": _val(a, "lift_gap_s") or 0,
     }
+    for k in ("kmh_lost_turn_in_to_mrp", "rotation_jerk_dps2", "mrp_kmh", "throttle_on_vs_mrp_m", "maintenance_throttle_s"):
+        nums[f"you_{k}"] = _val(a, k) or 0
+        nums[f"ref_{k}"] = _val(b, k) or 0
+    nums["you_rot_before_pct"] = 100 * (_val(a, "rotation_before_throttle_frac") or 0)
+    nums["ref_rot_before_pct"] = 100 * (_val(b, "rotation_before_throttle_frac") or 0)
+    nums["you_grip_gap_pct"] = 100 * (_val(a, "grip_gap_frac") or 0)
+    nums["ref_grip_gap_pct"] = 100 * (_val(b, "grip_gap_frac") or 0)
+    nums["target_grip_gap_pct"] = max(5.0, nums["ref_grip_gap_pct"] + 2.0)
+    nums["you_downshift_iqr"] = ((a.get("consistency") or {}).get("last_downshift_vs_apex_m") or {}).get("iqr") or 0
+    nums["target_jerk"] = max(1.3 * nums["ref_rotation_jerk_dps2"], nums["ref_rotation_jerk_dps2"] + 10.0)
+    nums["target_kmh_lost"] = (nums["you_kmh_lost_turn_in_to_mrp"] + nums["ref_kmh_lost_turn_in_to_mrp"]) / 2.0
+    nums["target_mrp_kmh"] = nums["ref_mrp_kmh"] - 1.0
     nums["target"] = max(nums["ref_ramp"] * 1.2, 10.0)
     nums["target_vmin"] = nums["ref_vmin"] - 1.0 if nums["ref_vmin"] else nums["you_vmin"] + 2.0
     crest = next((t for l in (a.get("laps") or []) for t in (l.get("terrain") or []) if t["kind"] == "crest"), None)
@@ -128,14 +210,28 @@ def build_fix(mm, habit, analysis) -> Optional[Dict[str, Any]]:
     if corners and nums["ref_ft"]:
         anc = landmarks.anchor_corner(nums["ref_ft"], "full_throttle_m", corners, corners[0])
         nums["ft_where_ref"] = landmarks.anchor_phrase(nums["ref_ft"], anc)["text"]
+    if "you_ft_phrase" not in nums:  # late_full_throttle without wheel-straight evidence: compare with the reference
+        nums["you_ft_phrase"] = (f"{abs(gap):.0f} m ({nums['ft_gap_cl']}) {'later' if gap > 0 else 'earlier'} than that"
+                                 if abs(gap) >= 3 else "at about the same place")
+        nums["ref_ft_phrase"] = nums["ft_where_ref"]
     if corners and crest:
         anc = landmarks.anchor_corner(crest["at_m"], "turn_in_m", corners, corners[0])
         nums["crest_where"] = landmarks.anchor_phrase(crest["at_m"], anc)["text"]
+    drill_t, metric_t = (mm.get("by_habit") or {}).get(habit["id"], (mm["drill"], mm["metric"]))
     try:
-        drill = mm["drill"].format(**nums)
-        metric = mm["metric"].format(**nums)
+        drill = drill_t.format(**nums)
+        metric = metric_t.format(**nums)
     except (KeyError, ValueError):
-        drill, metric = mm["drill"], mm["metric"]
+        drill, metric = drill_t, metric_t
+    for sib in siblings or []:
+        if sib["id"] == habit["id"] or not any(i["key"] == key for i in sib["instances"]):
+            continue
+        t = (mm.get("by_habit") or {}).get(sib["id"])
+        if t:
+            try:
+                drill += " " + t[0].format(**nums)
+            except (KeyError, ValueError):
+                pass
     cues = _cues(analysis, corner)
     physics_notes = []
     for l in (a.get("best_lap") or {}).get("terrain") or []:
@@ -171,7 +267,7 @@ def distill(analysis: Dict[str, Any], habits: Dict[str, Any], *, profile: Option
         score = h["pace_impact_s"] * min(1.0, h["repeats"] / 3.0 + 0.34)
         if "stability" in prefs and mm["group"] == "braking":
             score *= 1.0  # pace-first: preferences never promote calming changes
-        fix = build_fix(mm, h, analysis)
+        fix = build_fix(mm, h, analysis, hs)
         if fix:
             fix["score"] = round(score, 3)
             cands.append(fix)

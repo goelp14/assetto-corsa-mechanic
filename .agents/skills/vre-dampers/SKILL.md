@@ -36,6 +36,13 @@ the car is never the goal. Any move that removes transient rotation is a trade: 
 median lap; "calmer but slower" ⇒ reject. For a rotation-first driver prefer moves that add compliance/grip at the
 limiting end over moves that add front damping (transient push).
 
+**Damper histogram reading (Popometer method):** a good histogram has a tall, narrow centre (~12 % of samples
+near 0 mm/s) falling off symmetrically, with almost no high-speed tail. Flat/wide centre → too soft (stiffen springs
+first, then dampers). Peak shifted to the rebound side → add rebound damping; to the bump side → add bump.
+Widen bins/range before judging (narrow bins look flat). Also check rake: negative rake on turn-in →
+sudden aero understeer; lower front bump-stop range limits pitch and stabilises the aero platform. Confirm every
+change on track — the histogram is a guide, the lap time decides.
+
 **ACC MoTeC:** use `SUS_TRAVEL_*` @ 200 Hz and `VRE_DV_*` / `VRE_RAKE` from `motec_analysis_ld` (histogram in Motec
 worksheets). Do not invent damper velocity from unlocked `.rpy` pose.
 

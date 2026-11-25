@@ -214,7 +214,83 @@ def _rules():
             return {"brake_on_iqr_m": bo["iqr"], "laps": bo["n"]}
         return None
 
+    # --- rotation (coach/rotation.py metrics; absent on bundles built without frames) ---
+    def rotation_snap(me, ref):
+        """Rotation snapped in at turn-in rather than built up as speed falls (peak yaw acceleration)."""
+        a, b = _med(me, "rotation_jerk_dps2"), _med(ref, "rotation_jerk_dps2") if ref else None
+        if a is None or b is None:
+            return None
+        if a > max(1.5 * b, b + 15.0):
+            ev = {"rotation_jerk_dps2": a, "ref_rotation_jerk_dps2": b}
+            sa, sb = _med(me, "entry_slip_peak_deg"), _med(ref, "entry_slip_peak_deg")
+            if sa is not None and sb is not None:
+                ev.update(entry_slip_peak_deg=sa, ref_entry_slip_peak_deg=sb)
+            return ev
+        return None
+
+    def brakes_then_turns(me, ref):
+        """All the slowing is done before turning; the reference keeps shedding speed while the car rotates."""
+        a, b = _med(me, "kmh_lost_turn_in_to_mrp"), _med(ref, "kmh_lost_turn_in_to_mrp") if ref else None
+        if a is None or b is None:
+            return None
+        if b > a + 8.0:
+            return {"kmh_lost_turn_in_to_mrp": a, "ref_kmh_lost_turn_in_to_mrp": b,
+                    "heading_to_mrp_deg": _med(me, "heading_to_mrp_deg"),
+                    "ref_heading_to_mrp_deg": _med(ref, "heading_to_mrp_deg")}
+        return None
+
+    def rotates_slower(me, ref):
+        """Peak rotation happens at a clearly lower speed than the reference ('paying' more speed for rotation)."""
+        a, b = _med(me, "mrp_kmh"), _med(ref, "mrp_kmh") if ref else None
+        if _med(me, "kmh_lost_turn_in_to_mrp") is None:  # braked corners only
+            return None
+        if a is None or b is None or a >= b - 3.0:
+            return None
+        return {"mrp_kmh": a, "ref_mrp_kmh": b, "mrp_vs_apex_m": _med(me, "mrp_vs_apex_m"),
+                "ref_mrp_vs_apex_m": _med(ref, "mrp_vs_apex_m")}
+
+    def throttle_before_rotation(me, ref):
+        a, b = _med(me, "throttle_on_vs_mrp_m"), _med(ref, "throttle_on_vs_mrp_m") if ref else None
+        if a is None or b is None or a >= -5.0 or b < -5.0:  # only where the reference waits for the rotation
+            return None
+        return {"throttle_on_vs_mrp_m": a, "ref_throttle_on_vs_mrp_m": b}
+
+    def accelerates_before_half_rotation(me, ref):
+        """Throttle before about half the corner's rotation is done (on the brakes is where rotation is cheap)."""
+        a, b = _med(me, "rotation_before_throttle_frac"), _med(ref, "rotation_before_throttle_frac") if ref else None
+        if a is None or b is None or a >= 0.5 or b < 0.5 or a > b - 0.15:
+            return None
+        return {"rotation_before_throttle_pct": round(100 * a), "ref_rotation_before_throttle_pct": round(100 * b)}
+
+    def maintenance_throttle(me, ref):
+        a, b = _med(me, "maintenance_throttle_s"), _med(ref, "maintenance_throttle_s") if ref else None
+        if a is None or a < 0.3 or (b is not None and a < b + 0.25):
+            return None
+        return {"maintenance_throttle_s": a, "ref_maintenance_throttle_s": b}
+
+    def grip_gap(me, ref):
+        """A dip in combined g between braking and turning (tyres 'go quiet'), and your own laps pay for it."""
+        a, b, r = _med(me, "grip_gap_frac"), _med(ref, "grip_gap_frac") if ref else None, _r(me, "grip_gap_frac")
+        if a is None or a < 0.08 or r is None or r < 0.4 or (b is not None and a < b + 0.04):
+            return None
+        return {"grip_gap_frac": a, "ref_grip_gap_frac": b, "own_r_with_time": r}
+
+    def downshift_spread(me, ref):
+        c = (me.get("consistency") or {}).get("last_downshift_vs_apex_m")
+        if not c or c["n"] < 5 or c["iqr"] <= 15.0:
+            return None
+        return {"last_downshift_iqr_m": c["iqr"], "laps": c["n"], "last_downshift_vs_apex_m": c["median"],
+                "ref_last_downshift_vs_apex_m": _med(ref, "last_downshift_vs_apex_m") if ref else None}
+
     return [
+        ("grip_gap_braking_to_turning", "entry", "Grip gap between braking and turning", "Combined grip dips as the brake comes off before the steering takes over; your slower laps have the bigger dip", grip_gap, "weakness", "grip_gap_frac"),
+        ("inconsistent_downshifts", "braking", "Downshifts land in a different place every lap", "The last downshift before the corner moves by more than 15 m (IQR) lap to lap, so the entry balance changes every lap", downshift_spread, "weakness", "last_downshift_vs_apex_m"),
+        ("rotation_snap", "rotation", "Rotation snapped in, not built", "The car's rotation jumps right after turn-in instead of building as speed falls (closing spiral)", rotation_snap, "weakness", "rotation_jerk_dps2"),
+        ("brakes_then_turns", "rotation", "Brake straight, then turn", "Little speed is shed between turn-in and peak rotation; the reference keeps slowing while the car rotates", brakes_then_turns, "weakness", "kmh_lost_turn_in_to_mrp"),
+        ("rotates_at_lower_speed", "rotation", "Rotates at a lower speed", "Peak rotation (MRP) happens at a lower speed than the reference", rotates_slower, "weakness", "mrp_kmh"),
+        ("throttle_before_rotation", "exit", "Throttle before the car has rotated", "Throttle comes in before the maximum rotation point", throttle_before_rotation, "weakness", "throttle_on_vs_mrp_m"),
+        ("accelerates_before_half_rotation", "exit", "Accelerating before half the rotation is done", "Throttle comes in with less than half of the corner's rotation done; the reference rotates more on the brakes first", accelerates_before_half_rotation, "weakness", "rotation_before_throttle_frac"),
+        ("maintenance_throttle", "exit", "Part throttle that doesn't accelerate", "Throttle held part-way after the slowest point while the car isn't accelerating", maintenance_throttle, "weakness", "maintenance_throttle_s"),
         ("slow_brake_build", "braking", "Slow brake build", "Full brake pressure arrives late after the braking point", slow_build, "weakness", "brake_ramp_m"),
         ("second_brake_application", "braking", "Brake, release, brake again", "A second brake application near turn-in (classic 'brake too early, then re-brake')", rebrake, "weakness", "rebrake_peak"),
         ("lift_gap_before_brake", "braking", "Lift, pause, then brake", "Neither pedal between lifting and braking: coasting at top speed", lift_gap, "weakness", "lift_gap_s"),

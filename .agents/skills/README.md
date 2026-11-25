@@ -10,7 +10,8 @@ Committed skills for telemetry coaching in this repo. Car- and track-agnostic.
 | `vre-video-review` | both | Coach-style video review in Lap Studio; AI drives the viewer (MCP), grounded reviews |
 | `vre-root-cause` | both | Trace exits/hesitation/coasting back to the upstream cause |
 | `vre-line-analysis` | both | Edge-independent line study on the driver's own passes |
-| `vre-corner-coaching` | both | One drill + driver-language cues (boards, apex-relative, car lengths) |
+| `vre-coaching-session` | both | Run a session like a coach: watch → reference → 1–2 mechanisms → drill/homework → retest |
+| `vre-corner-coaching` | both | One drill + driver-language cues; rotation model (MRP, closing spiral, grip gap) |
 | `vre-incident-analysis` | both | Spins / loss-of-control |
 | `vre-explain-dynamics` | both | Physics / mechanism (elevation, braking balance, load transfer) |
 | `vre-car-research` | both | What is universal vs car-specific; how to research and store car facts |

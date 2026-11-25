@@ -95,6 +95,11 @@ From Popometer + GitGud GT3 + Blayze trail-brake data:
 | **Throttle sawtooth** | 60→40→100 | Wait, then **one** committed application (binary-ish GT3). |
 | **Trail too heavy** | ABS while steered; steering grows without LatG | Peak brake wheels straight; be light on trail before lock (GitGud ~light trail in slow GT3 — car-specific). |
 | **High-downforce fear** | Fast corners: square brake, no trail, huge scrub | Learn pitch/balance; careful trail + smooth steer (Popometer Pouhon-type). |
+| **Rotation snapped in ("1 → 3")** | Yaw rate jumps right after turn-in (high `rotation_jerk_dps2`), slide, correction, then understeer | Small first input; add lock only as the brake bleeds off; one continuous build to the MRP ([rotation doc](rotation-and-corner-structure.md)) |
+| **Brake straight, then turn** | Speed already at its minimum by turn-in; ref still sheds speed while rotating (`kmh_lost_turn_in_to_mrp`) | Carry some brake past turn-in and release it *with* the steering (closing spiral) |
+| **Grip gap** | Combined-g dip between braking and turning; own slower laps have the bigger dip | Turn a fraction before each step of brake release; release length ≈ steering build |
+| **Turned in too early** | A "waiting" phase under the limit: neither strong brake nor rising steer, then a second steering build | Turn in later, then build one motion; check "could the car have taken more?" |
+| **Slowest point after the apex** | minV after apex; long part-throttle that doesn't accelerate | Slowest point slightly before apex; accelerate through it with *enough* throttle to accelerate |
 | **Late apex hairpin done right** | MinV near/after geometric apex; FT soon after car pointed | Spa La Source: exit ≫ entry (Coach Dave / Track Titan / P1). |
 
 **La Source (Spa) research notes**
@@ -175,5 +180,7 @@ A coaching line **passes** if it:
 | Track Titan Spa analyses | LS late-brake failure chain; FT at apex vs scrubbing |
 | AiM / ACI race-data explainers | What/where/why; delta → speed → pedals → one fix → validate |
 | Blayze trail-brake data | Peak vs trail shape; exit > early throttle dab |
+| Suellio Almeida coaching videos (2025–26) | Corner = brake/closing spiral/MRP/opening spiral; rotation ∝ falling speed; brake release unlocks rotation; engine braking = dynamic brake bias; grip gap; balance trace |
+| Nils Naujoks (Popometer) coaching + "track marks" | 2–3 targets per corner (apex, slowest point, apex 2); over-/under-turning patterns; braking cascades; damper histogram |
 
 Update this file when a new technique proves out on VRE sessions — do not rediscover Motec basics in chat.

@@ -13,7 +13,9 @@ Ground mechanism explanations in evidence + glossary.
 
 1. Start from a metric in the evidence pack or a `driver_lab.py` output — never parametric-only physics
 2. Link metric → mechanism → driver action
-3. Read [dynamics-glossary.md](../../docs/coach/dynamics-glossary.md) for vocabulary and the proven chains
+3. Read [dynamics-glossary.md](../../docs/coach/dynamics-glossary.md) for vocabulary and the proven chains, and
+   [car-handling-theory.md](../../docs/coach/car-handling-theory.md) for the handling model (rotation, three tools for
+   rotation, weight-transfer levels, correction priority, elevation/camber, V vs U by downforce)
 
 ## Common chains
 

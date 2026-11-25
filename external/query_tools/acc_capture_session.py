@@ -83,14 +83,20 @@ def unstage() -> int:
     return n
 
 
-def _existing(bundle: str, d: dict) -> set:
-    """(kind, corner, camera) already recorded for this driver's current fastest lap from the same replay."""
+def _cam_key(v: dict) -> str:
+    cam = v.get("camera") or ""
+    return "set1" if v.get("kind") == "angle" and cam.startswith("set") else cam
+
+
+def _existing(bundle: str, d: dict) -> list:
+    """Recordings usable for this driver's current fastest lap from the same replay:
+    [(kind, camera, s0_m, s1_m)] (track span covered; full laps cover everything)."""
     try:
         with open(os.path.join(EXPORTS, bundle, "videos.json"), encoding="utf-8") as fh:
             vids = json.load(fh).get("videos", [])
     except (OSError, ValueError):
-        return set()
-    out = set()
+        return []
+    out = []
     for v in vids:
         if v.get("tool") != "vre" or v.get("driver") != d["label"] or v.get("rpy_file") != d.get("rpy_file"):
             continue
@@ -99,9 +105,72 @@ def _existing(bundle: str, d: dict) -> set:
         lap = next((l for l in v.get("laps", []) if l.get("lap_index") == d.get("best_lap_index")), None)
         if lap is None or (v.get("kind", "full") == "full" and not lap.get("complete")):
             continue
-        out.add((v.get("kind", "full"), v.get("corner"), v.get("camera") if v.get("kind") != "angle" or not
-                 (v.get("camera") or "").startswith("set") else "set1"))
+        out.append((v.get("kind", "full"), _cam_key(v), v.get("s0_m"), v.get("s1_m")))
     return out
+
+
+def _has(have: list, p: dict, tol_m: float = 5.0) -> bool:
+    """True when an existing recording covers this pass: same kind and camera, and (for corner clips) a track
+    span that contains the planned one — so a longer 'La Source → Eau Rouge' clip covers a 'La Source' pass."""
+    cam = _cam_key(p)
+    for kind, c, s0, s1 in have:
+        if kind != p["kind"] or c != cam:
+            continue
+        if kind == "full":
+            return True
+        if None not in (s0, s1, p.get("s0_m"), p.get("s1_m")) and s0 <= p["s0_m"] + tol_m and s1 >= p["s1_m"] - tol_m:
+            return True
+    return False
+
+
+def adopt_shared(bundle: str, exports: Optional[str] = None) -> int:
+    """Copy into this bundle any recording another bundle made of the *same replay lap* (same rpy file, same lap,
+    still each driver's fastest here) — e.g. the reference driver's footage when only your replay changed.
+    Files are shared, not duplicated; the pruner never deletes a file another bundle still lists."""
+    root = exports or EXPORTS
+    bdir = os.path.join(root, bundle)
+    try:
+        with open(os.path.join(bdir, "manifest.json"), encoding="utf-8") as fh:
+            drivers = {d["label"]: d for d in json.load(fh).get("drivers", [])}
+    except (OSError, ValueError):
+        return 0
+    vpath = os.path.join(bdir, "videos.json")
+    try:
+        with open(vpath, encoding="utf-8") as fh:
+            doc = json.load(fh)
+    except (OSError, ValueError):
+        doc = {"videos": []}
+    have_ids = {v.get("id") for v in doc.get("videos", [])}
+    have_files = {v.get("file") for v in doc.get("videos", [])}
+    added = 0
+    for other in sorted(os.listdir(root)):
+        if other == bundle:
+            continue
+        try:
+            with open(os.path.join(root, other, "videos.json"), encoding="utf-8") as fh:
+                vids = json.load(fh).get("videos", [])
+        except (OSError, ValueError):
+            continue
+        for v in vids:
+            d = drivers.get(v.get("driver"))
+            if (d is None or v.get("tool") != "vre" or v.get("rpy_file") != d.get("rpy_file")
+                    or v.get("id") in have_ids or v.get("file") in have_files
+                    or not v.get("file") or not os.path.isfile(v["file"])
+                    or not any(l.get("lap_index") == d.get("best_lap_index") for l in v.get("laps", []))):
+                continue
+            doc.setdefault("videos", []).append(dict(v, shared_from=other))
+            have_ids.add(v.get("id"))
+            have_files.add(v.get("file"))
+            src = os.path.join(root, other, "video_%s_samples.json" % v.get("id"))
+            if os.path.isfile(src):
+                import shutil
+                shutil.copyfile(src, os.path.join(bdir, os.path.basename(src)))
+            added += 1
+    if added:
+        doc["videos"] = sorted(doc["videos"], key=lambda x: x.get("recorded", ""))
+        with open(vpath, "w", encoding="utf-8") as fh:
+            json.dump(doc, fh, indent=1)
+    return added
 
 
 def _describe(d: dict) -> str:
@@ -271,6 +340,11 @@ class Session:
         """(order, drivers): full laps first, then per driver one camera at a time through the corners."""
         with open(os.path.join(EXPORTS, self.bundle, "manifest.json"), encoding="utf-8") as fh:
             m = json.load(fh)
+        try:
+            if not self.force:
+                adopt_shared(self.bundle)
+        except Exception:
+            pass
         spots = trouble_spots(self.bundle, self.max_spots)
         plans = {d["label"]: driver_plan(self.bundle, d, spots, self.angles) for d in m["drivers"]}
         drivers = {d["label"]: d for d in m["drivers"]}
@@ -293,12 +367,12 @@ class Session:
     def estimate(self, acc_up: bool = True, loaded: Optional[str] = None, fresh: bool = False) -> float:
         """Seconds for a run (skipping passes already recorded unless ``fresh``); 0 when nothing is missing."""
         order, drivers = self.plan()
-        have = {lbl: set() if fresh else _existing(self.bundle, drivers[lbl]) for lbl in drivers}
-        if all((p["kind"], p.get("corner"), p["camera"]) in have[lbl] for lbl, p in order):
+        have = {lbl: [] if fresh else _existing(self.bundle, drivers[lbl]) for lbl in drivers}
+        if all(_has(have[lbl], p) for lbl, p in order):
             return 0.0
         total, current = (0.0 if acc_up else self.EST_START_ACC_S), loaded
         for lbl, p in order:
-            if (p["kind"], p.get("corner"), p["camera"]) in have[lbl]:
+            if _has(have[lbl], p):
                 continue
             if lbl != current:
                 total += self.EST_LOAD_S
@@ -367,7 +441,14 @@ class Session:
             end = (st_.get("start_s") or 0) + st_["total_s"] if st_.get("total_s") else None
         except (TimeoutError, OSError):
             end = None
-        file_ok = bool(det.get("in_replay") and det.get("bundle") == self.bundle and det.get("driver") == d["label"])
+        # Match on the replay file itself: the same .rpy can belong to several bundles (e.g. the reference replay is
+        # shared), so "which bundle does this file map to" is not a valid check.
+        loaded = det.get("file")
+        try:
+            loaded = staged_map().get(loaded, loaded)
+        except Exception:
+            pass
+        file_ok = bool(det.get("in_replay") and loaded and loaded == d.get("rpy_file"))
         len_ok = end is not None and abs(end - (d.get("replay_end_s") or 0)) <= 2.0
         self.acc_now = {"in_replay": bool(det.get("in_replay")), "file": det.get("file"), "driver": det.get("driver"),
                         "length_s": end, "file_ok": file_ok, "length_ok": len_ok}
@@ -489,8 +570,8 @@ class Session:
             self.steps = [{"driver": lbl, "label": p["label"], "state": "pending",
                            "est_s": round(self.pass_estimate(drivers[lbl], p), 1)} for lbl, p in order]
             self.log("Trouble spots: %s" % ", ".join(s["corner"] for s in self._spots))
-            have0 = {lbl: set() if self.force else _existing(self.bundle, drivers[lbl]) for lbl in drivers}
-            if all((p["kind"], p.get("corner"), p["camera"]) in have0[lbl] for lbl, p in order):
+            have0 = {lbl: [] if self.force else _existing(self.bundle, drivers[lbl]) for lbl in drivers}
+            if all(_has(have0[lbl], p) for lbl, p in order):
                 for st in self.steps:
                     st["state"], st["est_s"] = "done", 0
                 self.log("Everything is already recorded")
@@ -509,13 +590,13 @@ class Session:
                 obs.request("SetVideoSettings", {"fpsNumerator": self.OBS_FPS, "fpsDenominator": 1})
             # (changing OBS's recording quality at runtime leaves its outputs half-configured and recording
             #  silently never starts — so file size is left to OBS's own settings)
-            have = {lbl: set() if self.force else _existing(self.bundle, drivers[lbl]) for lbl in drivers}
+            have = {lbl: [] if self.force else _existing(self.bundle, drivers[lbl]) for lbl in drivers}
             current = None
             for k, (lbl, p) in enumerate(order):
                 if self._stop.is_set():
                     break
                 d = drivers[lbl]
-                if (p["kind"], p.get("corner"), p["camera"]) in have[lbl]:
+                if _has(have[lbl], p):
                     self.steps[k]["state"] = "done"
                     self.steps[k]["est_s"] = 0
                     continue
@@ -613,7 +694,8 @@ class Session:
                         pass
             try:
                 from .video_store import prune
-                pr = prune(self.bundle, keep_corners={sp["corner"] for sp in getattr(self, "_spots", [])} or None)
+                pr = prune(self.bundle, keep_corners={sp["corner"] for sp in getattr(self, "_spots", [])} or None,
+                           keep_spans=[(sp["s0_m"], sp["s1_m"]) for sp in getattr(self, "_spots", [])] or None)
                 if pr["removed"]:
                     self.log("Pruned %d old recordings (%.1f GB)" % (len(pr["removed"]), pr["freed_bytes"] / 1e9))
             except Exception:

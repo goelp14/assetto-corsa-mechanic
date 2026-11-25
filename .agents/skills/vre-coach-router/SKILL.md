@@ -31,6 +31,11 @@ Entry point for every driver-coaching question. Pick the route, gather evidence,
 7. **Pace first, always.** Never recommend a setup or technique change because it makes the car calmer; only because it
    makes the driver faster (or equally fast and more confident). "More stable but slower" is a failed change.
 8. **Fit the driver, not a template.** Read the driver profile before setup or style advice; extend their natural style.
+9. **Coach, don't instruct.** Explain the mechanism and what the fast driver is trying to achieve, never "copy this
+   trace"; look for the pattern across corner types; 2–3 targets per corner. Rotation questions use the corner model
+   in `docs/coach/rotation-and-corner-structure.md` (closing spiral → MRP → opening spiral). General technique theory:
+   `docs/coach/car-handling-theory.md`; how to coach by scenario: `docs/coach/coaching-craft.md`; track notes:
+   `docs/coach/tracks/<track>.md`.
 
 ## Any car, any track
 
@@ -54,7 +59,7 @@ Keep AC routes below unchanged for non-ACC cars.
 
 | Applies to both AC and ACC | AC only | ACC only |
 |---|---|---|
-| router, collect-evidence (method), root-cause, line-analysis, corner-coaching, incident-analysis, explain-dynamics, driver-profile, pace-potential, teach-answer, annotate-replay, video-review, car-research | setup-and-controls, dampers (workflow), driver_lab commands on VRE sessions | acc-replay-analysis, acc-setup, acc-tyres, acc-electronics, `.rpy` gates, motec-mt2-workspace (ACC exports) |
+| router, coaching-session, collect-evidence (method), root-cause, line-analysis, corner-coaching, incident-analysis, explain-dynamics, driver-profile, pace-potential, teach-answer, annotate-replay, video-review, car-research | setup-and-controls, dampers (workflow), driver_lab commands on VRE sessions | acc-replay-analysis, acc-setup, acc-tyres, acc-electronics, `.rpy` gates, motec-mt2-workspace (ACC exports) |
 
 Technique and physics are universal; numbers (click units, pressure windows, bias offsets, magnitudes per click) are
 car- and game-specific — research or measure them (`vre-car-research`), never carry them across cars.
@@ -83,7 +88,8 @@ Always pass `--min-lap/--max-lap` to drop spins, offs and out-laps, and group la
 | spin, crash, snap, lost control | `vre-incident-analysis` |
 | "why am I slow at X", exits, hesitation, coasting, "one corner better → next worse" | `vre-root-cause` |
 | line, apex, turn-in point, "should I be more left/right" | `vre-line-analysis` |
-| technique drill for one corner, braking point, visual cues | `vre-corner-coaching` |
+| "coach me", plateau, "what should I work on", homework, reporting back after a drill | `vre-coaching-session` |
+| technique drill for one corner, braking point, visual cues, rotation / MRP / "can't get it turned" | `vre-corner-coaching` |
 | understeer/oversteer/grip mechanism | `vre-explain-dynamics` |
 | setup change, brake bias, diff, ARB, "feels wrong", input calibration | `vre-setup-and-controls` (AC) **or** `vre-acc-setup` (ACC) |
 | ACC tyre pressure, graining, hot psi, stint temps | `vre-acc-tyres` |

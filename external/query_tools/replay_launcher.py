@@ -15,6 +15,8 @@ import queue
 import threading
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+VIDEO_CHUNK = 1024 * 1024
 from urllib.parse import unquote, urlparse
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -381,9 +383,12 @@ class ReplayHTTPRequestHandler(SimpleHTTPRequestHandler):
             try:
                 if a:
                     start = int(a)
-                    # open-ended ranges: answer in 8 MB pieces (the browser asks for more) so a few
-                    # videos on one page can't tie up the server streaming whole files
-                    end = int(b) if b else min(size - 1, start + 8 * 1024 * 1024 - 1)
+                    # open-ended ranges: answer in small (1 MB) pieces; the browser asks for more. A paused
+                    # <video> stops reading mid-response, and an unfinished response pins one of the browser's
+                    # 6 connections to this host — with big pieces a few videos + the event stream used them all
+                    # and the page itself could no longer load. Small pieces finish and free the connection.
+                    end = int(b) if b else min(size - 1, start + VIDEO_CHUNK - 1)
+                    end = min(end, start + VIDEO_CHUNK - 1)
                 else:
                     start = max(0, size - int(b))
             except ValueError:

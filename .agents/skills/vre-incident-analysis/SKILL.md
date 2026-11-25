@@ -41,6 +41,20 @@ Read [dynamics-glossary.md](../../docs/coach/dynamics-glossary.md):
 - **Abrupt brake release at turn-in** (≥ 50% → 0 in one station) → rear steps out in 2nd-gear hairpins
 - **Braking over a crest** → load drop → lock or float (check `driver_lab.py sim` crest zones)
 
+## Slip-angle math for slides (why corrections fail)
+
+Front slip ≈ body slip (β) + steering angle, signed. Optimal slick slip is ~5°.
+
+- **More lock in the slide's direction overloads the fronts** (β + δ far past optimal) → rotation *dies*; the "I
+  turned more and it went straight" case.
+- **Too small / too slow counter-steer still leaves the fronts pulling inward** (β − δ ≈ optimal) → the slide grows →
+  spin. Gentle "smooth" corrections that never catch up with β cause spins; corrections must be quick, then back to
+  the plan. Check β vs steering in the pre-window: was δ ever ≥ β?
+- Snap oversteer clusters at **early entry** (trail-braking load + tense hands, too much rotation) and **late exit**
+  (gaining speed while asking for constant rotation — circle, not opening spiral; often caused by not taking the
+  rotation at low speed earlier). See [rotation-and-corner-structure.md](../../docs/coach/rotation-and-corner-structure.md) §4.
+- An outward spin with a car that was never going to make the corner = entry speed, not a technique error.
+
 ## Before blaming the driver
 
 Run `python external/query_tools/driver_lab.py controls`. A non-linear brake curve (GAMMA > 1.2) makes trail braking

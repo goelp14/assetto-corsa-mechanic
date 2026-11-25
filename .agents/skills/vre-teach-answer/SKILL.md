@@ -20,6 +20,9 @@ Format evidence into actionable coaching copy.
 7. **Confidence:** proven on these laps vs hypothesis + 5-lap test.
 8. **Corrections:** if an earlier cue was wrong, say it plainly once.
 9. Plain words over jargon; tables only for short comparisons.
+10. **Mechanism, not instruction:** say what the faster driver is trying to make the car do and why, so the driver can
+    reuse it elsewhere; never "copy this trace". Add what it will *feel* like (tyre noise, steering weight, the car
+    pointing). Pick the register for the scenario — [coaching-craft.md](../../docs/coach/coaching-craft.md) §3–4.
 
 Method authority: `docs/coach/telemetry-analysis-playbook.md`.
 

@@ -126,17 +126,30 @@ def replay_segments(samples: List[dict], end_s: float, phase: float = TICK_PHASE
         last_v = smp["v"]
     if len(cur) >= 2:
         segs.append(cur)
+    def fit(pts):
+        n = len(pts)
+        mv = sum(v for v, _ in pts) / n
+        md = sum(d for _, d in pts) / n
+        var = sum((v - mv) ** 2 for v, _ in pts)
+        b = sum((v - mv) * (d - md) for v, d in pts) / var if var > 0 else 1.0
+        return md - b * mv, b
+
     out = []
     for ticks in segs:
-        n = len(ticks)
-        mv = sum(v for v, _ in ticks) / n
-        md = sum(d for _, d in ticks) / n
-        var = sum((v - mv) ** 2 for v, _ in ticks)
-        b = sum((v - mv) * (d - md) for v, d in ticks) / var if var > 0 else 1.0
-        a = md - b * mv
+        # The first tick after a jump/start can land a few tenths early (measured up to 0.5 s on some replays) while
+        # every later tick is steady to ±0.03 s: fit, drop ticks that disagree with the rest, refit.
+        used = list(ticks)
+        a, b = fit(used)
+        while len(used) >= 5:
+            worst = max(used, key=lambda p: abs(a + b * p[0] - p[1]))
+            if abs(a + b * worst[0] - worst[1]) <= 0.12:
+                break
+            used.remove(worst)
+            a, b = fit(used)
         v0, v1 = ticks[0][0], ticks[-1][0] + (1.0 / b if b > 0 else 0.0)   # holds until the next tick
-        resid = max(abs(a + b * v - d) for v, d in ticks)
-        out.append({"v0": v0, "v1": v1, "a": a, "b": b, "ticks": n, "max_resid_s": resid})
+        resid = max(abs(a + b * v - d) for v, d in used)
+        out.append({"v0": v0, "v1": v1, "a": a, "b": b, "ticks": len(used), "dropped": len(ticks) - len(used),
+                    "max_resid_s": resid})
     return out
 
 

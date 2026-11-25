@@ -111,6 +111,14 @@ def build(me_spec: Tuple[Path, str], ref_spec: Optional[Tuple[Path, str]] = None
                              "pose_hz": rf.clock["hz"], "replay_end_s": _replay_end_s(rf),
                              "rpy_file": Path(str(rf.path)).name})
 
+    try:  # rotation metrics (MRP, rotation build, throttle timing) need the frames just written
+        from .coach.rotation import augment
+
+        augment(analysis, out / "frames")
+        (out / "analysis.json").write_text(json.dumps(analysis, default=float), encoding="utf-8")
+    except Exception as exc:  # additive: coaching still runs on the base metrics
+        print(f"rotation metrics skipped: {exc}")
+
     try:
         rep = limits([x for x in (me, ref) if x is not None])
         (out / "track_limits.json").write_text(json.dumps(rep, default=float), encoding="utf-8")

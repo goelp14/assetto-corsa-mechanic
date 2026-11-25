@@ -29,6 +29,7 @@ GROUP_EVENTS = {
     "exit": ("vmin_m", "throttle_on_m", "full_throttle_m"),
     "terrain": ("brake_on_m", "brake_off_m", "turn_in_m"),
     "consistency": ("brake_on_m", "turn_in_m"),
+    "rotation": ("turn_in_m", "mrp_m", "throttle_on_m"),
 }
 
 REPO = Path(__file__).resolve().parents[3]

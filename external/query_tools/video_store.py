@@ -32,8 +32,27 @@ def _keep_reason(v: dict, drivers: dict) -> str:
     return ""
 
 
-def prune(bundle: str, dry_run: bool = False, exports: str = None, keep_corners=None) -> dict:
-    """``keep_corners``: when given, angle clips of any other corner/segment are dropped (plan changed)."""
+def _files_used_elsewhere(root: str, bundle: str) -> set:
+    used = set()
+    try:
+        names = os.listdir(root)
+    except OSError:
+        return used
+    for other in names:
+        if other == bundle:
+            continue
+        try:
+            with open(os.path.join(root, other, "videos.json"), encoding="utf-8") as fh:
+                used.update(v.get("file") for v in json.load(fh).get("videos", []) if v.get("file"))
+        except (OSError, ValueError):
+            continue
+    return used
+
+
+def prune(bundle: str, dry_run: bool = False, exports: str = None, keep_corners=None, keep_spans=None) -> dict:
+    """``keep_corners``: when given, angle clips of any other corner/segment are dropped (plan changed) —
+    unless the clip's track span covers one of ``keep_spans`` [(s0_m, s1_m)] (still useful under another name).
+    A file that another bundle still lists is never deleted from disk; only this bundle's entry goes."""
     bdir = os.path.join(exports or EXPORTS, bundle)
     vpath = os.path.join(bdir, "videos.json")
     try:
@@ -55,7 +74,10 @@ def prune(bundle: str, dry_run: bool = False, exports: str = None, keep_corners=
         key = (v.get("driver"), v.get("kind", "full"), v.get("corner"), v.get("camera"),
                tuple(sorted(l.get("lap_index") or -1 for l in v.get("laps", []))))
         if not why and keep_corners is not None and v.get("kind") == "angle" and v.get("corner") not in keep_corners:
-            why = "no longer in the capture plan"
+            covers = any(v.get("s0_m") is not None and v.get("s1_m") is not None
+                         and v["s0_m"] <= a + 5 and v["s1_m"] >= b - 5 for a, b in (keep_spans or []))
+            if not covers:
+                why = "no longer in the capture plan"
         if not why and key in seen:
             why = "superseded by a newer recording"
         if why:
@@ -64,9 +86,13 @@ def prune(bundle: str, dry_run: bool = False, exports: str = None, keep_corners=
             seen.add(key)
             keep.append(v)
     freed = 0
+    shared = _files_used_elsewhere(exports or EXPORTS, bundle)
     if not dry_run:
         for v in removed:
-            for p in (v.get("file"), os.path.join(bdir, "video_%s_samples.json" % v.get("id"))):
+            paths = [os.path.join(bdir, "video_%s_samples.json" % v.get("id"))]
+            if v.get("file") not in shared:
+                paths.insert(0, v.get("file"))
+            for p in paths:
                 if p and os.path.isfile(p):
                     freed += os.path.getsize(p)
                     os.remove(p)
@@ -74,7 +100,8 @@ def prune(bundle: str, dry_run: bool = False, exports: str = None, keep_corners=
         with open(vpath, "w", encoding="utf-8") as fh:
             json.dump(doc, fh, indent=1)
     else:
-        freed = sum(os.path.getsize(v["file"]) for v in removed if v.get("file") and os.path.isfile(v["file"]))
+        freed = sum(os.path.getsize(v["file"]) for v in removed
+                    if v.get("file") and v["file"] not in shared and os.path.isfile(v["file"]))
     return {"removed": [{"id": v["id"], "reason": v["reason"], "label": v.get("pass_label") or v.get("camera")}
                         for v in removed], "freed_bytes": freed}
 
